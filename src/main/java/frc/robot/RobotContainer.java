@@ -4,9 +4,17 @@
 
 package frc.robot;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Optional;
+
+import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
+import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;
+
 import com.pathplanner.lib.commands.PathPlannerAuto;
 import com.pathplanner.lib.events.EventTrigger;
 import com.pathplanner.lib.path.PathPlannerPath;
+
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.Alert;
@@ -33,20 +41,12 @@ import frc.lib.team3061.vision.VisionIOSim;
 import frc.robot.Constants.Mode;
 import frc.robot.commands.CharacterizationCommands;
 import frc.robot.commands.TeleopSwerve;
-import frc.robot.configs.ArtemisRobotConfig;
-import frc.robot.configs.DefaultRobotConfig;
-import frc.robot.configs.NewPracticeRobotConfig;
-import frc.robot.configs.PracticeBoardConfig;
-import frc.robot.configs.VisionTestPlatformConfig;
+import frc.robot.configs.CompRobotConfig;
+import frc.robot.configs.PracticeRobotConfig;
 import frc.robot.operator_interface.OISelector;
 import frc.robot.operator_interface.OperatorInterface;
 import frc.robot.subsystems.subsystem.Subsystem;
 import frc.robot.subsystems.subsystem.SubsystemIO;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Optional;
-import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
-import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -153,20 +153,11 @@ public class RobotContainer {
    */
   private void createRobotConfig() {
     switch (Constants.getRobot()) {
-      case ROBOT_DEFAULT:
-        config = new DefaultRobotConfig();
-        break;
       case ROBOT_PRACTICE:
-        config = new NewPracticeRobotConfig();
+        config = new PracticeRobotConfig();
         break;
       case ROBOT_COMPETITION, ROBOT_SIMBOT:
-        config = new ArtemisRobotConfig();
-        break;
-      case ROBOT_PRACTICE_BOARD:
-        config = new PracticeBoardConfig();
-        break;
-      case ROBOT_VISION_TEST_PLATFORM:
-        config = new VisionTestPlatformConfig();
+        config = new CompRobotConfig();
         break;
       default:
         break;

@@ -2,10 +2,9 @@ package frc.robot.configs;
 
 import static edu.wpi.first.units.Units.*;
 
-import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Transform3d;
+import com.ctre.phoenix6.configs.MountPoseConfigs;
+import com.ctre.phoenix6.configs.Pigeon2Configuration;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearVelocity;
@@ -14,59 +13,46 @@ import edu.wpi.first.units.measure.MomentOfInertia;
 import frc.lib.team3061.RobotConfig;
 import frc.lib.team3061.drivetrain.swerve.SwerveConstants;
 
-/*
- * Refer to the README for how to represent your robot's configuration. For more information on
- * these methods, refer to the documentation in the RobotConfig class.
- */
-public class DefaultRobotConfig extends RobotConfig {
+public class PracticeRobotConfig extends RobotConfig {
+  // 2 mk4n's on the front, 2 mk4is on the back
 
-  // FIXME: update all CAN IDs and steer offsets
-  private static final int FRONT_LEFT_MODULE_DRIVE_MOTOR = 13;
-  private static final int FRONT_LEFT_MODULE_STEER_MOTOR = 12;
+  private static final int FRONT_LEFT_MODULE_DRIVE_MOTOR = 43;
+  private static final int FRONT_LEFT_MODULE_STEER_MOTOR = 44;
   private static final int FRONT_LEFT_MODULE_STEER_ENCODER = 14;
-  private static final Angle FRONT_LEFT_MODULE_STEER_OFFSET = Rotations.of(-0.22591);
+  private static final Angle FRONT_LEFT_MODULE_STEER_OFFSET = Rotations.of(0.474121); // tune
 
-  private static final int FRONT_RIGHT_MODULE_DRIVE_MOTOR = 16;
-  private static final int FRONT_RIGHT_MODULE_STEER_MOTOR = 15;
+  private static final int FRONT_RIGHT_MODULE_DRIVE_MOTOR = 41;
+  private static final int FRONT_RIGHT_MODULE_STEER_MOTOR = 42;
   private static final int FRONT_RIGHT_MODULE_STEER_ENCODER = 17;
-  private static final Angle FRONT_RIGHT_MODULE_STEER_OFFSET = Rotations.of(-0.390381);
+  private static final Angle FRONT_RIGHT_MODULE_STEER_OFFSET = Rotations.of(-0.358398); // tune
 
-  private static final int BACK_LEFT_MODULE_DRIVE_MOTOR = 7;
-  private static final int BACK_LEFT_MODULE_STEER_MOTOR = 6;
+  private static final int BACK_LEFT_MODULE_DRIVE_MOTOR = 38;
+  private static final int BACK_LEFT_MODULE_STEER_MOTOR = 37;
   private static final int BACK_LEFT_MODULE_STEER_ENCODER = 8;
-  private static final Angle BACK_LEFT_MODULE_STEER_OFFSET = Rotations.of(0.327393);
+  private static final Angle BACK_LEFT_MODULE_STEER_OFFSET = Rotations.of(-0.234863); // tune
 
-  private static final int BACK_RIGHT_MODULE_DRIVE_MOTOR = 10;
-  private static final int BACK_RIGHT_MODULE_STEER_MOTOR = 9;
+  private static final int BACK_RIGHT_MODULE_DRIVE_MOTOR = 39;
+  private static final int BACK_RIGHT_MODULE_STEER_MOTOR = 40;
   private static final int BACK_RIGHT_MODULE_STEER_ENCODER = 11;
-  private static final Angle BACK_RIGHT_MODULE_STEER_OFFSET = Rotations.of(-0.336670);
+  private static final Angle BACK_RIGHT_MODULE_STEER_OFFSET = Rotations.of(0.161133); // tune
 
-  private static final int GYRO_ID = 3;
+  private static final int GYRO_ID = 3; // ?
 
-  // FIXME: update robot dimensions
-  private static final Mass MASS =
-      Kilograms.of(
-          51.862); // FIXME: update based on measured mass of robot with battery and bumpers
-  private static final MomentOfInertia MOI = KilogramSquareMeters.of(6.0); // FIXME: measure
-  private static final Distance TRACKWIDTH = Meters.of(0.523875);
-  private static final Distance WHEELBASE = Meters.of(0.52705);
-  private static final Distance WHEEL_RADIUS = Meters.of(0.09845567409 / 2.0);
-  private static final double WHEEL_COEFFICIENT_OF_FRICTION =
-      1.2; // FIXME: update based on wheel coefficient of friction
+  private static final Distance TRACKWIDTH = Meters.of(0.57785); // 22.75
+  private static final Distance WHEELBASE = Meters.of(0.57785); // 22.75
+  private static final Distance WHEEL_RADIUS = Meters.of(0.0954405 / 2.0);
   private static final Translation2d FRONT_RIGHT_CORNER_POSITION = new Translation2d(0.36, -0.36);
-  private static final Distance ROBOT_WIDTH_WITH_BUMPERS = Meters.of(0.8382);
-  private static final Distance ROBOT_LENGTH_WITH_BUMPERS = Meters.of(0.8382);
+
+  private static final Distance ROBOT_WIDTH_WITH_BUMPERS = Meters.of(0.88026); // 34.656 in
+  private static final Distance ROBOT_LENGTH_WITH_BUMPERS = Meters.of(0.88026); // 34.656 in
 
   private static final double COUPLE_RATIO = 3.125; // FIXME: tune
-
-  // FIXME: tune PID values for the angle and drive motors for the swerve modules
 
   /* Angle Motor PID Values */
   private static final double ANGLE_KP = 100.0;
   private static final double ANGLE_KI = 0.0;
   private static final double ANGLE_KD = 0.05;
 
-  // FIXME: characterize the drivetrain and update these constants
   private static final double ANGLE_KS = 0.1891233333;
   private static final double ANGLE_KV =
       0.4399866667 * 2 * Math.PI; // convert from V/(radians/s) to V/(rotations/s)
@@ -77,34 +63,17 @@ public class DefaultRobotConfig extends RobotConfig {
   private static final double DRIVE_KI = 0.0;
   private static final double DRIVE_KD = 0.0;
 
-  // FIXME: characterize the drivetrain and update these constants
   private static final double DRIVE_KS = 5.0;
   private static final double DRIVE_KV = 0.0;
   private static final double DRIVE_KA = 0.0;
 
-  // FIXME: determine maximum velocities empirically
-  private static final LinearVelocity MAX_VELOCITY = MetersPerSecond.of(3.5);
+  private static final LinearVelocity MAX_VELOCITY =
+      MetersPerSecond.of(5.5); // FIXME: confirm max velocity with real robot
   private static final LinearVelocity MAX_COAST_VELOCITY = MetersPerSecond.of(0.05);
   private static final double SLOW_MODE_MULTIPLIER = 0.75;
 
-  // FIXME: specify the name of the CANivore CAN FD bus as appropriate (an empty string uses the
-  // default CAN bus)
-  private static final String CAN_BUS_NAME = "";
+  private static final String CAN_BUS_NAME = "canbus1";
 
-  // FIXME: specify the name of the camera used for detecting AprilTags
-  private static final String CAMERA_NAME = "OV2311";
-
-  // FIXME: update this with the actual transform from the robot to the camera
-  private static final Transform3d ROBOT_TO_CAMERA =
-      new Transform3d(new Translation3d(0, 0, 0), new Rotation3d(0, 0, 0));
-
-  // FIXME: specify the configuration for pneumatics
-  private static final int PNEUMATICS_HUB_ID = 20;
-  private static final int FLOW_SENSOR_CHANNEL = 0;
-  private static final int REV_HIGH_PRESSURE_SENSOR_CHANNEL = 0;
-  private static final int REV_LOW_PRESSURE_SENSOR_CHANNEL = 1;
-
-  // FIXME: specify maximum velocity and acceleration and tune PID values for auto paths
   private static final double AUTO_DRIVE_P_CONTROLLER = 5.0;
   private static final double AUTO_DRIVE_I_CONTROLLER = 0.0;
   private static final double AUTO_DRIVE_D_CONTROLLER = 0.0;
@@ -112,7 +81,6 @@ public class DefaultRobotConfig extends RobotConfig {
   private static final double AUTO_TURN_I_CONTROLLER = 0.0;
   private static final double AUTO_TURN_D_CONTROLLER = 0.0;
 
-  // FIXME: tune PID values for drive to pose
   // Drive to Pose constants
   private static final double DRIVE_TO_POSE_DRIVE_KP = 2.5;
   private static final double DRIVE_TO_POSE_DRIVE_KD = 0.0;
@@ -125,19 +93,16 @@ public class DefaultRobotConfig extends RobotConfig {
 
   private static final LinearVelocity SQUARING_SPEED = MetersPerSecond.of(1.0);
 
-  // FIXME: tune PID values for drive facing angle
   // Drive Facing Angle constants
-  private static final double DRIVE_FACING_ANGLE_KP = 6.0;
+  private static final double DRIVE_FACING_ANGLE_KP = 2.0;
   private static final double DRIVE_FACING_ANGLE_KD = 0.1;
   private static final double DRIVE_FACING_ANGLE_KI = 0.0;
 
-  // FIXME: specify the number of LEDs
   private static final int LED_COUNT = 85;
 
   @Override
   public boolean getPhoenix6Licensed() {
-    // FIXME: return false if you have Phoenix 6 Pro license
-    return false;
+    return true;
   }
 
   @Override
@@ -202,8 +167,17 @@ public class DefaultRobotConfig extends RobotConfig {
 
   @Override
   public SwerveConstants getSwerveConstants() {
-    // FIXME: specify the type of swerve module (MK4 and MK4i are supported)
-    return SwerveConstants.MK4I_L2_CONSTANTS;
+    return SwerveConstants.MK4N_L3_PLUS_CONSTANTS;
+  }
+
+  @Override
+  public SwerveConstants getFrontSwerveConstants() {
+    return SwerveConstants.MK4N_L3_PLUS_CONSTANTS;
+  }
+
+  @Override
+  public SwerveConstants getBackSwerveConstants() {
+    return SwerveConstants.MK4I_L3_PLUS_CONSTANTS;
   }
 
   @Override
@@ -282,11 +256,6 @@ public class DefaultRobotConfig extends RobotConfig {
   }
 
   @Override
-  public Transform3d[] getRobotToCameraTransforms() {
-    return new Transform3d[] {ROBOT_TO_CAMERA};
-  }
-
-  @Override
   public LinearVelocity getRobotMaxVelocity() {
     return MAX_VELOCITY;
   }
@@ -333,32 +302,22 @@ public class DefaultRobotConfig extends RobotConfig {
 
   @Override
   public Mass getMass() {
-    return MASS;
+    return Kilograms.of(51.862);
   }
 
   @Override
   public MomentOfInertia getMomentOfInertia() {
-    return MOI;
+    return KilogramSquareMeters.of(6.0);
   }
 
   @Override
   public double getWheelCOF() {
-    return WHEEL_COEFFICIENT_OF_FRICTION;
+    return 1.2;
   }
 
   @Override
   public String getCANBusName() {
     return CAN_BUS_NAME;
-  }
-
-  @Override
-  public String[] getCameraNames() {
-    return new String[] {CAMERA_NAME};
-  }
-
-  @Override
-  public double[] getCameraStdDevFactors() {
-    return new double[] {1.0};
   }
 
   @Override
@@ -403,22 +362,7 @@ public class DefaultRobotConfig extends RobotConfig {
 
   @Override
   public int getPneumaticsHubCANID() {
-    return PNEUMATICS_HUB_ID;
-  }
-
-  @Override
-  public int getFlowSensorChannel() {
-    return FLOW_SENSOR_CHANNEL;
-  }
-
-  @Override
-  public int getRevHighPressureSensorChannel() {
-    return REV_HIGH_PRESSURE_SENSOR_CHANNEL;
-  }
-
-  @Override
-  public int getRevLowPressureSensorChannel() {
-    return REV_LOW_PRESSURE_SENSOR_CHANNEL;
+    return 0;
   }
 
   @Override
@@ -443,8 +387,13 @@ public class DefaultRobotConfig extends RobotConfig {
 
   @Override
   public double getOdometryUpdateFrequency() {
-    // FIXME: return 250 Hz if using the DrivetrainIOCTRE class
-    return 50.0;
+    return 250.0;
+  }
+
+  @Override
+  public Pigeon2Configuration getPigeonConfigForSwerveDrivetrain() {
+    return new Pigeon2Configuration()
+        .withMountPose(new MountPoseConfigs().withMountPoseRoll(-180.0));
   }
 
   @Override
