@@ -3,10 +3,16 @@
   "robotLength": 0.845,
   "holonomicMode": true,
   "pathFolders": [
-    "Reefscape"
+    "Amp Side",
+    "Center",
+    "Reefscape",
+    "Source Side"
   ],
   "autoFolders": [
-    "Reefscape"
+    "Amp Side",
+    "Center",
+    "Reefscape",
+    "Source Side"
   ],
   "defaultMaxVel": 3.0,
   "defaultMaxAccel": 3.0,
