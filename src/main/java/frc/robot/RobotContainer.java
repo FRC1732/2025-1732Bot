@@ -4,19 +4,12 @@
 
 package frc.robot;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Optional;
+import static edu.wpi.first.units.Units.*;
 
-import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
-import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;
-
-import com.pathplanner.lib.commands.PathPlannerAuto;
+import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
+import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.pathplanner.lib.events.EventTrigger;
 import com.pathplanner.lib.path.PathPlannerPath;
-
-import edu.wpi.first.apriltag.AprilTagFieldLayout;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -28,25 +21,18 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.lib.team3061.RobotConfig;
-import frc.lib.team3061.drivetrain.Drivetrain;
-import frc.lib.team3061.drivetrain.DrivetrainIO;
-import frc.lib.team3061.drivetrain.DrivetrainIOCTRE;
 import frc.lib.team3061.leds.LEDs;
 import frc.lib.team3061.util.SysIdRoutineChooser;
-import frc.lib.team3061.vision.Vision;
-import frc.lib.team3061.vision.VisionConstants;
-import frc.lib.team3061.vision.VisionIO;
-import frc.lib.team3061.vision.VisionIOPhotonVision;
-import frc.lib.team3061.vision.VisionIOSim;
-import frc.robot.Constants.Mode;
-import frc.robot.commands.CharacterizationCommands;
-import frc.robot.commands.TeleopSwerve;
 import frc.robot.configs.CompRobotConfig;
 import frc.robot.configs.PracticeRobotConfig;
+import frc.robot.generated.*;
+import frc.robot.generated.TunerConstants;
 import frc.robot.operator_interface.OISelector;
 import frc.robot.operator_interface.OperatorInterface;
-import frc.robot.subsystems.subsystem.Subsystem;
-import frc.robot.subsystems.subsystem.SubsystemIO;
+import frc.robot.subsystems.CommandSwerveDrivetrain;
+import java.util.Optional;
+import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
+import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -57,10 +43,25 @@ import frc.robot.subsystems.subsystem.SubsystemIO;
 public class RobotContainer {
   private OperatorInterface oi = new OperatorInterface() {};
   private RobotConfig config;
-  private Drivetrain drivetrain;
+
   private Alliance lastAlliance = Field2d.getInstance().getAlliance();
-  private Vision vision;
-  private Subsystem subsystem;
+
+  public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
+
+  private double MaxSpeed =
+      TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
+  private double MaxAngularRate =
+      RotationsPerSecond.of(0.75)
+          .in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
+
+  private final SwerveRequest.FieldCentric drive =
+      new SwerveRequest.FieldCentric()
+          .withDeadband(MaxSpeed * 0.1)
+          .withRotationalDeadband(MaxAngularRate * 0.1) // Add a 10% deadband
+          .withDriveRequestType(
+              DriveRequestType.OpenLoopVoltage); // Use open-loop control for drive motors
+  private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
+  private final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
 
   // use AdvantageKit's LoggedDashboardChooser instead of SendableChooser to ensure accurate logging
   private final LoggedDashboardChooser<Command> autoChooser =
@@ -90,47 +91,7 @@ public class RobotContainer {
      */
     createRobotConfig();
 
-    LEDs.getInstance();
-
-    // create real, simulated, or replay subsystems based on the mode and robot specified
-    if (Constants.getMode() != Mode.REPLAY) {
-
-      switch (Constants.getRobot()) {
-        case ROBOT_DEFAULT, ROBOT_PRACTICE, ROBOT_COMPETITION:
-          {
-            createCTRESubsystems();
-            break;
-          }
-        case ROBOT_SIMBOT:
-          {
-            createCTRESimSubsystems();
-            break;
-          }
-        case ROBOT_PRACTICE_BOARD:
-          {
-            createPracticeBoardSubsystems();
-            break;
-          }
-        case ROBOT_VISION_TEST_PLATFORM:
-          {
-            createVisionTestPlatformSubsystems();
-            break;
-          }
-        default:
-          break;
-      }
-
-    } else {
-      drivetrain = new Drivetrain(new DrivetrainIO() {});
-
-      String[] cameraNames = config.getCameraNames();
-      VisionIO[] visionIOs = new VisionIO[cameraNames.length];
-      for (int i = 0; i < visionIOs.length; i++) {
-        visionIOs[i] = new VisionIO() {};
-      }
-      vision = new Vision(visionIOs);
-      subsystem = new Subsystem(new SubsystemIO() {});
-    }
+    // create the subsystems
 
     // disable all telemetry in the LiveWindow to reduce the processing during each iteration
     LiveWindow.disableAllTelemetry();
@@ -164,7 +125,7 @@ public class RobotContainer {
     }
   }
 
-  private void createCTRESubsystems() {
+  /*private void createCTRESubsystems() {
     drivetrain = new Drivetrain(new DrivetrainIOCTRE());
 
     String[] cameraNames = config.getCameraNames();
@@ -186,9 +147,9 @@ public class RobotContainer {
 
     // FIXME: create the hardware-specific subsystem class
     subsystem = new Subsystem(new SubsystemIO() {});
-  }
+  }*/
 
-  private void createCTRESimSubsystems() {
+  /*private void createCTRESimSubsystems() {
     DrivetrainIO drivetrainIO = new DrivetrainIOCTRE();
     drivetrain = new Drivetrain(drivetrainIO);
 
@@ -212,35 +173,7 @@ public class RobotContainer {
             });
 
     // FIXME: create the hardware-specific subsystem class
-  }
-
-  private void createPracticeBoardSubsystems() {
-    // change the following to connect the subsystem being tested to actual hardware
-    drivetrain = new Drivetrain(new DrivetrainIO() {});
-    vision = new Vision(new VisionIO[] {new VisionIO() {}});
-  }
-
-  private void createVisionTestPlatformSubsystems() {
-    // change the following to connect the subsystem being tested to actual hardware
-    drivetrain = new Drivetrain(new DrivetrainIO() {});
-
-    String[] cameraNames = config.getCameraNames();
-    VisionIO[] visionIOs = new VisionIO[cameraNames.length];
-    AprilTagFieldLayout layout;
-    try {
-      layout = new AprilTagFieldLayout(VisionConstants.APRILTAG_FIELD_LAYOUT_PATH);
-    } catch (IOException e) {
-      layout = new AprilTagFieldLayout(new ArrayList<>(), 16.4592, 8.2296);
-
-      layoutFileMissingAlert.setText(
-          LAYOUT_FILE_MISSING + ": " + VisionConstants.APRILTAG_FIELD_LAYOUT_PATH);
-      layoutFileMissingAlert.set(true);
-    }
-    for (int i = 0; i < visionIOs.length; i++) {
-      visionIOs[i] = new VisionIOPhotonVision(cameraNames[i], layout);
-    }
-    vision = new Vision(visionIOs);
-  }
+  }*/
 
   /**
    * Creates the field from the defined regions and transition points from one region to its
@@ -300,11 +233,11 @@ public class RobotContainer {
 
     // interrupt all commands by running a command that requires every subsystem. This is used to
     // recover to a known state if the robot becomes "stuck" in a command.
-    oi.getInterruptAll()
-        .onTrue(
-            Commands.parallel(
-                Commands.runOnce(() -> subsystem.setMotorVoltage(0)),
-                new TeleopSwerve(drivetrain, oi::getTranslateX, oi::getTranslateY, oi::getRotate)));
+    /*oi.getInterruptAll()
+    .onTrue(
+        Commands.parallel(
+            Commands.runOnce(() -> subsystem.setMotorVoltage(0)),
+            new TeleopSwerve(drivetrain, oi::getTranslateX, oi::getTranslateY, oi::getRotate)));*/
   }
 
   /** Use this method to define your commands for autonomous mode. */
@@ -344,98 +277,98 @@ public class RobotContainer {
      * used for empirically determining the wheel radius
      *
      */
-    autoChooser.addOption("Distance Test Slow", createTuningAutoPath("DistanceTestSlow", true));
-    autoChooser.addOption("Distance Test Med", createTuningAutoPath("DistanceTestMed", true));
-    autoChooser.addOption("Distance Test Fast", createTuningAutoPath("DistanceTestFast", true));
+    // autoChooser.addOption("Distance Test Slow", createTuningAutoPath("DistanceTestSlow", true));
+    // autoChooser.addOption("Distance Test Med", createTuningAutoPath("DistanceTestMed", true));
+    // autoChooser.addOption("Distance Test Fast", createTuningAutoPath("DistanceTestFast", true));
 
     /************ Auto Tuning ************
      *
      * useful for tuning the autonomous PID controllers
      *
      */
-    autoChooser.addOption("Rotation Test Slow", createTuningAutoPath("RotationTestSlow", false));
-    autoChooser.addOption("Rotation Test Fast", createTuningAutoPath("RotationTestFast", false));
+    // autoChooser.addOption("Rotation Test Slow", createTuningAutoPath("RotationTestSlow", false));
+    // autoChooser.addOption("Rotation Test Fast", createTuningAutoPath("RotationTestFast", false));
 
-    autoChooser.addOption("Oval Test Slow", createTuningAutoPath("OvalTestSlow", false));
-    autoChooser.addOption("Oval Test Fast", createTuningAutoPath("OvalTestFast", false));
+    // autoChooser.addOption("Oval Test Slow", createTuningAutoPath("OvalTestSlow", false));
+    // autoChooser.addOption("Oval Test Fast", createTuningAutoPath("OvalTestFast", false));
 
     /************ Drive Velocity Tuning ************
      *
      * useful for tuning the drive velocity PID controller
      *
      */
-    autoChooser.addOption(
-        "Drive Velocity Tuning",
-        Commands.sequence(
-            Commands.runOnce(drivetrain::disableFieldRelative, drivetrain),
-            Commands.repeatingSequence(
-                Commands.deadline(
-                    Commands.waitSeconds(1.0),
-                    Commands.run(() -> drivetrain.drive(2.0, 0.0, 0.0, false, false), drivetrain)),
-                Commands.deadline(
-                    Commands.waitSeconds(1.0),
-                    Commands.run(() -> drivetrain.drive(-0.5, 0.0, 0.0, false, false), drivetrain)),
-                Commands.deadline(
-                    Commands.waitSeconds(1.0),
-                    Commands.run(() -> drivetrain.drive(1.0, 0.0, 0.0, false, false), drivetrain)),
-                Commands.deadline(
-                    Commands.waitSeconds(0.5),
-                    Commands.run(() -> drivetrain.drive(3.0, 0.0, 0.0, false, false), drivetrain)),
-                Commands.deadline(
-                    Commands.waitSeconds(2.0),
-                    Commands.run(() -> drivetrain.drive(1.0, 0.0, 0.0, false, false), drivetrain)),
-                Commands.deadline(
-                    Commands.waitSeconds(2.0),
-                    Commands.run(() -> drivetrain.drive(-1.0, 0.0, 0.0, false, false), drivetrain)),
-                Commands.deadline(
-                    Commands.waitSeconds(0.5),
-                    Commands.run(() -> drivetrain.drive(-3.0, 0.0, 0.0, false, false), drivetrain)),
-                Commands.deadline(
-                    Commands.waitSeconds(2.0),
-                    Commands.run(
-                        () -> drivetrain.drive(-1.0, 0.0, 0.0, false, false), drivetrain)))));
+    /*autoChooser.addOption(
+    "Drive Velocity Tuning",
+    Commands.sequence(
+        Commands.runOnce(drivetrain::disableFieldRelative, drivetrain),
+        Commands.repeatingSequence(
+            Commands.deadline(
+                Commands.waitSeconds(1.0),
+                Commands.run(() -> drivetrain.drive(2.0, 0.0, 0.0, false, false), drivetrain)),
+            Commands.deadline(
+                Commands.waitSeconds(1.0),
+                Commands.run(() -> drivetrain.drive(-0.5, 0.0, 0.0, false, false), drivetrain)),
+            Commands.deadline(
+                Commands.waitSeconds(1.0),
+                Commands.run(() -> drivetrain.drive(1.0, 0.0, 0.0, false, false), drivetrain)),
+            Commands.deadline(
+                Commands.waitSeconds(0.5),
+                Commands.run(() -> drivetrain.drive(3.0, 0.0, 0.0, false, false), drivetrain)),
+            Commands.deadline(
+                Commands.waitSeconds(2.0),
+                Commands.run(() -> drivetrain.drive(1.0, 0.0, 0.0, false, false), drivetrain)),
+            Commands.deadline(
+                Commands.waitSeconds(2.0),
+                Commands.run(() -> drivetrain.drive(-1.0, 0.0, 0.0, false, false), drivetrain)),
+            Commands.deadline(
+                Commands.waitSeconds(0.5),
+                Commands.run(() -> drivetrain.drive(-3.0, 0.0, 0.0, false, false), drivetrain)),
+            Commands.deadline(
+                Commands.waitSeconds(2.0),
+                Commands.run(
+                    () -> drivetrain.drive(-1.0, 0.0, 0.0, false, false), drivetrain)))));*/
 
     /************ Swerve Rotation Tuning ************
      *
      * useful for tuning the swerve module rotation PID controller
      *
      */
-    autoChooser.addOption(
-        "Swerve Rotation Tuning",
-        Commands.sequence(
-            Commands.runOnce(drivetrain::enableFieldRelative, drivetrain),
-            Commands.repeatingSequence(
-                Commands.deadline(
-                    Commands.waitSeconds(0.5),
-                    Commands.run(() -> drivetrain.drive(0.1, 0.1, 0.0, true, false), drivetrain)),
-                Commands.deadline(
-                    Commands.waitSeconds(0.5),
-                    Commands.run(() -> drivetrain.drive(-0.1, 0.1, 0.0, true, false), drivetrain)),
-                Commands.deadline(
-                    Commands.waitSeconds(0.5),
-                    Commands.run(() -> drivetrain.drive(-0.1, -0.1, 0.0, true, false), drivetrain)),
-                Commands.deadline(
-                    Commands.waitSeconds(0.5),
-                    Commands.run(
-                        () -> drivetrain.drive(0.1, -0.1, 0.0, true, false), drivetrain)))));
+    /*autoChooser.addOption(
+    "Swerve Rotation Tuning",
+    Commands.sequence(
+        Commands.runOnce(drivetrain::enableFieldRelative, drivetrain),
+        Commands.repeatingSequence(
+            Commands.deadline(
+                Commands.waitSeconds(0.5),
+                Commands.run(() -> drivetrain.drive(0.1, 0.1, 0.0, true, false), drivetrain)),
+            Commands.deadline(
+                Commands.waitSeconds(0.5),
+                Commands.run(() -> drivetrain.drive(-0.1, 0.1, 0.0, true, false), drivetrain)),
+            Commands.deadline(
+                Commands.waitSeconds(0.5),
+                Commands.run(() -> drivetrain.drive(-0.1, -0.1, 0.0, true, false), drivetrain)),
+            Commands.deadline(
+                Commands.waitSeconds(0.5),
+                Commands.run(
+                    () -> drivetrain.drive(0.1, -0.1, 0.0, true, false), drivetrain)))));*/
 
     /************ Drive Wheel Radius Characterization ************
      *
      * useful for characterizing the drive wheel Radius
      *
      */
-    autoChooser.addOption( // start by driving slowing in a circle to align wheels
-        "Drive Wheel Radius Characterization",
-        CharacterizationCommands.wheelRadiusCharacterization(drivetrain)
-            .withName("Drive Wheel Radius Characterization"));
+    /*autoChooser.addOption( // start by driving slowing in a circle to align wheels
+    "Drive Wheel Radius Characterization",
+    CharacterizationCommands.wheelRadiusCharacterization(drivetrain)
+        .withName("Drive Wheel Radius Characterization"));*/
   }
 
-  private Command createTuningAutoPath(String autoName, boolean measureDistance) {
+  /*private Command createTuningAutoPath(String autoName, boolean measureDistance) {
     return Commands.sequence(
         Commands.runOnce(drivetrain::captureInitialConditions),
         new PathPlannerAuto(autoName),
         Commands.runOnce(() -> drivetrain.captureFinalConditions(autoName, measureDistance)));
-  }
+  }*/
 
   private void configureDrivetrainCommands() {
     /*
@@ -449,33 +382,44 @@ public class RobotContainer {
      * and the left joystick's x axis specifies the velocity in the y direction.
      */
     drivetrain.setDefaultCommand(
-        new TeleopSwerve(drivetrain, oi::getTranslateX, oi::getTranslateY, oi::getRotate));
+        // Drivetrain will execute this command periodically
+        drivetrain.applyRequest(
+            () ->
+                drive
+                    .withVelocityX(
+                        oi.getTranslateX() * MaxSpeed) // Drive forward with negative Y (forward)
+                    .withVelocityY(
+                        oi.getTranslateY() * MaxSpeed) // Drive left with negative X (left)
+                    .withRotationalRate(
+                        oi.getRotate()
+                            * MaxAngularRate) // Drive counterclockwise with negative X (left)
+            ));
 
     // lock rotation to the nearest 180° while driving
-    oi.getLock180Button()
-        .whileTrue(
-            new TeleopSwerve(
-                    drivetrain,
-                    oi::getTranslateX,
-                    oi::getTranslateY,
-                    () ->
-                        (drivetrain.getPose().getRotation().getDegrees() > -90
-                                && drivetrain.getPose().getRotation().getDegrees() < 90)
-                            ? Rotation2d.fromDegrees(0.0)
-                            : Rotation2d.fromDegrees(180.0))
-                .withName("lock 180"));
+    /*oi.getLock180Button()
+    .whileTrue(
+        new TeleopSwerve(
+                drivetrain,
+                oi::getTranslateX,
+                oi::getTranslateY,
+                () ->
+                    (drivetrain.getPose().getRotation().getDegrees() > -90
+                            && drivetrain.getPose().getRotation().getDegrees() < 90)
+                        ? Rotation2d.fromDegrees(0.0)
+                        : Rotation2d.fromDegrees(180.0))
+            .withName("lock 180"));*/
 
     // field-relative toggle
-    oi.getFieldRelativeButton()
-        .toggleOnTrue(
-            Commands.either(
-                    Commands.runOnce(drivetrain::disableFieldRelative, drivetrain),
-                    Commands.runOnce(drivetrain::enableFieldRelative, drivetrain),
-                    drivetrain::getFieldRelative)
-                .withName("toggle field relative"));
+    /*oi.getFieldRelativeButton()
+    .toggleOnTrue(
+        Commands.either(
+                Commands.runOnce(drivetrain::disableFieldRelative, drivetrain),
+                Commands.runOnce(drivetrain::enableFieldRelative, drivetrain),
+                drivetrain::getFieldRelative)
+            .withName("toggle field relative"));*/
 
     // slow-mode toggle
-    oi.getTranslationSlowModeButton()
+    /*oi.getTranslationSlowModeButton()
         .onTrue(
             Commands.runOnce(drivetrain::enableTranslationSlowMode, drivetrain)
                 .withName("enable translation slow mode"));
@@ -490,26 +434,26 @@ public class RobotContainer {
     oi.getRotationSlowModeButton()
         .onFalse(
             Commands.runOnce(drivetrain::disableRotationSlowMode, drivetrain)
-                .withName("disable rotation slow mode"));
+                .withName("disable rotation slow mode"));*/
 
     // reset gyro to 0 degrees
-    oi.getResetGyroButton()
-        .onTrue(Commands.runOnce(drivetrain::zeroGyroscope, drivetrain).withName("zero gyro"));
+    /*oi.getResetGyroButton()
+    .onTrue(Commands.runOnce(drivetrain::zeroGyroscope, drivetrain).withName("zero gyro"));*/
 
     // reset pose based on vision
-    oi.getResetPoseToVisionButton()
-        .onTrue(
-            Commands.repeatingSequence(Commands.none())
-                .until(() -> vision.getBestRobotPose() != null)
-                .andThen(
-                    Commands.runOnce(
-                        () -> drivetrain.resetPoseToVision(() -> vision.getBestRobotPose())))
-                .ignoringDisable(true)
-                .withName("reset pose to vision"));
+    /*oi.getResetPoseToVisionButton()
+    .onTrue(
+        Commands.repeatingSequence(Commands.none())
+            .until(() -> vision.getBestRobotPose() != null)
+            .andThen(
+                Commands.runOnce(
+                    () -> drivetrain.resetPoseToVision(() -> vision.getBestRobotPose())))
+            .ignoringDisable(true)
+            .withName("reset pose to vision"));*/
 
     // x-stance
-    oi.getXStanceButton()
-        .whileTrue(Commands.run(drivetrain::holdXstance, drivetrain).withName("hold x-stance"));
+    /*oi.getXStanceButton()
+    .whileTrue(Commands.run(drivetrain::holdXstance, drivetrain).withName("hold x-stance"));*/
 
     oi.getSysIdDynamicForward().whileTrue(SysIdRoutineChooser.getInstance().getDynamicForward());
     oi.getSysIdDynamicReverse().whileTrue(SysIdRoutineChooser.getInstance().getDynamicReverse());
@@ -525,7 +469,7 @@ public class RobotContainer {
 
   private void configureVisionCommands() {
     // enable/disable vision
-    oi.getVisionIsEnabledSwitch()
+    /*oi.getVisionIsEnabledSwitch()
         .onTrue(
             Commands.runOnce(() -> vision.enable(true))
                 .ignoringDisable(true)
@@ -534,7 +478,7 @@ public class RobotContainer {
         .onFalse(
             Commands.runOnce(() -> vision.enable(false), vision)
                 .ignoringDisable(true)
-                .withName("disable vision"));
+                .withName("disable vision"));*/
   }
 
   /**
@@ -554,7 +498,7 @@ public class RobotContainer {
     Optional<Alliance> alliance = DriverStation.getAlliance();
     if (alliance.isPresent() && alliance.get() != lastAlliance) {
       this.lastAlliance = alliance.get();
-      this.drivetrain.updateAlliance(this.lastAlliance);
+      // this.drivetrain.updateAlliance(this.lastAlliance);
       Field2d.getInstance().updateAlliance(this.lastAlliance);
     }
   }
