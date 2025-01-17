@@ -387,11 +387,11 @@ public class RobotContainer {
             () ->
                 drive
                     .withVelocityX(
-                        oi.getTranslateX() * MaxSpeed) // Drive forward with negative Y (forward)
+                        -oi.getTranslateX() * MaxSpeed) // Drive forward with negative Y (forward)
                     .withVelocityY(
-                        oi.getTranslateY() * MaxSpeed) // Drive left with negative X (left)
+                        -oi.getTranslateY() * MaxSpeed) // Drive left with negative X (left)
                     .withRotationalRate(
-                        oi.getRotate()
+                        -oi.getRotate()
                             * MaxAngularRate) // Drive counterclockwise with negative X (left)
             ));
 
