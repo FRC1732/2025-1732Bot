@@ -2,20 +2,19 @@
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
 
-package frc.robot.commands.clawcommands;
+package frc.robot.commands.joint_commands;
 
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.subsystems.claw.Claw;
+import frc.robot.subsystems.joint.Joint;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
-public class ClawForward extends Command {
-  /** Creates a new ClawForward. */
-  private Claw claw;
+public class JointBackwards extends Command {
+  /** Creates a new JointBackwards. */
+  private Joint joint;
 
-  public ClawForward(Claw claw) {
+  public JointBackwards(Joint joint) {
     // Use addRequirements() here to declare subsystem dependencies.
-    addRequirements(claw);
-    this.claw = claw;
+    this.joint = joint;
   }
 
   // Called when the command is initially scheduled.
@@ -25,13 +24,13 @@ public class ClawForward extends Command {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    claw.runClaw();
+    joint.runJointBackward();
   }
 
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-    claw.stopClaw();
+    joint.stopJoint();
   }
 
   // Returns true when the command should end.

@@ -6,10 +6,12 @@ package frc.robot.commands.clawcommands;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.claw.Claw;
+
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
 public class ClawBackwards extends Command {
   /** Creates a new ClawForward. */
   private Claw claw;
+
   public ClawBackwards(Claw claw) {
     // Use addRequirements() here to declare subsystem dependencies.
     addRequirements(claw);

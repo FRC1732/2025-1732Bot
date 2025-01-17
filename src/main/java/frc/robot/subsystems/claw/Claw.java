@@ -4,11 +4,8 @@
 
 package frc.robot.subsystems.claw;
 
-import edu.wpi.first.wpilibj.Timer;
-
 import com.revrobotics.spark.SparkMax;
-import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
-
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class Claw extends SubsystemBase {
@@ -18,9 +15,8 @@ public class Claw extends SubsystemBase {
   public Claw() {
     clawMotor = new SparkMax(ClawConstants.Claw_MOTOR_CAN_ID, SparkMax.MotorType.kBrushless);
     Timer.delay(0.050);
-    clawMotor.setInverted(ClawConstants.Claw_MOTOR_INVERTED);
-   // clawMotor.enableVoltageCompensation(12); 
-   // clawMotor.setIdleMode(IdleMode.kBrake);
+    // clawMotor.enableVoltageCompensation(12);
+    // clawMotor.setIdleMode(IdleMode.kBrake);
     clawMotor.stopMotor();
   }
 

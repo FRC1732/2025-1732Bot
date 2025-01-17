@@ -11,7 +11,7 @@ public class ClawConstants {
   public static final boolean TESTING = true;
   public static final String SUBSYSTEM_NAME = "Claw";
 
-  public static final int Claw_MOTOR_CAN_ID = 50;
+  public static final int Claw_MOTOR_CAN_ID = 51;
 
   public static final Double Claw_MOTOR_SPEED = .4;
   public static final Double Claw_BRAKE_SPEED = 0.0; // -.04;
