@@ -13,8 +13,8 @@ public class JointConstants {
 
   public static final int JOINT_MOTOR_CAN_ID = 56;
 
-  public static final Double JOINT_FORWARD_SPEED = 0.4;
-  public static final Double JOINT_REVERSE_SPEED = -0.4;
+  public static final Double JOINT_FORWARD_SPEED = 0.2;
+  public static final Double JOINT_REVERSE_SPEED = -0.2;
 
   public static final boolean JOINT_LOGGING = true;
 }
