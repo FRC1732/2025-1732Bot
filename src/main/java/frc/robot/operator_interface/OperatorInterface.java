@@ -91,6 +91,11 @@ public interface OperatorInterface {
     return new Trigger(() -> false);
   }
 
+  public default Trigger getIntakeCoral() {
+    return new Trigger(() -> false);
+  }
+
+
   // drivetrain, game-specific
 
   // miscellaneous

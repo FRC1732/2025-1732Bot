@@ -94,4 +94,9 @@ public class DualJoysticksOI implements OperatorInterface {
   public Trigger getClawTriggerBackwards() {
     return translateJoystickButtons[5];
   }
+
+  @Override
+  public Trigger getIntakeCoral() {
+    return translateJoystickButtons[6];
+  }
 }
