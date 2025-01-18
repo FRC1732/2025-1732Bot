@@ -65,7 +65,7 @@ public class Claw extends SubsystemBase {
   }
 
   public boolean hasCoral() {
-    return !digitalInput.get();
+    return digitalInput.get();
   }
 
   @Override

@@ -24,7 +24,6 @@ import frc.lib.team3061.RobotConfig;
 import frc.lib.team3061.leds.LEDs;
 import frc.lib.team3061.util.SysIdRoutineChooser;
 import frc.robot.commands.clawcommands.ClawBackwards;
-import frc.robot.commands.clawcommands.ClawForward;
 import frc.robot.commands.clawcommands.IntakeCoral;
 import frc.robot.commands.joint_commands.JointBackwards;
 import frc.robot.commands.joint_commands.JointForward;
@@ -483,9 +482,9 @@ public class RobotContainer {
     oi.getArmTriggerForward().whileTrue(new JointForward(joint));
     oi.getArmTriggerBackwards().whileTrue(new JointBackwards(joint));
     oi.getClawTriggerBackwards().whileTrue(new ClawBackwards(claw));
-    oi.getClawTriggerForwards().whileTrue(new ClawForward(claw));
+    oi.getClawTriggerForwards().whileTrue(new IntakeCoral(claw));
 
-    oi.getIntakeCoral().whileTrue(new IntakeCoral(claw));
+    // oi.getIntakeCoral().whileTrue(new IntakeCoral(claw));
   }
 
   private void configureVisionCommands() {
