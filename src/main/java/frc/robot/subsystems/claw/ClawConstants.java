@@ -1,5 +1,7 @@
 package frc.robot.subsystems.claw;
 
+import edu.wpi.first.wpilibj.DutyCycle;
+
 public class ClawConstants {
   private static final String CONSTRUCTOR_EXCEPTION = "constant class";
 
@@ -18,4 +20,6 @@ public class ClawConstants {
 
   public static final boolean Claw_LOGGING = true;
   public static final int BEAMBREAK_ID = 9;
+  public static final int CLAW_ABSOLUTE_ENCODER = 8;
+  public static final int SHOOTER_TILT_ABSOLUTE_OFFSET = 0; // TODO find value for this
 }
