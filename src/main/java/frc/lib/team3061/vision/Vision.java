@@ -172,10 +172,8 @@ public class Vision extends SubsystemBase {
           // Initialize logging values
           this.lastTimestamps[cameraIndex] = observation.timestamp();
           cameraPoses.add(observation.cameraPose());
-          
-          Pose3d estimatedRobotPose3d =
-              observation
-                  .cameraPose(); /*
+
+          Pose3d estimatedRobotPose3d = observation.cameraPose(); /*
                   .plus(
                       RobotConfig.getInstance()
                           .getRobotToCameraTransforms()[cameraIndex]
@@ -256,8 +254,8 @@ public class Vision extends SubsystemBase {
           robotPosesRejected.toArray(new Pose3d[robotPosesRejected.size()]));
       Logger.recordOutput(
           SUBSYSTEM_NAME + "/" + cameraIndex + "/CameraAxes",
-          new Pose3d(RobotOdometry.getInstance().getEstimatedPose());
-              //.plus(RobotConfig.getInstance().getRobotToCameraTransforms()[cameraIndex]));
+          new Pose3d(RobotOdometry.getInstance().getEstimatedPose()));
+      // .plus(RobotConfig.getInstance().getRobotToCameraTransforms()[cameraIndex]));
 
       allRobotPoses.addAll(robotPoses);
       allRobotPosesAccepted.addAll(robotPosesAccepted);

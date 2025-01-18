@@ -20,10 +20,8 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.simulation.DriverStationSim;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-
 import frc.robot.Constants.Mode;
 import frc.robot.generated.TunerConstants;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiConsumer;
@@ -235,7 +233,7 @@ public class Robot extends LoggedRobot {
     }
     if (RobotController.getBatteryVoltage() < LOW_BATTERY_VOLTAGE
         && disabledTimer.hasElapsed(LOW_BATTERY_DISABLED_TIME)) {
-      //LEDs.getInstance().requestState(LEDs.States.LOW_BATTERY);
+      // LEDs.getInstance().requestState(LEDs.States.LOW_BATTERY);
       lowBatteryAlert.set(true);
     }
 

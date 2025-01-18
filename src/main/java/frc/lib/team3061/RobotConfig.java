@@ -7,7 +7,6 @@ import com.pathplanner.lib.config.ModuleConfig;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
-import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularAcceleration;
 import edu.wpi.first.units.measure.AngularVelocity;
@@ -175,7 +174,6 @@ public abstract class RobotConfig {
   public double getDriveKA() {
     return 0.0;
   }
-
 
   /**
    * Returns the trackwidth (i.e., the center-to-center distance between the left and right wheels)
@@ -397,14 +395,14 @@ public abstract class RobotConfig {
             getWheelRadius(),
             getRobotMaxVelocity(),
             getWheelCOF(),
-            null,null,
-            //TODO: Fix this.
+            null,
+            null,
+            // TODO: Fix this.
             /*
             DCMotor.getKrakenX60(1).withReduction(getSwerveConstants().getDriveGearRatio()),
             Amps.of(SwerveConstants.DRIVE_PEAK_CURRENT_LIMIT),
             */
             1),
-            
         getSwerveModulePositions());
   }
 

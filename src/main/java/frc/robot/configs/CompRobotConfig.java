@@ -4,11 +4,7 @@ import static edu.wpi.first.units.Units.*;
 
 import com.ctre.phoenix6.configs.MountPoseConfigs;
 import com.ctre.phoenix6.configs.Pigeon2Configuration;
-import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.geometry.Translation3d;
-import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearAcceleration;
@@ -16,14 +12,14 @@ import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.units.measure.Mass;
 import edu.wpi.first.units.measure.MomentOfInertia;
 import frc.lib.team3061.RobotConfig;
-
+import frc.robot.generated.TunerConstants;
 
 /*
  * Refer to the README for how to represent your robot's configuration. For more information on
  * these methods, refer to the documentation in the RobotConfig class.
  */
 public class CompRobotConfig extends RobotConfig {
- 
+
   private static final Mass MASS =
       Kilograms.of(
           51.862); // FIXME: update based on measured mass of robot with battery and bumpers
@@ -31,20 +27,17 @@ public class CompRobotConfig extends RobotConfig {
   private static final double WHEEL_COEFFICIENT_OF_FRICTION = 1.2;
   private static final Translation2d FRONT_RIGHT_CORNER_POSITION = new Translation2d(0.36, -0.36);
 
-  private static final Distance ROBOT_WIDTH_WITH_BUMPERS =
-      Meters.of(0.88265); // 34.75 in , measure the actual bumpers
-  private static final Distance ROBOT_LENGTH_WITH_BUMPERS =
-      Meters.of(0.88265); // 34.75 in same above
+  private static final Distance ROBOT_WIDTH_WITH_BUMPERS = Inches.of(32);
+  private static final Distance ROBOT_LENGTH_WITH_BUMPERS = Inches.of(32);
 
   private static final LinearVelocity MAX_VELOCITY =
       MetersPerSecond.of(5.5); // FIXME: confirm max velocity with real robot
   private static final LinearVelocity MAX_COAST_VELOCITY =
       MetersPerSecond.of(0.05); // FIXME: Values taken from nova, need to be updated
-  private static final double SLOW_MODE_MULTIPLIER =
-      0.75; // FIXME: Values taken from nova, need to be updated
+  private static final double SLOW_MODE_MULTIPLIER = 0.5;
 
   // Front right camera
-  /* 
+  /*
   private static final Transform3d ROBOT_TO_CAMERA_0 =
       new Transform3d(
           new Translation3d(
@@ -99,13 +92,11 @@ public class CompRobotConfig extends RobotConfig {
   @Override
   public Distance getRobotLengthWithBumpers() {
     return ROBOT_LENGTH_WITH_BUMPERS;
-    //TODO: Keep this.
   }
 
   @Override
   public LinearVelocity getRobotMaxVelocity() {
     return MAX_VELOCITY;
-    //TODO: Keep this.
   }
 
   @Override
@@ -152,23 +143,22 @@ public class CompRobotConfig extends RobotConfig {
   public Mass getMass() {
     return MASS;
   }
+
   @Override
-  public Distance getWheelbase(){
-    return null;
-    //FIXME
+  public Distance getWheelbase() {
+    return Inches.of(TunerConstants.kHalfSize * 2);
   }
 
   @Override
-  public Distance getWheelRadius(){
-    return null;
-    //FIXME
+  public Distance getWheelRadius() {
+    return TunerConstants.kWheelRadius;
   }
 
   @Override
-  public Distance getTrackwidth(){
-    return null;
-    //FIXME
+  public Distance getTrackwidth() {
+    return Inches.of(TunerConstants.kHalfSize * 2);
   }
+
   @Override
   public MomentOfInertia getMomentOfInertia() {
     return MOI;
@@ -182,7 +172,7 @@ public class CompRobotConfig extends RobotConfig {
   @Override
   public double[] getCameraStdDevFactors() {
     return new double[] {1.0, 1.0, 1.0, 1.0};
-    //TODO: Keep this.
+    // TODO: Keep this.
   }
 
   @Override
@@ -233,7 +223,6 @@ public class CompRobotConfig extends RobotConfig {
   @Override
   public LinearVelocity getMoveToPathFinalVelocity() {
     return SQUARING_SPEED;
-    //TODO: Keep this one.
   }
 
   @Override
@@ -271,5 +260,4 @@ public class CompRobotConfig extends RobotConfig {
   public SWERVE_CONTROL_MODE getSwerveDriveControlMode() {
     return SWERVE_CONTROL_MODE.TORQUE_CURRENT_FOC;
   }
-
 }

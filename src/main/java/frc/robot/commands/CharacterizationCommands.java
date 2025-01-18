@@ -15,15 +15,13 @@ package frc.robot.commands;
 
 import static edu.wpi.first.units.Units.*;
 
-import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.PrintCommand;
 import frc.lib.team3061.RobotConfig;
-import frc.lib.team3061.drivetrain.Drivetrain;
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
+import frc.robot.subsystems.CommandSwerveDrivetrain;
+
+// import frc.lib.team3061.drivetrain.Drivetrain;
 
 @java.lang.SuppressWarnings({"java:S106"})
 public class CharacterizationCommands {
@@ -37,8 +35,9 @@ public class CharacterizationCommands {
   private CharacterizationCommands() {}
 
   /** Measures the robot's wheel radius by spinning in a circle. */
-  public static Command wheelRadiusCharacterization(Drivetrain drive) {
-    SlewRateLimiter limiter = new SlewRateLimiter(WHEEL_RADIUS_RAMP_RATE);
+  public static Command wheelRadiusCharacterization(CommandSwerveDrivetrain drive) {
+    return new PrintCommand("Not Implemented");
+    /*SlewRateLimiter limiter = new SlewRateLimiter(WHEEL_RADIUS_RAMP_RATE);
     WheelRadiusCharacterizationState state = new WheelRadiusCharacterizationState();
 
     return Commands.parallel(
@@ -99,7 +98,7 @@ public class CharacterizationCommands {
                               + " meters, "
                               + formatter.format(Units.metersToInches(wheelRadius))
                               + " inches");
-                    })));
+                    })));*/
   }
 
   private static class WheelRadiusCharacterizationState {
