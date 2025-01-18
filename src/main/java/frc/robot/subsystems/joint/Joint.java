@@ -4,6 +4,7 @@
 
 package frc.robot.subsystems.joint;
 
+import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkMax;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
@@ -13,13 +14,16 @@ public class Joint extends SubsystemBase {
   /** Creates a new Joint. */
   private final SparkMax jointMotor;
 
-  private ShuffleboardTab jointTab;
+  private ShuffleboardTab tab;
   private Double setpoint;
+  private RelativeEncoder encoder;
 
   public Joint() {
     jointMotor = new SparkMax(JointConstants.JOINT_MOTOR_CAN_ID, SparkMax.MotorType.kBrushless);
     jointMotor.stopMotor();
+    encoder = jointMotor.getEncoder();
     setpoint = 0.0;
+    setupShuffleboard();
   }
 
   public enum JointPosition {
@@ -35,25 +39,34 @@ public class Joint extends SubsystemBase {
     // This method will be called once per scheduler run
   }
 
+  public void setSetPoint(double newSetpoint) {
+    setpoint = newSetpoint;
+    jointMotor.set(newSetpoint);
+  }
+
   public void runJointForward() {
-    jointMotor.set(JointConstants.JOINT_FORWARD_SPEED);
+    setSetPoint(JointConstants.JOINT_FORWARD_SPEED);
   }
 
   public void runJointBackward() {
-    jointMotor.set(JointConstants.JOINT_REVERSE_SPEED);
+    setSetPoint(JointConstants.JOINT_REVERSE_SPEED);
   }
 
   public void stopJoint() {
-    jointMotor.stopMotor();
-    ;
+    setSetPoint(JointConstants.JOINT_STOPPED_SPEED);
   }
 
   public Double getSetPoint() {
     return setpoint;
   }
 
-  public void JointTabs() {
-    jointTab = Shuffleboard.getTab("Joint Tab");
-    jointTab.addDouble("Setpoint", () -> getSetPoint());
+  public double getEncoderPosition() {
+    return encoder.getPosition();
+  }
+
+  public void setupShuffleboard() {
+    tab = Shuffleboard.getTab("Joint Tab");
+    tab.addDouble("Setpoint", this::getSetPoint);
+    tab.addDouble("Encoder Position", this::getEncoderPosition);
   }
 }
