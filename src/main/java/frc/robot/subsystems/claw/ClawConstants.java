@@ -17,5 +17,5 @@ public class ClawConstants {
   public static final Double Claw_BRAKE_SPEED = 0.0; // -.04;
 
   public static final boolean Claw_LOGGING = true;
-  public static final int BEAMBREAK_ANALOG_ID = 0;
+  public static final int BEAMBREAK_ID = 0;
 }

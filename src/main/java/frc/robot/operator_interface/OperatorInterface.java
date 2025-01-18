@@ -95,7 +95,6 @@ public interface OperatorInterface {
     return new Trigger(() -> false);
   }
 
-
   // drivetrain, game-specific
 
   // miscellaneous
