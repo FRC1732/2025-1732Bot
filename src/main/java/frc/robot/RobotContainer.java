@@ -8,16 +8,10 @@ import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
-import java.util.Optional;
-
-import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
-import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;
-
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.pathplanner.lib.events.EventTrigger;
 import com.pathplanner.lib.path.PathPlannerPath;
-
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -27,13 +21,15 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
-//import frc.lib.team3061.leds.LEDs;
+// import frc.lib.team3061.leds.LEDs;
 import frc.lib.team3061.util.SysIdRoutineChooser;
 import frc.robot.generated.TunerConstants;
 import frc.robot.operator_interface.OISelector;
 import frc.robot.operator_interface.OperatorInterface;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
+import java.util.Optional;
+import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
+import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -212,25 +208,25 @@ public class RobotContainer {
 
     // Endgame alerts
     /*new Trigger(
-            () ->
-                DriverStation.isTeleopEnabled()
-                    && DriverStation.getMatchTime() > 0.0
-                    && DriverStation.getMatchTime() <= Math.round(endgameAlert1.get()))
-        .onTrue(
-            Commands.run(() -> LEDs.getInstance().requestState(LEDs.States.ENDGAME_ALERT))
-                .withTimeout(1));*/
+        () ->
+            DriverStation.isTeleopEnabled()
+                && DriverStation.getMatchTime() > 0.0
+                && DriverStation.getMatchTime() <= Math.round(endgameAlert1.get()))
+    .onTrue(
+        Commands.run(() -> LEDs.getInstance().requestState(LEDs.States.ENDGAME_ALERT))
+            .withTimeout(1));*/
     /*new Trigger(
-            () ->
-                DriverStation.isTeleopEnabled()
-                    && DriverStation.getMatchTime() > 0.0
-                    && DriverStation.getMatchTime() <= Math.round(endgameAlert2.get()))
-        .onTrue(
-            Commands.sequence(
-                Commands.run(() -> LEDs.getInstance().requestState(LEDs.States.ENDGAME_ALERT))
-                    .withTimeout(0.5),
-                Commands.waitSeconds(0.25),
-                Commands.run(() -> LEDs.getInstance().requestState(LEDs.States.ENDGAME_ALERT))
-                    .withTimeout(0.5)));*/
+        () ->
+            DriverStation.isTeleopEnabled()
+                && DriverStation.getMatchTime() > 0.0
+                && DriverStation.getMatchTime() <= Math.round(endgameAlert2.get()))
+    .onTrue(
+        Commands.sequence(
+            Commands.run(() -> LEDs.getInstance().requestState(LEDs.States.ENDGAME_ALERT))
+                .withTimeout(0.5),
+            Commands.waitSeconds(0.25),
+            Commands.run(() -> LEDs.getInstance().requestState(LEDs.States.ENDGAME_ALERT))
+                .withTimeout(0.5)));*/
 
     // interrupt all commands by running a command that requires every subsystem. This is used to
     // recover to a known state if the robot becomes "stuck" in a command.

@@ -19,7 +19,8 @@ import frc.robot.subsystems.CommandSwerveDrivetrain;
 public class TunerConstants {
   // Both sets of gains need to be tuned to your individual robot.
 
-  // The steer motor uses any SwerveModule.SteerRequestType control request with the
+  public static final String kCanBusName = "Oogway";
+// The steer motor uses any SwerveModule.SteerRequestType control request with the
   // output type specified by SwerveModuleConstants.SteerMotorClosedLoopOutput
   private static final Slot0Configs steerGains =
       new Slot0Configs()
@@ -43,7 +44,7 @@ public class TunerConstants {
   private static final ClosedLoopOutputType kDriveClosedLoopOutput = ClosedLoopOutputType.Voltage;
 
   // The type of motor used for the drive motor
-  private static final DriveMotorArrangement kDriveMotorType =
+  private static final DriveMotorArrangement kDriveMotorType = 
       DriveMotorArrangement.TalonFX_Integrated;
   // The type of motor used for the drive motor
   private static final SteerMotorArrangement kSteerMotorType =
@@ -75,7 +76,7 @@ public class TunerConstants {
 
   // CAN bus that the devices are located on;
   // All swerve devices must share the same CAN bus
-  public static final CANBus kCANBus = new CANBus("Oogway", "./logs/example.hoot");
+  public static final CANBus kCANBus = new CANBus(kCanBusName, "./logs/example.hoot");
 
   // Theoretical free speed (m/s) at 12 V applied output;
   // This needs to be tuned to your individual robot

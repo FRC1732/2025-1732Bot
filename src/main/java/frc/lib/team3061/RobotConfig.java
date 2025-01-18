@@ -16,7 +16,6 @@ import edu.wpi.first.units.measure.LinearAcceleration;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.units.measure.Mass;
 import edu.wpi.first.units.measure.MomentOfInertia;
-import frc.lib.team3061.drivetrain.swerve.SwerveConstants;
 import java.io.IOException;
 import org.json.simple.parser.ParseException;
 
@@ -177,75 +176,6 @@ public abstract class RobotConfig {
     return 0.0;
   }
 
-  /**
-   * Returns the swerve type for this robot. Must be overridden.
-   *
-   * @return the swerve type for this robot
-   */
-  public abstract SwerveConstants getSwerveConstants();
-
-  /**
-   * Returns the swerve type for the front modules for this robot. Defaults to the swerve type
-   * returned by getSwerveConstants().
-   *
-   * @return the swerve type for the front modules for this robot
-   */
-  public SwerveConstants getFrontSwerveConstants() {
-    return getSwerveConstants();
-  }
-
-  /**
-   * Returns the swerve type for the back modules for this robot. Defaults to the swerve type
-   * returned by getSwerveConstants().
-   *
-   * @return the swerve type for the back modules for this robot
-   */
-  public SwerveConstants getBackSwerveConstants() {
-    return getSwerveConstants();
-  }
-
-  /**
-   * Returns the CAN IDs for the swerve modules' drive motors in the order of front left, front
-   * right, back left, and back right. Must be overridden.
-   *
-   * @return the CAN IDs for the swerve modules' drive motors in the order of front left, front
-   *     right, back left, and back right
-   */
-  public abstract int[] getSwerveDriveMotorCANIDs();
-
-  /**
-   * Returns the CAN IDs for the swerve modules' angle motors in the order of front left, front
-   * right, back left, and back right. Must be overridden.
-   *
-   * @return the CAN IDs for the swerve modules' angle motors in the order of front left, front
-   *     right, back left, and back right
-   */
-  public abstract int[] getSwerveSteerMotorCANIDs();
-
-  /**
-   * Returns the CAN IDs for the swerve modules' angle encoders in the order of front left, front
-   * right, back left, and back right. Must be overridden.
-   *
-   * @return the CAN IDs for the swerve modules' angle encoders in the order of front left, front
-   *     right, back left, and back right
-   */
-  public abstract int[] getSwerveSteerEncoderCANIDs();
-
-  /**
-   * Returns the swerve module offsets, in units of rotations, in the order of front left, front
-   * right, back left, and back right. Must be overridden.
-   *
-   * @return the swerve module offsets, in units of rotations, in the order of front left, front
-   *     right, back left, and back right
-   */
-  public abstract Angle[] getSwerveSteerOffsets();
-
-  /**
-   * Returns the CAN ID for the robot's gyro sensor. Must be overridden.
-   *
-   * @return the CAN ID for the robot's gyro sensor
-   */
-  public abstract int getGyroCANID();
 
   /**
    * Returns the trackwidth (i.e., the center-to-center distance between the left and right wheels)
@@ -467,9 +397,14 @@ public abstract class RobotConfig {
             getWheelRadius(),
             getRobotMaxVelocity(),
             getWheelCOF(),
+            null,null,
+            //TODO: Fix this.
+            /*
             DCMotor.getKrakenX60(1).withReduction(getSwerveConstants().getDriveGearRatio()),
             Amps.of(SwerveConstants.DRIVE_PEAK_CURRENT_LIMIT),
+            */
             1),
+            
         getSwerveModulePositions());
   }
 
@@ -519,13 +454,6 @@ public abstract class RobotConfig {
   public String[] getCameraNames() {
     return new String[] {};
   }
-
-  /**
-   * Returns the CAN ID of the pneumatics hub. Must be overridden.
-   *
-   * @return the CAN ID of the pneumatics hub
-   */
-  public abstract int getPneumaticsHubCANID();
 
   /**
    * Returns the analog input channel number to which the flow sensor is connected. Defaults to 0.
