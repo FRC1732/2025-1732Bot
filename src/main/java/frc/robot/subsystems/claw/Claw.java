@@ -6,7 +6,6 @@ package frc.robot.subsystems.claw;
 
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkMax;
-
 import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
@@ -16,6 +15,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 public class Claw extends SubsystemBase {
   /** Creates a new Claw. */
   private SparkMax clawMotor;
+
   private RelativeEncoder encoder;
   private ShuffleboardTab tab;
   private AnalogInput analog;
