@@ -36,6 +36,8 @@ import frc.robot.operator_interface.OperatorInterface;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.claw.Claw;
 import frc.robot.subsystems.joint.Joint;
+import frc.robot.subsystems.rgb.StatusRgb;
+
 import java.util.Optional;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;
@@ -51,6 +53,7 @@ public class RobotContainer {
   private RobotConfig config;
   private Joint joint;
   private Claw claw;
+  private StatusRgb statusRgb;
 
   private Alliance lastAlliance = Field2d.getInstance().getAlliance();
 
@@ -137,6 +140,7 @@ public class RobotContainer {
   private void defineSubsystems() {
     joint = new Joint();
     claw = new Claw();
+    statusRgb = new StatusRgb();
   }
 
   /*private void createCTRESubsystems() {
@@ -482,7 +486,7 @@ public class RobotContainer {
     oi.getArmTriggerForward().whileTrue(new JointForward(joint));
     oi.getArmTriggerBackwards().whileTrue(new JointBackwards(joint));
     oi.getClawTriggerBackwards().whileTrue(new ClawBackwards(claw));
-    oi.getClawTriggerForwards().whileTrue(new IntakeCoral(claw));
+    oi.getClawTriggerForwards().whileTrue(new IntakeCoral(claw, statusRgb));
 
     // oi.getIntakeCoral().whileTrue(new IntakeCoral(claw));
   }
