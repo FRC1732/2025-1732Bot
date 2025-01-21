@@ -4,11 +4,8 @@
 
 package frc.robot.subsystems.claw;
 
-import org.littletonrobotics.junction.Logger;
-
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkMax;
-
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
@@ -16,6 +13,7 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import org.littletonrobotics.junction.Logger;
 
 public class Claw extends SubsystemBase {
   /** Creates a new Claw. */
@@ -60,14 +58,13 @@ public class Claw extends SubsystemBase {
     return clawMotor.get();
   }
 
-    private double angleModulusDeg(double angleDeg) {
+  private double angleModulusDeg(double angleDeg) {
     return Math.toDegrees(MathUtil.angleModulus(Math.toRadians(angleDeg)));
   }
 
   private double getAbsolutePosition() {
     return angleModulusDeg(
-      clawAbsoluteEncoder.get() * -360
-            + ClawConstants.SHOOTER_TILT_ABSOLUTE_OFFSET);
+        clawAbsoluteEncoder.get() * -360 + ClawConstants.SHOOTER_TILT_ABSOLUTE_OFFSET);
   }
 
   public void resetToAbsoluteEncoder() {
@@ -75,7 +72,6 @@ public class Claw extends SubsystemBase {
       encoder.setPosition(getAbsolutePosition());
     }
   }
-
 
   public double getEncoderPosition() {
     return encoder.getPosition();
@@ -96,9 +92,11 @@ public class Claw extends SubsystemBase {
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
-    Logger.recordOutput(ClawConstants.SUBSYSTEM_NAME + "/Claw Encoder Position", this::getEncoderPosition);
-    Logger.recordOutput(ClawConstants.SUBSYSTEM_NAME + "/Claw Speed", this::getClawSpeed);
-    Logger.recordOutput(ClawConstants.SUBSYSTEM_NAME + "/Has Coral", this::hasCoral);
-    Logger.recordOutput(ClawConstants.SUBSYSTEM_NAME + "/Absolute Position", this::getAbsolutePosition);
+    Logger.recordOutput(
+        ClawConstants.SUBSYSTEM_NAME + "/Claw Encoder Position", this.getEncoderPosition());
+    Logger.recordOutput(ClawConstants.SUBSYSTEM_NAME + "/Claw Speed", this.getClawSpeed());
+    Logger.recordOutput(ClawConstants.SUBSYSTEM_NAME + "/Has Coral", this.hasCoral());
+    Logger.recordOutput(
+        ClawConstants.SUBSYSTEM_NAME + "/Absolute Position", this.getAbsolutePosition());
   }
 }

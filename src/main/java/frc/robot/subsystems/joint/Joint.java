@@ -4,14 +4,12 @@
 
 package frc.robot.subsystems.joint;
 
-import org.littletonrobotics.junction.Logger;
-
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkMax;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.subsystems.claw.ClawConstants;
+import org.littletonrobotics.junction.Logger;
 
 public class Joint extends SubsystemBase {
   /** Creates a new Joint. */
@@ -40,9 +38,11 @@ public class Joint extends SubsystemBase {
 
   @Override
   public void periodic() {
-    Logger.recordOutput(JointConstants.SUBSYSTEM_NAME + "/Joint Encoder Position", this::getEncoderPosition);
-    Logger.recordOutput(JointConstants.SUBSYSTEM_NAME + "/Joint Set Point", this::getSetPoint);
-    Logger.recordOutput(JointConstants.SUBSYSTEM_NAME + "/Joint Position", this::getJointPositionInt);
+    Logger.recordOutput(
+        JointConstants.SUBSYSTEM_NAME + "/Joint Encoder Position", this.getEncoderPosition());
+    Logger.recordOutput(JointConstants.SUBSYSTEM_NAME + "/Joint Set Point", this.getSetPoint());
+    Logger.recordOutput(
+        JointConstants.SUBSYSTEM_NAME + "/Joint Position", this.getJointPositionInt());
   }
 
   public void setSetPoint(double newSetpoint) {
@@ -74,12 +74,12 @@ public class Joint extends SubsystemBase {
     int switchPositon = 0;
 
     switch (getJointPosition()) {
-          case LEVEL_1 -> switchPositon = 1;
-          case LEVEL_2 -> switchPositon = 2;
-          case LEVEL_3 -> switchPositon = 3;
-          case LEVEL_4 -> switchPositon = 4;
-          case CORAL_STATION -> switchPositon = 5;
-          default -> switchPositon = -1;
+      case LEVEL_1 -> switchPositon = 1;
+      case LEVEL_2 -> switchPositon = 2;
+      case LEVEL_3 -> switchPositon = 3;
+      case LEVEL_4 -> switchPositon = 4;
+      case CORAL_STATION -> switchPositon = 5;
+      default -> switchPositon = -1;
     }
 
     return switchPositon;
