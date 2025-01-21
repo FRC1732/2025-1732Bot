@@ -12,6 +12,7 @@ import frc.robot.subsystems.rgb.StatusRgb;
 public class IntakeCoral extends Command {
   /** Creates a new IntakeCoral. */
   private Claw claw;
+
   private StatusRgb statusRgb;
 
   public IntakeCoral(Claw claw, StatusRgb statusRgb) {

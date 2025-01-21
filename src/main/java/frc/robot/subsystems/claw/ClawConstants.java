@@ -1,7 +1,5 @@
 package frc.robot.subsystems.claw;
 
-import edu.wpi.first.wpilibj.DutyCycle;
-
 public class ClawConstants {
   private static final String CONSTRUCTOR_EXCEPTION = "constant class";
 

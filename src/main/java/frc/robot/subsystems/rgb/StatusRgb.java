@@ -23,10 +23,8 @@ public class StatusRgb extends SubsystemBase {
 
   public StatusRgb() {
     timer = new Timer();
-
   }
 
-  
   public void acquiredCoral() {
     timer.start();
     targetElapsedTimeSeconds = 1.5;
@@ -37,31 +35,39 @@ public class StatusRgb extends SubsystemBase {
   public void setMode(int modeToSet) {
     if (modeToSet % 2 == 1) {
       out0.set(!true);
+    } else {
+      out0.set(!false);
     }
     modeToSet /= 2;
 
     if (modeToSet % 2 == 1) {
       out1.set(!true);
+    } else {
+      out1.set(!false);
     }
     modeToSet /= 2;
 
     if (modeToSet % 2 == 1) {
       out2.set(!true);
+    } else {
+      out2.set(!false);
     }
     modeToSet /= 2;
 
     if (modeToSet % 2 == 1) {
       out3.set(!true);
+    } else {
+      out3.set(!false);
     }
     modeToSet /= 2;
 
     if (modeToSet % 2 == 1) {
       out4.set(!true);
+    } else {
+      out4.set(!false);
     }
   }
 
-  
-  
   @Override
   public void periodic() {
     if (specialMode != SpecialMode.NONE) {
@@ -72,7 +78,8 @@ public class StatusRgb extends SubsystemBase {
       } else {
         switch (specialMode) {
           case CORAL_CAPTURED: // blue and gold
-            setMode(1);;
+            setMode(1);
+            ;
             break;
           default: // do nothing
             break;
@@ -84,7 +91,7 @@ public class StatusRgb extends SubsystemBase {
       setMode(0);
     } else {
       setMode(0);
-    }  
+    }
   }
 
   public enum SpecialMode {
