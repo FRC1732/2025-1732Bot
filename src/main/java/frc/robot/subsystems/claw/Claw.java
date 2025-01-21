@@ -4,6 +4,8 @@
 
 package frc.robot.subsystems.claw;
 
+import org.littletonrobotics.junction.Logger;
+
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkMax;
 
@@ -81,7 +83,7 @@ public class Claw extends SubsystemBase {
 
   public void setupShuffleboard() {
     tab = Shuffleboard.getTab("Claw");
-    tab.addDouble("Claw Encoder Rotations", this::getEncoderPosition);
+    tab.addDouble("Claw Encoder Position", this::getEncoderPosition);
     tab.addDouble("Claw Speed", this::getClawSpeed);
     tab.addBoolean("Has Coral", this::hasCoral);
     tab.addDouble("Absolute Position", this::getAbsolutePosition);
@@ -94,5 +96,9 @@ public class Claw extends SubsystemBase {
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
+    Logger.recordOutput(ClawConstants.SUBSYSTEM_NAME + "/Claw Encoder Position", this::getEncoderPosition);
+    Logger.recordOutput(ClawConstants.SUBSYSTEM_NAME + "/Claw Speed", this::getClawSpeed);
+    Logger.recordOutput(ClawConstants.SUBSYSTEM_NAME + "/Has Coral", this::hasCoral);
+    Logger.recordOutput(ClawConstants.SUBSYSTEM_NAME + "/Absolute Position", this::getAbsolutePosition);
   }
 }
