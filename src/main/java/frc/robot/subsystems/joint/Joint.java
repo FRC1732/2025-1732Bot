@@ -9,11 +9,13 @@ import com.revrobotics.spark.SparkMax;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import org.littletonrobotics.junction.Logger;
 
 public class Joint extends SubsystemBase {
   /** Creates a new Joint. */
   private final SparkMax jointMotor;
 
+  private JointPosition jointPosition = JointPosition.LEVEL_1;
   private ShuffleboardTab tab;
   private Double setpoint;
   private RelativeEncoder encoder;
@@ -36,7 +38,11 @@ public class Joint extends SubsystemBase {
 
   @Override
   public void periodic() {
-    // This method will be called once per scheduler run
+    Logger.recordOutput(
+        JointConstants.SUBSYSTEM_NAME + "/Joint Encoder Position", this.getEncoderPosition());
+    Logger.recordOutput(JointConstants.SUBSYSTEM_NAME + "/Joint Set Point", this.getSetPoint());
+    Logger.recordOutput(
+        JointConstants.SUBSYSTEM_NAME + "/Joint Position", this.getJointPositionInt());
   }
 
   public void setSetPoint(double newSetpoint) {
@@ -58,6 +64,25 @@ public class Joint extends SubsystemBase {
 
   public Double getSetPoint() {
     return setpoint;
+  }
+
+  public JointPosition getJointPosition() {
+    return jointPosition;
+  }
+
+  public int getJointPositionInt() {
+    int switchPosition = 0;
+
+    switch (getJointPosition()) {
+      case LEVEL_1 -> switchPosition = 1;
+      case LEVEL_2 -> switchPosition = 2;
+      case LEVEL_3 -> switchPosition = 3;
+      case LEVEL_4 -> switchPosition = 4;
+      case CORAL_STATION -> switchPosition = 5;
+      default -> switchPosition = -1;
+    }
+
+    return switchPosition;
   }
 
   public double getEncoderPosition() {

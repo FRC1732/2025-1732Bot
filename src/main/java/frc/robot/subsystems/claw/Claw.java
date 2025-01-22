@@ -6,11 +6,14 @@ package frc.robot.subsystems.claw;
 
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkMax;
-import edu.wpi.first.wpilibj.AnalogInput;
+import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import org.littletonrobotics.junction.Logger;
 
 public class Claw extends SubsystemBase {
   /** Creates a new Claw. */
@@ -18,7 +21,8 @@ public class Claw extends SubsystemBase {
 
   private RelativeEncoder encoder;
   private ShuffleboardTab tab;
-  private AnalogInput analog;
+  private DigitalInput digitalInput;
+  private DutyCycleEncoder clawAbsoluteEncoder;
 
   public Claw() {
     clawMotor = new SparkMax(ClawConstants.Claw_MOTOR_CAN_ID, SparkMax.MotorType.kBrushless);
@@ -28,7 +32,8 @@ public class Claw extends SubsystemBase {
     // clawMotor.enableVoltageCompensation(12);
 
     // clawMotor.setIdleMode(IdleMode.kBrake);
-    analog = new AnalogInput(ClawConstants.BEAMBREAK_ANALOG_ID);
+    digitalInput = new DigitalInput(ClawConstants.BEAMBREAK_ID);
+    clawAbsoluteEncoder = new DutyCycleEncoder(ClawConstants.CLAW_ABSOLUTE_ENCODER);
     clawMotor.stopMotor();
     setupShuffleboard();
   }
@@ -53,28 +58,45 @@ public class Claw extends SubsystemBase {
     return clawMotor.get();
   }
 
+  private double angleModulusDeg(double angleDeg) {
+    return Math.toDegrees(MathUtil.angleModulus(Math.toRadians(angleDeg)));
+  }
+
+  private double getAbsolutePosition() {
+    return angleModulusDeg(
+        clawAbsoluteEncoder.get() * -360 + ClawConstants.SHOOTER_TILT_ABSOLUTE_OFFSET);
+  }
+
+  public void resetToAbsoluteEncoder() {
+    if (clawAbsoluteEncoder.isConnected()) {
+      encoder.setPosition(getAbsolutePosition());
+    }
+  }
+
   public double getEncoderPosition() {
     return encoder.getPosition();
   }
 
   public void setupShuffleboard() {
     tab = Shuffleboard.getTab("Claw");
-    tab.addDouble("Claw Encoder Rotations", this::getEncoderPosition);
+    tab.addDouble("Claw Encoder Position", this::getEncoderPosition);
     tab.addDouble("Claw Speed", this::getClawSpeed);
-    tab.addDouble("Analog Value", this::getAnalogValue);
     tab.addBoolean("Has Coral", this::hasCoral);
-  }
-
-  public double getAnalogValue() {
-    return analog.getAverageValue();
+    tab.addDouble("Absolute Position", this::getAbsolutePosition);
   }
 
   public boolean hasCoral() {
-    return getAnalogValue() > 900;
+    return digitalInput.get();
   }
 
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
+    Logger.recordOutput(
+        ClawConstants.SUBSYSTEM_NAME + "/Claw Encoder Position", this.getEncoderPosition());
+    Logger.recordOutput(ClawConstants.SUBSYSTEM_NAME + "/Claw Speed", this.getClawSpeed());
+    Logger.recordOutput(ClawConstants.SUBSYSTEM_NAME + "/Has Coral", this.hasCoral());
+    Logger.recordOutput(
+        ClawConstants.SUBSYSTEM_NAME + "/Absolute Position", this.getAbsolutePosition());
   }
 }

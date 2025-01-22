@@ -4,7 +4,9 @@
 
 package frc.robot;
 
-import static edu.wpi.first.units.Units.*;
+import static edu.wpi.first.units.Units.MetersPerSecond;
+import static edu.wpi.first.units.Units.RadiansPerSecond;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
@@ -19,18 +21,12 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.lib.team3061.RobotConfig;
-import frc.lib.team3061.leds.LEDs;
+// import frc.lib.team3061.leds.LEDs;
 import frc.lib.team3061.util.SysIdRoutineChooser;
 import frc.robot.commands.clawcommands.ClawBackwards;
-import frc.robot.commands.clawcommands.ClawForward;
 import frc.robot.commands.clawcommands.IntakeCoral;
 import frc.robot.commands.joint_commands.JointBackwards;
 import frc.robot.commands.joint_commands.JointForward;
-import frc.robot.configs.CompRobotConfig;
-import frc.robot.configs.PracticeRobotConfig;
-import frc.robot.generated.*;
 import frc.robot.generated.TunerConstants;
 import frc.robot.operator_interface.OISelector;
 import frc.robot.operator_interface.OperatorInterface;
@@ -49,7 +45,7 @@ import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;
  */
 public class RobotContainer {
   private OperatorInterface oi = new OperatorInterface() {};
-  private RobotConfig config;
+  // private RobotConfig config;
   private Joint joint;
   private Claw claw;
 
@@ -125,10 +121,10 @@ public class RobotContainer {
   private void createRobotConfig() {
     switch (Constants.getRobot()) {
       case ROBOT_PRACTICE:
-        config = new PracticeRobotConfig();
+        // config = new PracticeRobotConfig();
         break;
       case ROBOT_COMPETITION, ROBOT_SIMBOT:
-        config = new CompRobotConfig();
+        // config = new CompRobotConfig();
         break;
       default:
         break;
@@ -225,26 +221,26 @@ public class RobotContainer {
     configureVisionCommands();
 
     // Endgame alerts
-    new Trigger(
-            () ->
-                DriverStation.isTeleopEnabled()
-                    && DriverStation.getMatchTime() > 0.0
-                    && DriverStation.getMatchTime() <= Math.round(endgameAlert1.get()))
-        .onTrue(
+    /*new Trigger(
+        () ->
+            DriverStation.isTeleopEnabled()
+                && DriverStation.getMatchTime() > 0.0
+                && DriverStation.getMatchTime() <= Math.round(endgameAlert1.get()))
+    .onTrue(
+        Commands.run(() -> LEDs.getInstance().requestState(LEDs.States.ENDGAME_ALERT))
+            .withTimeout(1));*/
+    /*new Trigger(
+        () ->
+            DriverStation.isTeleopEnabled()
+                && DriverStation.getMatchTime() > 0.0
+                && DriverStation.getMatchTime() <= Math.round(endgameAlert2.get()))
+    .onTrue(
+        Commands.sequence(
             Commands.run(() -> LEDs.getInstance().requestState(LEDs.States.ENDGAME_ALERT))
-                .withTimeout(1));
-    new Trigger(
-            () ->
-                DriverStation.isTeleopEnabled()
-                    && DriverStation.getMatchTime() > 0.0
-                    && DriverStation.getMatchTime() <= Math.round(endgameAlert2.get()))
-        .onTrue(
-            Commands.sequence(
-                Commands.run(() -> LEDs.getInstance().requestState(LEDs.States.ENDGAME_ALERT))
-                    .withTimeout(0.5),
-                Commands.waitSeconds(0.25),
-                Commands.run(() -> LEDs.getInstance().requestState(LEDs.States.ENDGAME_ALERT))
-                    .withTimeout(0.5)));
+                .withTimeout(0.5),
+            Commands.waitSeconds(0.25),
+            Commands.run(() -> LEDs.getInstance().requestState(LEDs.States.ENDGAME_ALERT))
+                .withTimeout(0.5)));*/
 
     // interrupt all commands by running a command that requires every subsystem. This is used to
     // recover to a known state if the robot becomes "stuck" in a command.
@@ -402,11 +398,11 @@ public class RobotContainer {
             () ->
                 drive
                     .withVelocityX(
-                        oi.getTranslateX() * MaxSpeed) // Drive forward with negative Y (forward)
+                        -oi.getTranslateX() * MaxSpeed) // Drive forward with negative Y (forward)
                     .withVelocityY(
-                        oi.getTranslateY() * MaxSpeed) // Drive left with negative X (left)
+                        -oi.getTranslateY() * MaxSpeed) // Drive left with negative X (left)
                     .withRotationalRate(
-                        oi.getRotate()
+                        -oi.getRotate()
                             * MaxAngularRate) // Drive counterclockwise with negative X (left)
             ));
 
@@ -483,9 +479,9 @@ public class RobotContainer {
     oi.getArmTriggerForward().whileTrue(new JointForward(joint));
     oi.getArmTriggerBackwards().whileTrue(new JointBackwards(joint));
     oi.getClawTriggerBackwards().whileTrue(new ClawBackwards(claw));
-    oi.getClawTriggerForwards().whileTrue(new ClawForward(claw));
+    oi.getClawTriggerForwards().whileTrue(new IntakeCoral(claw));
 
-    oi.getIntakeCoral().whileTrue(new IntakeCoral(claw));
+    // oi.getIntakeCoral().whileTrue(new IntakeCoral(claw));
   }
 
   private void configureVisionCommands() {

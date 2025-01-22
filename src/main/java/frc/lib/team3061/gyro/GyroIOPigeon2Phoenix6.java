@@ -5,7 +5,7 @@
 package frc.lib.team3061.gyro;
 
 import static edu.wpi.first.units.Units.*;
-import static frc.lib.team3061.drivetrain.DrivetrainConstants.SUBSYSTEM_NAME;
+// import static frc.lib.team3061.drivetrain.DrivetrainConstants.SUBSYSTEM_NAME;
 
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusCode;
@@ -29,6 +29,8 @@ public class GyroIOPigeon2Phoenix6 implements GyroIO {
   private final StatusSignal<AngularVelocity> angularVelocityYStatusSignal;
   private final StatusSignal<AngularVelocity> angularVelocityZStatusSignal;
   private final Pigeon2SimState gyroSim;
+
+  private final String SUBSYSTEM_NAME = "gyro subsystem";
 
   private final Alert refreshAlert =
       new Alert("Failed to refresh signals in " + SUBSYSTEM_NAME, AlertType.kError);

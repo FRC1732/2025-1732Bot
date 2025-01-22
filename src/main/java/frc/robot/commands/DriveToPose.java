@@ -19,9 +19,10 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.lib.team3061.RobotConfig;
-import frc.lib.team3061.drivetrain.Drivetrain;
+// import frc.lib.team3061.drivetrain.Drivetrain;
 import frc.lib.team6328.util.LoggedTunableNumber;
 import frc.robot.Field2d;
+import frc.robot.subsystems.CommandSwerveDrivetrain;
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.Logger;
 
@@ -38,7 +39,7 @@ import org.littletonrobotics.junction.Logger;
  * <p>At End: stops the drivetrain
  */
 public class DriveToPose extends Command {
-  private final Drivetrain drivetrain;
+  private final CommandSwerveDrivetrain drivetrain;
   private final Supplier<Pose2d> poseSupplier;
   private Pose2d targetPose;
 
@@ -123,7 +124,7 @@ public class DriveToPose extends Command {
    * @param drivetrain the drivetrain subsystem required by this command
    * @param poseSupplier a supplier that returns the pose to drive to
    */
-  public DriveToPose(Drivetrain drivetrain, Supplier<Pose2d> poseSupplier) {
+  public DriveToPose(CommandSwerveDrivetrain drivetrain, Supplier<Pose2d> poseSupplier) {
     this.drivetrain = drivetrain;
     this.poseSupplier = poseSupplier;
     this.timer = new Timer();
@@ -220,8 +221,9 @@ public class DriveToPose extends Command {
 
     int allianceMultiplier = Field2d.getInstance().getAlliance() == Alliance.Blue ? 1 : -1;
 
-    drivetrain.drive(
-        allianceMultiplier * xVelocity, allianceMultiplier * yVelocity, thetaVelocity, true, true);
+    // drivetrain.drive(
+    //  allianceMultiplier * xVelocity, allianceMultiplier * yVelocity, thetaVelocity, true, true);
+    // TODO:needs new drive mechanism
   }
 
   /**
@@ -241,9 +243,10 @@ public class DriveToPose extends Command {
     // check that running is true (i.e., the calculate method has been invoked on the PID
     // controllers) and that each of the controllers is at their goal. This is important since these
     // controllers will return true for atGoal if the calculate method has not yet been invoked.
-    return !drivetrain.isMoveToPoseEnabled()
-        || this.timer.hasElapsed(timeout.get())
-        || (running && xController.atGoal() && yController.atGoal() && thetaController.atGoal());
+    /*return !drivetrain.isMoveToPoseEnabled()
+    || this.timer.hasElapsed(timeout.get())
+    || (running && xController.atGoal() && yController.atGoal() && thetaController.atGoal());*/
+    return true;
   }
 
   /**

@@ -20,9 +20,8 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.simulation.DriverStationSim;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import frc.lib.team3061.RobotConfig;
-import frc.lib.team3061.leds.LEDs;
 import frc.robot.Constants.Mode;
+import frc.robot.generated.TunerConstants;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiConsumer;
@@ -169,7 +168,7 @@ public class Robot extends LoggedRobot {
     robotContainer = new RobotContainer();
 
     // create the CANivore bus object
-    this.canivoreBus = new CANBus(RobotConfig.getInstance().getCANBusName());
+    this.canivoreBus = new CANBus(TunerConstants.kCanBusName);
 
     // Due to the nature of how Java works, the first run of a path following command could have a
     // significantly higher delay compared with subsequent runs, as all the classes involved will
@@ -234,7 +233,7 @@ public class Robot extends LoggedRobot {
     }
     if (RobotController.getBatteryVoltage() < LOW_BATTERY_VOLTAGE
         && disabledTimer.hasElapsed(LOW_BATTERY_DISABLED_TIME)) {
-      LEDs.getInstance().requestState(LEDs.States.LOW_BATTERY);
+      // LEDs.getInstance().requestState(LEDs.States.LOW_BATTERY);
       lowBatteryAlert.set(true);
     }
 
