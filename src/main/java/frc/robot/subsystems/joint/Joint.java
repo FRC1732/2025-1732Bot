@@ -15,7 +15,7 @@ public class Joint extends SubsystemBase {
   /** Creates a new Joint. */
   private final SparkMax jointMotor;
 
-  private JointPosition jointPosition;
+  private JointPosition jointPosition = JointPosition.LEVEL_1;
   private ShuffleboardTab tab;
   private Double setpoint;
   private RelativeEncoder encoder;
@@ -71,18 +71,18 @@ public class Joint extends SubsystemBase {
   }
 
   public int getJointPositionInt() {
-    int switchPositon = 0;
+    int switchPosition = 0;
 
     switch (getJointPosition()) {
-      case LEVEL_1 -> switchPositon = 1;
-      case LEVEL_2 -> switchPositon = 2;
-      case LEVEL_3 -> switchPositon = 3;
-      case LEVEL_4 -> switchPositon = 4;
-      case CORAL_STATION -> switchPositon = 5;
-      default -> switchPositon = -1;
+      case LEVEL_1 -> switchPosition = 1;
+      case LEVEL_2 -> switchPosition = 2;
+      case LEVEL_3 -> switchPosition = 3;
+      case LEVEL_4 -> switchPosition = 4;
+      case CORAL_STATION -> switchPosition = 5;
+      default -> switchPosition = -1;
     }
 
-    return switchPositon;
+    return switchPosition;
   }
 
   public double getEncoderPosition() {
