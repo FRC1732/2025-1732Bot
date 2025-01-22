@@ -23,10 +23,16 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 // import frc.lib.team3061.leds.LEDs;
 import frc.lib.team3061.util.SysIdRoutineChooser;
+import frc.robot.commands.clawcommands.ClawBackwards;
+import frc.robot.commands.clawcommands.IntakeCoral;
+import frc.robot.commands.joint_commands.JointBackwards;
+import frc.robot.commands.joint_commands.JointForward;
 import frc.robot.generated.TunerConstants;
 import frc.robot.operator_interface.OISelector;
 import frc.robot.operator_interface.OperatorInterface;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
+import frc.robot.subsystems.claw.Claw;
+import frc.robot.subsystems.joint.Joint;
 import java.util.Optional;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;
@@ -40,6 +46,8 @@ import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;
 public class RobotContainer {
   private OperatorInterface oi = new OperatorInterface() {};
   // private RobotConfig config;
+  private Joint joint;
+  private Claw claw;
 
   private Alliance lastAlliance = Field2d.getInstance().getAlliance();
 
@@ -87,6 +95,7 @@ public class RobotContainer {
      * that use it directly or indirectly. If this isn't done, a null pointer exception will result.
      */
     createRobotConfig();
+    defineSubsystems();
 
     // create the subsystems
 
@@ -120,6 +129,11 @@ public class RobotContainer {
       default:
         break;
     }
+  }
+
+  private void defineSubsystems() {
+    joint = new Joint();
+    claw = new Claw();
   }
 
   /*private void createCTRESubsystems() {
@@ -462,6 +476,12 @@ public class RobotContainer {
 
   private void configureSubsystemCommands() {
     // FIXME: add commands for the subsystem
+    oi.getArmTriggerForward().whileTrue(new JointForward(joint));
+    oi.getArmTriggerBackwards().whileTrue(new JointBackwards(joint));
+    oi.getClawTriggerBackwards().whileTrue(new ClawBackwards(claw));
+    oi.getClawTriggerForwards().whileTrue(new IntakeCoral(claw));
+
+    // oi.getIntakeCoral().whileTrue(new IntakeCoral(claw));
   }
 
   private void configureVisionCommands() {

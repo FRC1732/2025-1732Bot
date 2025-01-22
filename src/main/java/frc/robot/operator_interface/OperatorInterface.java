@@ -75,6 +75,26 @@ public interface OperatorInterface {
     return new Trigger(() -> false);
   }
 
+  public default Trigger getArmTriggerForward() {
+    return new Trigger(() -> false);
+  }
+
+  public default Trigger getArmTriggerBackwards() {
+    return new Trigger(() -> false);
+  }
+
+  public default Trigger getClawTriggerForwards() {
+    return new Trigger(() -> false);
+  }
+
+  public default Trigger getClawTriggerBackwards() {
+    return new Trigger(() -> false);
+  }
+
+  public default Trigger getIntakeCoral() {
+    return new Trigger(() -> false);
+  }
+
   // drivetrain, game-specific
 
   // miscellaneous
