@@ -33,7 +33,7 @@ public class Claw extends SubsystemBase {
 
     // clawMotor.setIdleMode(IdleMode.kBrake);
     digitalInput = new DigitalInput(ClawConstants.BEAMBREAK_ID);
-    clawAbsoluteEncoder = new DutyCycleEncoder(ClawConstants.CLAW_ABSOLUTE_ENCODER);
+    //   clawAbsoluteEncoder = new DutyCycleEncoder(ClawConstants.CLAW_ABSOLUTE_ENCODER);
     clawMotor.stopMotor();
     setupShuffleboard();
   }
@@ -62,17 +62,17 @@ public class Claw extends SubsystemBase {
     return Math.toDegrees(MathUtil.angleModulus(Math.toRadians(angleDeg)));
   }
 
-  private double getAbsolutePosition() {
-    return angleModulusDeg(
-        clawAbsoluteEncoder.get() * -360 + ClawConstants.SHOOTER_TILT_ABSOLUTE_OFFSET);
-  }
-
-  public void resetToAbsoluteEncoder() {
-    if (clawAbsoluteEncoder.isConnected()) {
-      encoder.setPosition(getAbsolutePosition());
+  /*private double getAbsolutePosition() {
+      return angleModulusDeg(
+          clawAbsoluteEncoder.get() * -360 + ClawConstants.SHOOTER_TILT_ABSOLUTE_OFFSET);
     }
-  }
-
+  */
+  /*public void resetToAbsoluteEncoder() {
+      if (clawAbsoluteEncoder.isConnected()) {
+        encoder.setPosition(getAbsolutePosition());
+      }
+    }
+  */
   public double getEncoderPosition() {
     return encoder.getPosition();
   }
@@ -82,7 +82,7 @@ public class Claw extends SubsystemBase {
     tab.addDouble("Claw Encoder Position", this::getEncoderPosition);
     tab.addDouble("Claw Speed", this::getClawSpeed);
     tab.addBoolean("Has Coral", this::hasCoral);
-    tab.addDouble("Absolute Position", this::getAbsolutePosition);
+    // tab.addDouble("Absolute Position", this::getAbsolutePosition);
   }
 
   public boolean hasCoral() {
@@ -96,7 +96,7 @@ public class Claw extends SubsystemBase {
         ClawConstants.SUBSYSTEM_NAME + "/Claw Encoder Position", this.getEncoderPosition());
     Logger.recordOutput(ClawConstants.SUBSYSTEM_NAME + "/Claw Speed", this.getClawSpeed());
     Logger.recordOutput(ClawConstants.SUBSYSTEM_NAME + "/Has Coral", this.hasCoral());
-    Logger.recordOutput(
-        ClawConstants.SUBSYSTEM_NAME + "/Absolute Position", this.getAbsolutePosition());
+    //  Logger.recordOutput(
+    //      ClawConstants.SUBSYSTEM_NAME + "/Absolute Position", this.getAbsolutePosition());
   }
 }
