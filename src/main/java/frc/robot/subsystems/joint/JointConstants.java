@@ -33,13 +33,9 @@ public class JointConstants {
   public static final double JOINT_KS = 0;
 
   public static final double JOINT_DEGREES_PER_ROTATION =
-      5.625; // degrees per motor revolution (360 / reduction = 360 / 64)
+      360.0 / 38.4; // degrees per motor revolution (360 / reduction = 360 / 64)
   public static final double JOINT_RPM_TO_DEGREES_PER_SECOND =
-      0.09375; // RPM to deg/sec (360 / reduction / 60 = 360 / 64 / 60)
-  public static final double JOINT_HEIGHT_INCHES_PER_ROTATION =
-      0.366519; // inches per motor revolution (spool diam * 3.14 / reduction = 1.75 * 3.14 / 15)
-  public static final double JOINT_HEIGHT_RPM_TO_INCHES_PER_SECOND =
-      0.006109; // RPM to inch/sec (spool diam * 3.14 / reduction / 60 = 1.75 * 3.14 / 15 / 60)
+      360.0 / 38.4 / 60.0; // RPM to deg/sec (360 / reduction / 60 = 360 / 64 / 60)
 
   public static final double JOINT_START_SETPOINT = 196;
   public static final double JOINT_CORAL_SETPOINT = 55;
@@ -50,4 +46,5 @@ public class JointConstants {
 
   public static final double MIN_JOINT_DEGREES = -200;
   public static final double MAX_JOINT_DEGREES = 200;
+  public static final double JOINT_ABSOLUTE_OFFSET = 0.0;
 }

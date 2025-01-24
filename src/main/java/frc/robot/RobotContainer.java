@@ -529,6 +529,10 @@ public class RobotContainer {
     // add robot-wide periodic code here
   }
 
+  public void disablePeriodic() {
+    joint.resetToAbsoluteEncoder();
+  }
+
   public void autonomousInit() {
     // add robot-wide code here that will be executed when autonomous starts
   }

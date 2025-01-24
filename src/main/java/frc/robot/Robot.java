@@ -170,9 +170,12 @@ public class Robot extends LoggedRobot {
     // create the CANivore bus object
     this.canivoreBus = new CANBus(TunerConstants.kCanBusName);
 
-    // Due to the nature of how Java works, the first run of a path following command could have a
-    // significantly higher delay compared with subsequent runs, as all the classes involved will
-    // need to be loaded. To help alleviate this issue, you can run a warmup command in the
+    // Due to the nature of how Java works, the first run of a path following
+    // command could have a
+    // significantly higher delay compared with subsequent runs, as all the classes
+    // involved will
+    // need to be loaded. To help alleviate this issue, you can run a warmup command
+    // in the
     // background when code starts.
     // DO THIS AFTER CONFIGURATION OF YOUR DESIRED PATHFINDER
     PathfindingCommand.warmupCommand().schedule();
@@ -190,9 +193,12 @@ public class Robot extends LoggedRobot {
     Threads.setCurrentThreadPriority(true, 99);
 
     /*
-     * Runs the Scheduler. This is responsible for polling buttons, adding newly-scheduled commands,
-     * running already-scheduled commands, removing finished or interrupted commands, and running
-     * subsystem periodic() methods. This must be called from the robot's periodic block in order
+     * Runs the Scheduler. This is responsible for polling buttons, adding
+     * newly-scheduled commands,
+     * running already-scheduled commands, removing finished or interrupted
+     * commands, and running
+     * subsystem periodic() methods. This must be called from the robot's periodic
+     * block in order
      * for anything in the Command-based framework to work.
      */
     CommandScheduler.getInstance().run();
@@ -261,6 +267,7 @@ public class Robot extends LoggedRobot {
   public void disabledPeriodic() {
     // check if the operator interface (e.g., joysticks) has changed
     robotContainer.updateOI();
+    robotContainer.disablePeriodic();
 
     // check if the alliance color has changed based on the FMS data
     robotContainer.checkAllianceColor();
@@ -272,7 +279,8 @@ public class Robot extends LoggedRobot {
    */
   @Override
   public void autonomousInit() {
-    // check if the alliance color has changed based on the FMS data; the current alliance color is
+    // check if the alliance color has changed based on the FMS data; the current
+    // alliance color is
     // not guaranteed to be correct until the start of autonomous
     robotContainer.checkAllianceColor();
 
@@ -292,8 +300,10 @@ public class Robot extends LoggedRobot {
   @Override
   public void teleopInit() {
     /*
-     * This makes sure that the autonomous stops running when teleop starts running. If you want the
-     * autonomous to continue until interrupted by another command, remove this line or comment it
+     * This makes sure that the autonomous stops running when teleop starts running.
+     * If you want the
+     * autonomous to continue until interrupted by another command, remove this line
+     * or comment it
      * out.
      */
     if (autonomousCommand != null) {

@@ -14,7 +14,6 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
-import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
@@ -34,17 +33,17 @@ public class Joint extends SubsystemBase {
   private ArmFeedforward jointFeedforward;
 
   // private GenericEntry goalEntry;
-  private GenericEntry jointP, jointI, jointD;
-  private double prevJointP, prevJointI, prevJointD;
+  // private GenericEntry jointP, jointI, jointD;
+  // private double prevJointP, prevJointI, prevJointD;
 
   public Joint() {
     jointMotor = new SparkMax(JointConstants.JOINT_MOTOR_CAN_ID, SparkMax.MotorType.kBrushless);
-    jointAbsoluteEncoder = new DutyCycleEncoder(8);
+    jointAbsoluteEncoder = new DutyCycleEncoder(8, 1.0, JointConstants.JOINT_ABSOLUTE_OFFSET);
     SparkMaxConfig config = new SparkMaxConfig();
 
-    prevJointP = JointConstants.JOINT_KP;
-    prevJointI = JointConstants.JOINT_KI;
-    prevJointD = JointConstants.JOINT_KD;
+    // prevJointP = JointConstants.JOINT_KP;
+    // prevJointI = JointConstants.JOINT_KI;
+    // prevJointD = JointConstants.JOINT_KD;
 
     config.idleMode(IdleMode.kBrake);
     config
@@ -121,20 +120,24 @@ public class Joint extends SubsystemBase {
     return jointPID.atGoal();
   }
 
+  private double getAbsolutePosition() {
+    return ((jointAbsoluteEncoder.get() + 0.85) % 1.0) * -360.0 / 2.4 + 198.0;
+  }
+
   @Override
   public void periodic() {
     if (DriverStation.isDisabled()) {
       jointPID.reset(jointEncoder.getPosition());
     }
 
-    if (prevJointP != jointP.getDouble(0)
+    /*if (prevJointP != jointP.getDouble(0)
         || prevJointI != jointI.getDouble(0)
         || prevJointD != jointD.getDouble(0)) {
       jointPID.setPID(jointP.getDouble(0), jointI.getDouble(0), jointD.getDouble(0));
       prevJointP = jointP.getDouble(0);
       prevJointI = jointI.getDouble(0);
       prevJointD = jointD.getDouble(0);
-    }
+    }*/
 
     jointMotor.set(
         MathUtil.clamp(jointPID.calculate(jointEncoder.getPosition()), -0.5, 0.5)
@@ -159,7 +162,15 @@ public class Joint extends SubsystemBase {
             Math.toRadians(jointEncoder.getPosition() + JointConstants.JOINT_COG_OFFSET),
             jointEncoder.getVelocity()));
     Logger.recordOutput(
-        JointConstants.SUBSYSTEM_NAME + "/AbsoluteIsConnected", jointEncoder.getPosition());
+        JointConstants.SUBSYSTEM_NAME + "/AbsoluteIsConnected", jointAbsoluteEncoder.isConnected());
+    Logger.recordOutput(
+        JointConstants.SUBSYSTEM_NAME + "/AbsoluteEncoderDegrees", getAbsolutePosition());
+  }
+
+  public void resetToAbsoluteEncoder() {
+    if (jointAbsoluteEncoder.isConnected()) {
+      jointEncoder.setPosition(angleModulusDeg(getAbsolutePosition()));
+    }
   }
 
   public void runJointForward() {
@@ -181,12 +192,16 @@ public class Joint extends SubsystemBase {
   public void setupShuffleboard() {
     jointTab = Shuffleboard.getTab("Joint Tab");
     jointTab.addDouble("Setpoint", () -> getSetPoint());
-    jointTab.addDouble("Position", () -> jointEncoder.getPosition());
+    jointTab.addDouble("Encoder Position", () -> jointEncoder.getPosition());
     jointTab.addDouble("Absolute Position", () -> jointAbsoluteEncoder.get());
+    jointTab.addDouble("Absolute Position (Degrees)", () -> getAbsolutePosition());
 
-    jointP = jointTab.add("Shooter P", JointConstants.JOINT_KP).getEntry();
-    jointI = jointTab.add("Shooter I", JointConstants.JOINT_KI).getEntry();
-    jointD = jointTab.add("Shooter D", JointConstants.JOINT_KD).getEntry();
+    jointTab.add("PID Controllor", this.jointPID);
+    jointTab.add("Absolute Encoder", jointAbsoluteEncoder);
+
+    // jointP = jointTab.add("Shooter P", JointConstants.JOINT_KP).getEntry();
+    // jointI = jointTab.add("Shooter I", JointConstants.JOINT_KI).getEntry();
+    // jointD = jointTab.add("Shooter D", JointConstants.JOINT_KD).getEntry();
 
     /*goalEntry =
     jointTab
