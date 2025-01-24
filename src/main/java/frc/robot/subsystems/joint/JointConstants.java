@@ -47,4 +47,7 @@ public class JointConstants {
   public static final double JOINT_LV2_SETPOINT = 55;
   public static final double JOINT_LV3_SETPOINT = 55;
   public static final double JOINT_LV4_SETPOINT = 90;
+
+  public static final double MIN_JOINT_DEGREES = -200;
+  public static final double MAX_JOINT_DEGREES = 200;
 }

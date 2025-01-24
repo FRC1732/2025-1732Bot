@@ -31,7 +31,7 @@ import frc.robot.operator_interface.OperatorInterface;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.claw.Claw;
 import frc.robot.subsystems.joint.Joint;
-import frc.robot.subsystems.joint.Joint.JointPosition;
+import frc.robot.subsystems.joint.JointPosition;
 import java.util.Optional;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;

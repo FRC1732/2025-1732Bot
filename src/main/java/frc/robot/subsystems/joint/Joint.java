@@ -14,34 +14,45 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import org.littletonrobotics.junction.Logger;
 
 public class Joint extends SubsystemBase {
   /** Creates a new Joint. */
   private final SparkMax jointMotor;
 
   private ShuffleboardTab jointTab;
-  private Double setpoint;
+  private double setpoint;
   private RelativeEncoder jointEncoder;
   private DutyCycleEncoder jointAbsoluteEncoder;
   private ProfiledPIDController jointPID;
   private ArmFeedforward jointFeedforward;
+
+  // private GenericEntry goalEntry;
+  private GenericEntry jointP, jointI, jointD;
+  private double prevJointP, prevJointI, prevJointD;
 
   public Joint() {
     jointMotor = new SparkMax(JointConstants.JOINT_MOTOR_CAN_ID, SparkMax.MotorType.kBrushless);
     jointAbsoluteEncoder = new DutyCycleEncoder(8);
     SparkMaxConfig config = new SparkMaxConfig();
 
+    prevJointP = JointConstants.JOINT_KP;
+    prevJointI = JointConstants.JOINT_KI;
+    prevJointD = JointConstants.JOINT_KD;
+
     config.idleMode(IdleMode.kBrake);
     config
         .encoder
         .positionConversionFactor(JointConstants.JOINT_DEGREES_PER_ROTATION)
         .velocityConversionFactor(JointConstants.JOINT_RPM_TO_DEGREES_PER_SECOND);
-    // config.closedLoop.feedbackSensor(FeedbackSensor.kPrimaryEncoder).pid(1, 2, 3);
+    // config.closedLoop.feedbackSensor(FeedbackSensor.kPrimaryEncoder).pid(1, 2,
+    // 3);
 
     jointMotor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     jointMotor.stopMotor();
@@ -58,7 +69,7 @@ public class Joint extends SubsystemBase {
             JointConstants.JOINT_PID_PERIOD_SEC);
     jointPID.setTolerance(JointConstants.JOINT_GOAL_TOLERANCE_DEGREES);
     jointPID.reset(jointEncoder.getPosition());
-    jointPID.setGoal(JointConstants.JOINT_START_SETPOINT);
+    setJointPosition(JointConstants.JOINT_START_SETPOINT);
 
     jointFeedforward =
         new ArmFeedforward(
@@ -66,46 +77,44 @@ public class Joint extends SubsystemBase {
             JointConstants.JOINT_KG,
             JointConstants.JOINT_KV,
             JointConstants.JOINT_KA);
-  }
 
-  public enum JointPosition {
-    START_POSITION,
-    CORAL_STATION,
-    LEVEL_1,
-    LEVEL_2,
-    LEVEL_3,
-    LEVEL_4,
+    setupShuffleboard();
   }
 
   public void setJointPose(JointPosition jointPosition) {
     switch (jointPosition) {
       case START_POSITION:
-        jointPID.setGoal(JointConstants.JOINT_START_SETPOINT);
+        setJointPosition(JointConstants.JOINT_START_SETPOINT);
         break;
 
       case CORAL_STATION:
-        jointPID.setGoal(JointConstants.JOINT_CORAL_SETPOINT);
+        setJointPosition(JointConstants.JOINT_CORAL_SETPOINT);
         break;
 
       case LEVEL_1:
-        jointPID.setGoal(JointConstants.JOINT_LV1_SETPOINT);
+        setJointPosition(JointConstants.JOINT_LV1_SETPOINT);
         break;
 
       case LEVEL_2:
-        jointPID.setGoal(JointConstants.JOINT_LV2_SETPOINT);
+        setJointPosition(JointConstants.JOINT_LV2_SETPOINT);
         break;
 
       case LEVEL_3:
-        jointPID.setGoal(JointConstants.JOINT_LV3_SETPOINT);
+        setJointPosition(JointConstants.JOINT_LV3_SETPOINT);
         break;
 
       case LEVEL_4:
-        jointPID.setGoal(JointConstants.JOINT_LV4_SETPOINT);
+        setJointPosition(JointConstants.JOINT_LV4_SETPOINT);
         break;
 
       default:
         break;
     }
+  }
+
+  public void setJointPosition(double setpoint) {
+    this.setpoint = setpoint;
+    jointPID.setGoal(setpoint);
   }
 
   public boolean isAtGoal() {
@@ -118,11 +127,39 @@ public class Joint extends SubsystemBase {
       jointPID.reset(jointEncoder.getPosition());
     }
 
+    if (prevJointP != jointP.getDouble(0)
+        || prevJointI != jointI.getDouble(0)
+        || prevJointD != jointD.getDouble(0)) {
+      jointPID.setPID(jointP.getDouble(0), jointI.getDouble(0), jointD.getDouble(0));
+      prevJointP = jointP.getDouble(0);
+      prevJointI = jointI.getDouble(0);
+      prevJointD = jointD.getDouble(0);
+    }
+
     jointMotor.set(
         MathUtil.clamp(jointPID.calculate(jointEncoder.getPosition()), -0.5, 0.5)
             + jointFeedforward.calculate(
                 Math.toRadians(jointEncoder.getPosition() + JointConstants.JOINT_COG_OFFSET),
                 jointEncoder.getVelocity()));
+
+    updateIO();
+  }
+
+  private void updateIO() {
+    Logger.recordOutput(JointConstants.SUBSYSTEM_NAME + "/Angle", jointEncoder.getPosition());
+    Logger.recordOutput(
+        JointConstants.SUBSYSTEM_NAME + "/AngleVelocity", jointEncoder.getVelocity());
+    Logger.recordOutput(
+        JointConstants.SUBSYSTEM_NAME + "/AbsoluteAngle", jointEncoder.getPosition());
+    Logger.recordOutput(JointConstants.SUBSYSTEM_NAME + "/AngleGoal", jointPID.getGoal().position);
+    Logger.recordOutput(JointConstants.SUBSYSTEM_NAME + "/AngleSetpoint", this.setpoint);
+    Logger.recordOutput(
+        JointConstants.SUBSYSTEM_NAME + "/AngleFeedforward",
+        jointFeedforward.calculate(
+            Math.toRadians(jointEncoder.getPosition() + JointConstants.JOINT_COG_OFFSET),
+            jointEncoder.getVelocity()));
+    Logger.recordOutput(
+        JointConstants.SUBSYSTEM_NAME + "/AbsoluteIsConnected", jointEncoder.getPosition());
   }
 
   public void runJointForward() {
@@ -135,16 +172,33 @@ public class Joint extends SubsystemBase {
 
   public void stopJoint() {
     jointMotor.stopMotor();
-    ;
   }
 
-  public Double getSetPoint() {
+  public double getSetPoint() {
     return setpoint;
   }
 
-  public void JointTabs() {
+  public void setupShuffleboard() {
     jointTab = Shuffleboard.getTab("Joint Tab");
     jointTab.addDouble("Setpoint", () -> getSetPoint());
+    jointTab.addDouble("Position", () -> jointEncoder.getPosition());
+    jointTab.addDouble("Absolute Position", () -> jointAbsoluteEncoder.get());
+
+    jointP = jointTab.add("Shooter P", JointConstants.JOINT_KP).getEntry();
+    jointI = jointTab.add("Shooter I", JointConstants.JOINT_KI).getEntry();
+    jointD = jointTab.add("Shooter D", JointConstants.JOINT_KD).getEntry();
+
+    /*goalEntry =
+    jointTab
+        .add("Goal", 0)
+        .withWidget(BuiltInWidgets.kNumberSlider)
+        .withProperties(
+            Map.of(
+                "min",
+                JointConstants.MIN_JOINT_DEGREES,
+                "max",
+                JointConstants.MAX_JOINT_DEGREES))
+        .getEntry();*/
   }
 
   private double angleModulusDeg(double angleDeg) {
