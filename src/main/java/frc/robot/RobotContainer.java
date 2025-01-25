@@ -25,14 +25,13 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import frc.lib.team3061.util.SysIdRoutineChooser;
 import frc.robot.commands.clawcommands.ClawBackwards;
 import frc.robot.commands.clawcommands.IntakeCoral;
-import frc.robot.commands.joint_commands.JointBackwards;
-import frc.robot.commands.joint_commands.JointForward;
 import frc.robot.generated.TunerConstants;
 import frc.robot.operator_interface.OISelector;
 import frc.robot.operator_interface.OperatorInterface;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.claw.Claw;
 import frc.robot.subsystems.joint.Joint;
+import frc.robot.subsystems.joint.JointPosition;
 import java.util.Optional;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;
@@ -204,6 +203,7 @@ public class RobotContainer {
     if (oi == prevOI) {
       return;
     }
+    System.out.println(oi.getClass());
 
     // clear the list of composed commands since we are about to rebind them to potentially new
     // triggers
@@ -476,10 +476,17 @@ public class RobotContainer {
 
   private void configureSubsystemCommands() {
     // FIXME: add commands for the subsystem
-    oi.getArmTriggerForward().whileTrue(new JointForward(joint));
-    oi.getArmTriggerBackwards().whileTrue(new JointBackwards(joint));
+    // oi.getArmTriggerForward().whileTrue(new JointForward(joint));
+    // oi.getArmTriggerBackwards().whileTrue(new JointBackwards(joint));
     oi.getClawTriggerBackwards().whileTrue(new ClawBackwards(claw));
     oi.getClawTriggerForwards().whileTrue(new IntakeCoral(claw));
+    // oi.getIntakeCoral().whileTrue(new PrintCommand("AAAAAAAAAAAAAAAa"));
+    oi.getIntakeCoral()
+        .whileTrue(new InstantCommand(() -> joint.setJointPose(JointPosition.CORAL_STATION)));
+    oi.scoreL1().whileTrue(new InstantCommand(() -> joint.setJointPose(JointPosition.LEVEL_1)));
+    oi.scoreL2().whileTrue(new InstantCommand(() -> joint.setJointPose(JointPosition.LEVEL_2)));
+    oi.scoreL3().whileTrue(new InstantCommand(() -> joint.setJointPose(JointPosition.LEVEL_3)));
+    oi.scoreL4().whileTrue(new InstantCommand(() -> joint.setJointPose(JointPosition.LEVEL_4)));
 
     // oi.getIntakeCoral().whileTrue(new IntakeCoral(claw));
   }
@@ -522,6 +529,10 @@ public class RobotContainer {
 
   public void periodic() {
     // add robot-wide periodic code here
+  }
+
+  public void disablePeriodic() {
+    joint.resetToAbsoluteEncoder();
   }
 
   public void autonomousInit() {

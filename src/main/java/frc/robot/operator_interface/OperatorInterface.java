@@ -95,6 +95,22 @@ public interface OperatorInterface {
     return new Trigger(() -> false);
   }
 
+  public default Trigger scoreL1() {
+    return new Trigger(() -> false);
+  }
+
+  public default Trigger scoreL2() {
+    return new Trigger(() -> false);
+  }
+
+  public default Trigger scoreL3() {
+    return new Trigger(() -> false);
+  }
+
+  public default Trigger scoreL4() {
+    return new Trigger(() -> false);
+  }
+
   // drivetrain, game-specific
 
   // miscellaneous

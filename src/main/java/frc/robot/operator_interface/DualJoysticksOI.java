@@ -72,18 +72,20 @@ public class DualJoysticksOI implements OperatorInterface {
 
   @Override
   public Trigger getResetPoseToVisionButton() {
-    return translateJoystickButtons[1];
+    return translateJoystickButtons[10];
   }
 
-  @Override
-  public Trigger getArmTriggerForward() {
-    return rotateJoystickButtons[3];
-  }
+  /*@Override
+    public Trigger getArmTriggerForward() {
+      return rotateJoystickButtons[3];
+    }
+  */
 
-  @Override
-  public Trigger getArmTriggerBackwards() {
-    return rotateJoystickButtons[2];
-  }
+  /*@Override
+    public Trigger getArmTriggerBackwards() {
+      return rotateJoystickButtons[2];
+    }
+  */
 
   @Override
   public Trigger getClawTriggerForwards() {
@@ -97,6 +99,26 @@ public class DualJoysticksOI implements OperatorInterface {
 
   @Override
   public Trigger getIntakeCoral() {
-    return translateJoystickButtons[6];
+    return rotateJoystickButtons[1];
+  }
+
+  @Override
+  public Trigger scoreL1() {
+    return rotateJoystickButtons[4];
+  }
+
+  @Override
+  public Trigger scoreL2() {
+    return rotateJoystickButtons[3];
+  }
+
+  @Override
+  public Trigger scoreL3() {
+    return rotateJoystickButtons[5];
+  }
+
+  @Override
+  public Trigger scoreL4() {
+    return rotateJoystickButtons[2];
   }
 }
