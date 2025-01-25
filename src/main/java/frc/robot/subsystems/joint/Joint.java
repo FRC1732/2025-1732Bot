@@ -50,13 +50,14 @@ public class Joint extends SubsystemBase {
         .encoder
         .positionConversionFactor(JointConstants.JOINT_DEGREES_PER_ROTATION)
         .velocityConversionFactor(JointConstants.JOINT_RPM_TO_DEGREES_PER_SECOND);
+
     // config.closedLoop.feedbackSensor(FeedbackSensor.kPrimaryEncoder).pid(1, 2,
     // 3);
 
     jointMotor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     jointMotor.stopMotor();
     jointEncoder = jointMotor.getEncoder();
-    jointEncoder.setPosition(angleModulusDeg(JointConstants.JOINT_START_SETPOINT));
+    jointEncoder.setPosition(angleModulusDegZero360(JointConstants.JOINT_START_SETPOINT));
 
     jointPID =
         new ProfiledPIDController(
@@ -130,14 +131,17 @@ public class Joint extends SubsystemBase {
       jointPID.reset(jointEncoder.getPosition());
     }
 
-    /*if (prevJointP != jointP.getDouble(0)
-        || prevJointI != jointI.getDouble(0)
-        || prevJointD != jointD.getDouble(0)) {
-      jointPID.setPID(jointP.getDouble(0), jointI.getDouble(0), jointD.getDouble(0));
-      prevJointP = jointP.getDouble(0);
-      prevJointI = jointI.getDouble(0);
-      prevJointD = jointD.getDouble(0);
-    }*/
+    /*
+     * if (prevJointP != jointP.getDouble(0)
+     * || prevJointI != jointI.getDouble(0)
+     * || prevJointD != jointD.getDouble(0)) {
+     * jointPID.setPID(jointP.getDouble(0), jointI.getDouble(0),
+     * jointD.getDouble(0));
+     * prevJointP = jointP.getDouble(0);
+     * prevJointI = jointI.getDouble(0);
+     * prevJointD = jointD.getDouble(0);
+     * }
+     */
 
     jointMotor.set(
         MathUtil.clamp(jointPID.calculate(jointEncoder.getPosition()), -0.5, 0.5)
@@ -169,7 +173,7 @@ public class Joint extends SubsystemBase {
 
   public void resetToAbsoluteEncoder() {
     if (jointAbsoluteEncoder.isConnected()) {
-      jointEncoder.setPosition(angleModulusDeg(getAbsolutePosition()));
+      jointEncoder.setPosition(angleModulusDegZero360(getAbsolutePosition()));
     }
   }
 
@@ -203,20 +207,22 @@ public class Joint extends SubsystemBase {
     // jointI = jointTab.add("Shooter I", JointConstants.JOINT_KI).getEntry();
     // jointD = jointTab.add("Shooter D", JointConstants.JOINT_KD).getEntry();
 
-    /*goalEntry =
-    jointTab
-        .add("Goal", 0)
-        .withWidget(BuiltInWidgets.kNumberSlider)
-        .withProperties(
-            Map.of(
-                "min",
-                JointConstants.MIN_JOINT_DEGREES,
-                "max",
-                JointConstants.MAX_JOINT_DEGREES))
-        .getEntry();*/
+    /*
+     * goalEntry =
+     * jointTab
+     * .add("Goal", 0)
+     * .withWidget(BuiltInWidgets.kNumberSlider)
+     * .withProperties(
+     * Map.of(
+     * "min",
+     * JointConstants.MIN_JOINT_DEGREES,
+     * "max",
+     * JointConstants.MAX_JOINT_DEGREES))
+     * .getEntry();
+     */
   }
 
-  private double angleModulusDeg(double angleDeg) {
-    return Math.toDegrees(MathUtil.angleModulus(Math.toRadians(angleDeg)));
+  private double angleModulusDegZero360(double angleDeg) {
+    return Math.toDegrees(MathUtil.inputModulus(Math.toRadians(angleDeg), 0, 2 * Math.PI));
   }
 }
