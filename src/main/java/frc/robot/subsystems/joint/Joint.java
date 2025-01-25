@@ -34,16 +34,16 @@ public class Joint extends SubsystemBase {
 
   // private GenericEntry goalEntry;
   // private GenericEntry jointP, jointI, jointD;
-  // private double prevJointP, prevJointI, prevJointD;
+  private double prevJointP, prevJointI, prevJointD;
 
   public Joint() {
     jointMotor = new SparkMax(JointConstants.JOINT_MOTOR_CAN_ID, SparkMax.MotorType.kBrushless);
     jointAbsoluteEncoder = new DutyCycleEncoder(8, 1.0, JointConstants.JOINT_ABSOLUTE_OFFSET);
     SparkMaxConfig config = new SparkMaxConfig();
 
-    // prevJointP = JointConstants.JOINT_KP;
-    // prevJointI = JointConstants.JOINT_KI;
-    // prevJointD = JointConstants.JOINT_KD;
+    prevJointP = JointConstants.JOINT_KP;
+    prevJointI = JointConstants.JOINT_KI;
+    prevJointD = JointConstants.JOINT_KD;
 
     config.idleMode(IdleMode.kBrake);
     config
@@ -131,17 +131,17 @@ public class Joint extends SubsystemBase {
       jointPID.reset(jointEncoder.getPosition());
     }
 
-    /*
-     * if (prevJointP != jointP.getDouble(0)
-     * || prevJointI != jointI.getDouble(0)
-     * || prevJointD != jointD.getDouble(0)) {
-     * jointPID.setPID(jointP.getDouble(0), jointI.getDouble(0),
-     * jointD.getDouble(0));
-     * prevJointP = jointP.getDouble(0);
-     * prevJointI = jointI.getDouble(0);
-     * prevJointD = jointD.getDouble(0);
-     * }
-     */
+    if (prevJointP != jointPID.getP()
+        || prevJointI != jointPID.getI()
+        || prevJointD != jointPID.getD()) {
+      prevJointP = jointPID.getP();
+      prevJointI = jointPID.getI();
+      prevJointD = jointPID.getD();
+      System.out.println("New PID values: ");
+      System.out.println("P: " + prevJointP);
+      System.out.println("I: " + prevJointI);
+      System.out.println("D: " + prevJointD);
+    }
 
     jointMotor.set(
         MathUtil.clamp(jointPID.calculate(jointEncoder.getPosition()), -0.5, 0.5)

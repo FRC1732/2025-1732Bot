@@ -72,7 +72,7 @@ public class DualJoysticksOI implements OperatorInterface {
 
   @Override
   public Trigger getResetPoseToVisionButton() {
-    return translateJoystickButtons[1];
+    return translateJoystickButtons[10];
   }
 
   /*@Override
@@ -99,7 +99,7 @@ public class DualJoysticksOI implements OperatorInterface {
 
   @Override
   public Trigger getIntakeCoral() {
-    return translateJoystickButtons[1];
+    return rotateJoystickButtons[1];
   }
 
   @Override

@@ -38,11 +38,11 @@ public class JointConstants {
       360.0 / 38.4 / 60.0; // RPM to deg/sec (360 / reduction / 60 = 360 / 64 / 60)
 
   public static final double JOINT_START_SETPOINT = 196;
-  public static final double JOINT_CORAL_SETPOINT = 55;
-  public static final double JOINT_LV1_SETPOINT = 0;
-  public static final double JOINT_LV2_SETPOINT = 55;
-  public static final double JOINT_LV3_SETPOINT = 55;
-  public static final double JOINT_LV4_SETPOINT = 90;
+  public static final double JOINT_CORAL_SETPOINT = 35;
+  public static final double JOINT_LV1_SETPOINT = 90;
+  public static final double JOINT_LV2_SETPOINT = 190;
+  public static final double JOINT_LV3_SETPOINT = 190;
+  public static final double JOINT_LV4_SETPOINT = 180;
 
   public static final double MIN_JOINT_DEGREES = -200;
   public static final double MAX_JOINT_DEGREES = 200;

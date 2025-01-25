@@ -203,6 +203,7 @@ public class RobotContainer {
     if (oi == prevOI) {
       return;
     }
+    System.out.println(oi.getClass());
 
     // clear the list of composed commands since we are about to rebind them to potentially new
     // triggers
@@ -479,6 +480,7 @@ public class RobotContainer {
     // oi.getArmTriggerBackwards().whileTrue(new JointBackwards(joint));
     oi.getClawTriggerBackwards().whileTrue(new ClawBackwards(claw));
     oi.getClawTriggerForwards().whileTrue(new IntakeCoral(claw));
+    // oi.getIntakeCoral().whileTrue(new PrintCommand("AAAAAAAAAAAAAAAa"));
     oi.getIntakeCoral()
         .whileTrue(new InstantCommand(() -> joint.setJointPose(JointPosition.CORAL_STATION)));
     oi.scoreL1().whileTrue(new InstantCommand(() -> joint.setJointPose(JointPosition.LEVEL_1)));
