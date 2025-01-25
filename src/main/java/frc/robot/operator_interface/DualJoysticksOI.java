@@ -31,17 +31,23 @@ public class DualJoysticksOI implements OperatorInterface {
 
   @Override
   public double getTranslateX() {
-    return -translateJoystick.getY();
+    double input = -translateJoystick.getY();
+
+    return Math.copySign(Math.pow(input, 2), input);
   }
 
   @Override
   public double getTranslateY() {
-    return -translateJoystick.getX();
+    double input = -translateJoystick.getX();
+
+    return Math.copySign(Math.pow(input, 2), input);
   }
 
   @Override
   public double getRotate() {
-    return -rotateJoystick.getX();
+    double input = rotateJoystick.getX();
+
+    return Math.copySign(Math.pow(input, 2), input);
   }
 
   @Override

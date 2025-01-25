@@ -12,6 +12,7 @@ import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.pathplanner.lib.events.EventTrigger;
 import com.pathplanner.lib.path.PathPlannerPath;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -60,7 +61,7 @@ public class RobotContainer {
 
   private final SwerveRequest.FieldCentric drive =
       new SwerveRequest.FieldCentric()
-          .withDeadband(MaxSpeed * 0.1)
+          .withDeadband(MaxSpeed * 0.01)
           .withRotationalDeadband(MaxAngularRate * 0.1) // Add a 10% deadband
           .withDriveRequestType(
               DriveRequestType.OpenLoopVoltage); // Use open-loop control for drive motors
@@ -448,8 +449,8 @@ public class RobotContainer {
                 .withName("disable rotation slow mode"));*/
 
     // reset gyro to 0 degrees
-    /*oi.getResetGyroButton()
-    .onTrue(Commands.runOnce(drivetrain::zeroGyroscope, drivetrain).withName("zero gyro"));*/
+    oi.getResetGyroButton()
+        .onTrue(new InstantCommand(() -> drivetrain.resetRotation(new Rotation2d())));
 
     // reset pose based on vision
     /*oi.getResetPoseToVisionButton()
@@ -480,7 +481,7 @@ public class RobotContainer {
     // oi.getArmTriggerBackwards().whileTrue(new JointBackwards(joint));
     oi.getClawTriggerBackwards().whileTrue(new ClawBackwards(claw));
     oi.getClawTriggerForwards().whileTrue(new IntakeCoral(claw));
-    // oi.getIntakeCoral().whileTrue(new PrintCommand("AAAAAAAAAAAAAAAa"));
+
     oi.getIntakeCoral()
         .whileTrue(new InstantCommand(() -> joint.setJointPose(JointPosition.CORAL_STATION)));
     oi.scoreL1().whileTrue(new InstantCommand(() -> joint.setJointPose(JointPosition.LEVEL_1)));
