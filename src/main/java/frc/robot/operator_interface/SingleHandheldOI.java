@@ -46,16 +46,6 @@ public class SingleHandheldOI implements OperatorInterface {
   }
 
   @Override
-  public Trigger getTranslationSlowModeButton() {
-    return controller.leftBumper();
-  }
-
-  @Override
-  public Trigger getRotationSlowModeButton() {
-    return controller.rightBumper();
-  }
-
-  @Override
   public Trigger getVisionIsEnabledSwitch() {
     // vision is always enabled with Xbox as there is no switch to disable
     return new Trigger(() -> true);

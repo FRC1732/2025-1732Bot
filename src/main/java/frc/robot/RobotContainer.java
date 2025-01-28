@@ -12,7 +12,7 @@ import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.pathplanner.lib.events.EventTrigger;
 import com.pathplanner.lib.path.PathPlannerPath;
-import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -22,11 +22,13 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 // import frc.lib.team3061.leds.LEDs;
-import frc.lib.team3061.util.SysIdRoutineChooser;
 import frc.robot.commands.clawcommands.ClawBackwards;
 import frc.robot.commands.clawcommands.IntakeCoral;
 import frc.robot.generated.TunerConstants;
+import frc.robot.limelightVision.ApriltagVision.VisionApriltagSubsystem;
+import frc.robot.limelightVision.LimelightHelpers;
 import frc.robot.operator_interface.OISelector;
 import frc.robot.operator_interface.OperatorInterface;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
@@ -34,6 +36,7 @@ import frc.robot.subsystems.claw.Claw;
 import frc.robot.subsystems.joint.Joint;
 import frc.robot.subsystems.joint.JointPosition;
 import java.util.Optional;
+import java.util.function.BooleanSupplier;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;
 
@@ -45,9 +48,10 @@ import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;
  */
 public class RobotContainer {
   private OperatorInterface oi = new OperatorInterface() {};
-  // private RobotConfig config;
+
   private Joint joint;
   private Claw claw;
+  private VisionApriltagSubsystem visionApriltagSubsystem;
 
   private Alliance lastAlliance = Field2d.getInstance().getAlliance();
 
@@ -57,12 +61,18 @@ public class RobotContainer {
       TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
   private double MaxAngularRate =
       RotationsPerSecond.of(1.5)
-          .in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
+          .in(RadiansPerSecond); // 1.5 rotations per second max angular velocity
+  private double MaxSlowSpeed = 0.25 * MaxSpeed; // 25% of max speed
+  private double MaxSlowAngularRate = 0.25 * MaxAngularRate; // 25% of max angular rate
+  private boolean isSlowMode = false;
+  private BooleanSupplier slowModeSupplier = () -> isSlowMode;
+
+  private final Telemetry telemetryLogger = new Telemetry(MaxSpeed);
 
   private final SwerveRequest.FieldCentric drive =
       new SwerveRequest.FieldCentric()
           .withDeadband(MaxSpeed * 0.01)
-          .withRotationalDeadband(MaxAngularRate * 0.01) // Add a 10% deadband
+          .withRotationalDeadband(MaxAngularRate * 0.01) // Add a 10% deadband to raw input
           .withDriveRequestType(
               DriveRequestType.OpenLoopVoltage); // Use open-loop control for drive motors
   private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
@@ -76,13 +86,11 @@ public class RobotContainer {
       new LoggedNetworkNumber("/Tuning/Endgame Alert #1", 20.0);
   private final LoggedNetworkNumber endgameAlert2 =
       new LoggedNetworkNumber("/Tuning/Endgame Alert #2", 10.0);
-
   private Alert pathFileMissingAlert =
       new Alert("Could not find the specified path file.", AlertType.kError);
   private static final String LAYOUT_FILE_MISSING =
       "Could not find the specified AprilTags layout file";
   private Alert layoutFileMissingAlert = new Alert(LAYOUT_FILE_MISSING, AlertType.kError);
-
   private Alert tuningAlert = new Alert("Tuning mode enabled", AlertType.kInfo);
 
   /**
@@ -90,14 +98,7 @@ public class RobotContainer {
    * commands.
    */
   public RobotContainer() {
-    /*
-     * IMPORTANT: The RobotConfig subclass object *must* be created before any other objects
-     * that use it directly or indirectly. If this isn't done, a null pointer exception will result.
-     */
-    createRobotConfig();
     defineSubsystems();
-
-    // create the subsystems
 
     // disable all telemetry in the LiveWindow to reduce the processing during each iteration
     LiveWindow.disableAllTelemetry();
@@ -114,77 +115,10 @@ public class RobotContainer {
     }
   }
 
-  /**
-   * The RobotConfig subclass object *must* be created before any other objects that use it directly
-   * or indirectly. If this isn't done, a null pointer exception will result.
-   */
-  private void createRobotConfig() {
-    switch (Constants.getRobot()) {
-      case ROBOT_PRACTICE:
-        // config = new PracticeRobotConfig();
-        break;
-      case ROBOT_COMPETITION, ROBOT_SIMBOT:
-        // config = new CompRobotConfig();
-        break;
-      default:
-        break;
-    }
-  }
-
   private void defineSubsystems() {
     joint = new Joint();
     claw = new Claw();
   }
-
-  /*private void createCTRESubsystems() {
-    drivetrain = new Drivetrain(new DrivetrainIOCTRE());
-
-    String[] cameraNames = config.getCameraNames();
-    VisionIO[] visionIOs = new VisionIO[cameraNames.length];
-    AprilTagFieldLayout layout;
-    try {
-      layout = new AprilTagFieldLayout(VisionConstants.APRILTAG_FIELD_LAYOUT_PATH);
-    } catch (IOException e) {
-      layout = new AprilTagFieldLayout(new ArrayList<>(), 16.4592, 8.2296);
-
-      layoutFileMissingAlert.setText(
-          LAYOUT_FILE_MISSING + ": " + VisionConstants.APRILTAG_FIELD_LAYOUT_PATH);
-      layoutFileMissingAlert.set(true);
-    }
-    for (int i = 0; i < visionIOs.length; i++) {
-      visionIOs[i] = new VisionIOPhotonVision(cameraNames[i], layout);
-    }
-    vision = new Vision(visionIOs);
-
-    // FIXME: create the hardware-specific subsystem class
-    subsystem = new Subsystem(new SubsystemIO() {});
-  }*/
-
-  /*private void createCTRESimSubsystems() {
-    DrivetrainIO drivetrainIO = new DrivetrainIOCTRE();
-    drivetrain = new Drivetrain(drivetrainIO);
-
-    AprilTagFieldLayout layout;
-    try {
-      layout = new AprilTagFieldLayout(VisionConstants.APRILTAG_FIELD_LAYOUT_PATH);
-    } catch (IOException e) {
-      layout = new AprilTagFieldLayout(new ArrayList<>(), 16.4592, 8.2296);
-
-      layoutFileMissingAlert.setText(
-          LAYOUT_FILE_MISSING + ": " + VisionConstants.APRILTAG_FIELD_LAYOUT_PATH);
-      layoutFileMissingAlert.set(true);
-    }
-    vision =
-        new Vision(
-            new VisionIO[] {
-              new VisionIOSim(
-                  layout,
-                  drivetrain::getPose,
-                  RobotConfig.getInstance().getRobotToCameraTransforms()[0])
-            });
-
-    // FIXME: create the hardware-specific subsystem class
-  }*/
 
   /**
    * Creates the field from the defined regions and transition points from one region to its
@@ -220,36 +154,6 @@ public class RobotContainer {
     configureSubsystemCommands();
 
     configureVisionCommands();
-
-    // Endgame alerts
-    /*new Trigger(
-        () ->
-            DriverStation.isTeleopEnabled()
-                && DriverStation.getMatchTime() > 0.0
-                && DriverStation.getMatchTime() <= Math.round(endgameAlert1.get()))
-    .onTrue(
-        Commands.run(() -> LEDs.getInstance().requestState(LEDs.States.ENDGAME_ALERT))
-            .withTimeout(1));*/
-    /*new Trigger(
-        () ->
-            DriverStation.isTeleopEnabled()
-                && DriverStation.getMatchTime() > 0.0
-                && DriverStation.getMatchTime() <= Math.round(endgameAlert2.get()))
-    .onTrue(
-        Commands.sequence(
-            Commands.run(() -> LEDs.getInstance().requestState(LEDs.States.ENDGAME_ALERT))
-                .withTimeout(0.5),
-            Commands.waitSeconds(0.25),
-            Commands.run(() -> LEDs.getInstance().requestState(LEDs.States.ENDGAME_ALERT))
-                .withTimeout(0.5)));*/
-
-    // interrupt all commands by running a command that requires every subsystem. This is used to
-    // recover to a known state if the robot becomes "stuck" in a command.
-    /*oi.getInterruptAll()
-    .onTrue(
-        Commands.parallel(
-            Commands.runOnce(() -> subsystem.setMotorVoltage(0)),
-            new TeleopSwerve(drivetrain, oi::getTranslateX, oi::getTranslateY, oi::getRotate)));*/
   }
 
   /** Use this method to define your commands for autonomous mode. */
@@ -263,12 +167,6 @@ public class RobotContainer {
 
     // add commands to the auto chooser
     autoChooser.addDefaultOption("Do Nothing", new InstantCommand());
-
-    /************ Start Point ************
-     *
-     * useful for initializing the pose of the robot to a known location
-     *
-     */
 
     Command startPoint =
         Commands.runOnce(
@@ -284,26 +182,6 @@ public class RobotContainer {
             drivetrain);
     autoChooser.addOption("Start Point", startPoint);
 
-    /************ Distance Test ************
-     *
-     * used for empirically determining the wheel radius
-     *
-     */
-    // autoChooser.addOption("Distance Test Slow", createTuningAutoPath("DistanceTestSlow", true));
-    // autoChooser.addOption("Distance Test Med", createTuningAutoPath("DistanceTestMed", true));
-    // autoChooser.addOption("Distance Test Fast", createTuningAutoPath("DistanceTestFast", true));
-
-    /************ Auto Tuning ************
-     *
-     * useful for tuning the autonomous PID controllers
-     *
-     */
-    // autoChooser.addOption("Rotation Test Slow", createTuningAutoPath("RotationTestSlow", false));
-    // autoChooser.addOption("Rotation Test Fast", createTuningAutoPath("RotationTestFast", false));
-
-    // autoChooser.addOption("Oval Test Slow", createTuningAutoPath("OvalTestSlow", false));
-    // autoChooser.addOption("Oval Test Fast", createTuningAutoPath("OvalTestFast", false));
-
     /************ Drive Velocity Tuning ************
      *
      * useful for tuning the drive velocity PID controller
@@ -312,7 +190,6 @@ public class RobotContainer {
     /*autoChooser.addOption(
     "Drive Velocity Tuning",
     Commands.sequence(
-        Commands.runOnce(drivetrain::disableFieldRelative, drivetrain),
         Commands.repeatingSequence(
             Commands.deadline(
                 Commands.waitSeconds(1.0),
@@ -338,60 +215,20 @@ public class RobotContainer {
             Commands.deadline(
                 Commands.waitSeconds(2.0),
                 Commands.run(
-                    () -> drivetrain.drive(-1.0, 0.0, 0.0, false, false), drivetrain)))));*/
-
-    /************ Swerve Rotation Tuning ************
-     *
-     * useful for tuning the swerve module rotation PID controller
-     *
-     */
-    /*autoChooser.addOption(
-    "Swerve Rotation Tuning",
-    Commands.sequence(
-        Commands.runOnce(drivetrain::enableFieldRelative, drivetrain),
-        Commands.repeatingSequence(
-            Commands.deadline(
-                Commands.waitSeconds(0.5),
-                Commands.run(() -> drivetrain.drive(0.1, 0.1, 0.0, true, false), drivetrain)),
-            Commands.deadline(
-                Commands.waitSeconds(0.5),
-                Commands.run(() -> drivetrain.drive(-0.1, 0.1, 0.0, true, false), drivetrain)),
-            Commands.deadline(
-                Commands.waitSeconds(0.5),
-                Commands.run(() -> drivetrain.drive(-0.1, -0.1, 0.0, true, false), drivetrain)),
-            Commands.deadline(
-                Commands.waitSeconds(0.5),
-                Commands.run(
-                    () -> drivetrain.drive(0.1, -0.1, 0.0, true, false), drivetrain)))));*/
-
-    /************ Drive Wheel Radius Characterization ************
-     *
-     * useful for characterizing the drive wheel Radius
-     *
-     */
-    /*autoChooser.addOption( // start by driving slowing in a circle to align wheels
-    "Drive Wheel Radius Characterization",
-    CharacterizationCommands.wheelRadiusCharacterization(drivetrain)
-        .withName("Drive Wheel Radius Characterization"));*/
+                    () -> drivetrain.drive(-1.0, 0.0, 0.0, false, false), drivetrain))));*/
   }
-
-  /*private Command createTuningAutoPath(String autoName, boolean measureDistance) {
-    return Commands.sequence(
-        Commands.runOnce(drivetrain::captureInitialConditions),
-        new PathPlannerAuto(autoName),
-        Commands.runOnce(() -> drivetrain.captureFinalConditions(autoName, measureDistance)));
-  }*/
 
   private void configureDrivetrainCommands() {
     /*
      * Set up the default command for the drivetrain. The joysticks' values map to percentage of the
      * maximum velocities. The velocities may be specified from either the robot's frame of
-     * reference or the field's frame of reference. In the robot's frame of reference, the positive
-     * x direction is forward; the positive y direction, left; position rotation, CCW. In the field
-     * frame of reference, the origin of the field to the lower left corner (i.e., the corner of the
-     * field to the driver's right). Zero degrees is away from the driver and increases in the CCW
-     * direction. This is why the left joystick's y axis specifies the velocity in the x direction
-     * and the left joystick's x axis specifies the velocity in the y direction.
+     * reference or the field's frame of reference.
+     * Robot-centric: +x is forward, +y is left, +theta is CCW
+     * Field-centric: origin is back-right (blue), 0deg is forward, +x is forward, +y is left,
+     * +theta is CCW direction.
+     *      ___________
+     *      |    |    | ^
+     * (0,0).____|____| y, x-> 0->
      */
     drivetrain.setDefaultCommand(
         // Drivetrain will execute this command periodically
@@ -399,58 +236,28 @@ public class RobotContainer {
             () ->
                 drive
                     .withVelocityX(
-                        -oi.getTranslateX() * MaxSpeed) // Drive forward with negative Y (forward)
+                        -oi.getTranslateX()
+                            * (slowModeSupplier.getAsBoolean()
+                                ? MaxSlowSpeed
+                                : MaxSpeed)) // Drive forward with negative Y (forward)
                     .withVelocityY(
-                        -oi.getTranslateY() * MaxSpeed) // Drive left with negative X (left)
+                        -oi.getTranslateY()
+                            * (slowModeSupplier.getAsBoolean()
+                                ? MaxSlowSpeed
+                                : MaxSpeed)) // Drive left with negative X (left)
                     .withRotationalRate(
                         -oi.getRotate()
-                            * MaxAngularRate) // Drive counterclockwise with negative X (left)
+                            * (slowModeSupplier.getAsBoolean()
+                                ? MaxSlowAngularRate
+                                : MaxAngularRate)) // Drive counterclockwise with negative X (left)
             ));
 
-    // lock rotation to the nearest 180° while driving
-    /*oi.getLock180Button()
-    .whileTrue(
-        new TeleopSwerve(
-                drivetrain,
-                oi::getTranslateX,
-                oi::getTranslateY,
-                () ->
-                    (drivetrain.getPose().getRotation().getDegrees() > -90
-                            && drivetrain.getPose().getRotation().getDegrees() < 90)
-                        ? Rotation2d.fromDegrees(0.0)
-                        : Rotation2d.fromDegrees(180.0))
-            .withName("lock 180"));*/
-
-    // field-relative toggle
-    /*oi.getFieldRelativeButton()
-    .toggleOnTrue(
-        Commands.either(
-                Commands.runOnce(drivetrain::disableFieldRelative, drivetrain),
-                Commands.runOnce(drivetrain::enableFieldRelative, drivetrain),
-                drivetrain::getFieldRelative)
-            .withName("toggle field relative"));*/
-
     // slow-mode toggle
-    /*oi.getTranslationSlowModeButton()
-        .onTrue(
-            Commands.runOnce(drivetrain::enableTranslationSlowMode, drivetrain)
-                .withName("enable translation slow mode"));
-    oi.getTranslationSlowModeButton()
-        .onFalse(
-            Commands.runOnce(drivetrain::disableTranslationSlowMode, drivetrain)
-                .withName("disable translation slow mode"));
-    oi.getRotationSlowModeButton()
-        .onTrue(
-            Commands.runOnce(drivetrain::enableRotationSlowMode, drivetrain)
-                .withName("enable rotation slow mode"));
-    oi.getRotationSlowModeButton()
-        .onFalse(
-            Commands.runOnce(drivetrain::disableRotationSlowMode, drivetrain)
-                .withName("disable rotation slow mode"));*/
+    oi.getSlowModeSwitch().onTrue(Commands.runOnce(() -> isSlowMode = true));
+    oi.getSlowModeSwitch().onFalse(Commands.runOnce(() -> isSlowMode = false));
 
     // reset gyro to 0 degrees
-    oi.getResetGyroButton()
-        .onTrue(new InstantCommand(() -> drivetrain.resetRotation(new Rotation2d())));
+    oi.getResetGyroButton().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
 
     // reset pose based on vision
     /*oi.getResetPoseToVisionButton()
@@ -464,15 +271,14 @@ public class RobotContainer {
             .withName("reset pose to vision"));*/
 
     // x-stance
-    /*oi.getXStanceButton()
-    .whileTrue(Commands.run(drivetrain::holdXstance, drivetrain).withName("hold x-stance"));*/
+    oi.getXStanceButton().whileTrue(drivetrain.applyRequest(() -> brake));
 
-    oi.getSysIdDynamicForward().whileTrue(SysIdRoutineChooser.getInstance().getDynamicForward());
-    oi.getSysIdDynamicReverse().whileTrue(SysIdRoutineChooser.getInstance().getDynamicReverse());
-    oi.getSysIdQuasistaticForward()
-        .whileTrue(SysIdRoutineChooser.getInstance().getQuasistaticForward());
-    oi.getSysIdQuasistaticReverse()
-        .whileTrue(SysIdRoutineChooser.getInstance().getQuasistaticReverse());
+    oi.getSysIdDynamicForward().whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
+    oi.getSysIdDynamicReverse().whileTrue(drivetrain.sysIdDynamic(Direction.kReverse));
+    oi.getSysIdQuasistaticForward().whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
+    oi.getSysIdQuasistaticReverse().whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
+
+    // drivetrain.registerTelemetry(telemetryLogger::telemeterize);
   }
 
   private void configureSubsystemCommands() {
@@ -525,7 +331,6 @@ public class RobotContainer {
     Optional<Alliance> alliance = DriverStation.getAlliance();
     if (alliance.isPresent() && alliance.get() != lastAlliance) {
       this.lastAlliance = alliance.get();
-      // this.drivetrain.updateAlliance(this.lastAlliance);
       Field2d.getInstance().updateAlliance(this.lastAlliance);
     }
   }
@@ -536,6 +341,7 @@ public class RobotContainer {
 
   public void disablePeriodic() {
     joint.resetToAbsoluteEncoder();
+    this.checkAllianceColor();
   }
 
   public void autonomousInit() {
@@ -547,5 +353,16 @@ public class RobotContainer {
     // during a match, this would be the first opportunity to check the alliance color based on FMS
     // data.
     this.checkAllianceColor();
+  }
+
+  public void updateVisionPose() {
+    LimelightHelpers.PoseEstimate limelightMeasurement = visionApriltagSubsystem.getPoseEstimate();
+    if (limelightMeasurement.tagCount >= 2
+        || (limelightMeasurement.tagCount == 1 && limelightMeasurement.avgTagDist < 1.25)) {
+      drivetrain.addVisionMeasurement(
+          limelightMeasurement.pose,
+          limelightMeasurement.timestampSeconds,
+          VecBuilder.fill(.6, .6, 9999999));
+    }
   }
 }

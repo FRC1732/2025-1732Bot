@@ -5,63 +5,76 @@
 package frc.robot.operator_interface;
 
 import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
-import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
-/**
- * Class for controlling the robot with two joysticks, 1 Xbox controller, and 1 operator button
- * panel.
- */
+/** Class for controlling the robot with two joysticks, and 2 operator button panels. */
 public class FullOperatorConsoleOI extends DualJoysticksOI {
-  private final CommandXboxController operatorController;
+  private final CommandJoystick operatorPanelOne;
+  private final CommandJoystick operatorPanelTwo;
 
-  private final CommandJoystick operatorPanel;
-  private final Trigger[] operatorPanelButtons;
+  private final Trigger[] operatorPanelButtonsOne;
+  private final Trigger[] operatorPanelButtonsTwo;
 
   public FullOperatorConsoleOI(
-      int translatePort, int rotatePort, int operatorControllerPort, int operatorPanelPort) {
+      int translatePort, int rotatePort, int operatorPanelPortOne, int operatorPanelPortTwo) {
     super(translatePort, rotatePort);
-    operatorController = new CommandXboxController(operatorControllerPort);
-    operatorPanel = new CommandJoystick(operatorPanelPort);
+    operatorPanelOne = new CommandJoystick(operatorPanelPortOne);
+    operatorPanelTwo = new CommandJoystick(operatorPanelPortTwo);
 
-    // buttons use 1-based indexing such that the index matches the button number; leave index 0 set
-    // to null
-    this.operatorPanelButtons = new Trigger[13];
-    for (int i = 1; i < operatorPanelButtons.length; i++) {
-      operatorPanelButtons[i] = operatorPanel.button(i);
+    this.operatorPanelButtonsOne = new Trigger[13];
+    for (int i = 1; i < operatorPanelButtonsOne.length; i++) {
+      operatorPanelButtonsOne[i] = operatorPanelOne.button(i);
+    }
+
+    this.operatorPanelButtonsTwo = new Trigger[13];
+    for (int i = 1; i < operatorPanelButtonsTwo.length; i++) {
+      operatorPanelButtonsTwo[i] = operatorPanelTwo.button(i);
     }
   }
 
-  // Operator Controller
-  @Override
-  public Trigger getInterruptAll() {
-    return operatorController.start();
-  }
-
-  @Override
-  public Trigger getSysIdDynamicForward() {
-    return operatorController.back().and(operatorController.y());
-  }
-
-  @Override
-  public Trigger getSysIdDynamicReverse() {
-    return operatorController.back().and(operatorController.x());
-  }
-
-  @Override
-  public Trigger getSysIdQuasistaticForward() {
-    return operatorController.start().and(operatorController.y());
-  }
-
-  @Override
-  public Trigger getSysIdQuasistaticReverse() {
-    return operatorController.start().and(operatorController.x());
-  }
-
   // Operator Panel
-
-  @Override
-  public Trigger getVisionIsEnabledSwitch() {
-    return operatorPanelButtons[10];
+  /*
+  public Trigger operatorSpeakerButton() {
+    return operatorPanelButtonsTwo[10];
   }
+
+  public Trigger operatorAmpButton() {
+    return operatorPanelButtonsTwo[3];
+  }
+
+  public Trigger operatorFeedButton() {
+    return operatorPanelButtonsTwo[1];
+  }
+
+  public Trigger operatorEjectButton() {
+    return operatorPanelButtonsTwo[2];
+  }
+
+  public Trigger slowModeSwitch() {
+    return operatorPanelButtonsOne[3];
+  }
+
+  public Trigger armClimberSwitch() {
+    return operatorPanelButtonsOne[9];
+  }
+
+  public Trigger autoClimbButton() {
+    return operatorPanelButtonsOne[4];
+  }
+
+  public Trigger operatorObjectDetectionAssistButton() {
+    return operatorPanelButtonsTwo[12];
+  }
+
+  public Trigger sourceLoadButton() {
+    return operatorPanelButtonsOne[1];
+  }
+
+  public Trigger alignToClimbButton() {
+    return operatorPanelButtonsTwo[4];
+  }
+
+  public Trigger popShotToggleButton() {
+    return operatorPanelButtonsTwo[11];
+  }*/
 }

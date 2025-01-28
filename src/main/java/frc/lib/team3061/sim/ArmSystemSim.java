@@ -46,9 +46,6 @@ public class ArmSystemSim {
       double maxAngle,
       double startingAngle,
       String subsystemName) {
-    if (Constants.getMode() != Constants.Mode.SIM) {
-      return;
-    }
 
     this.motor = motor;
     this.encoder = encoder;
@@ -90,10 +87,6 @@ public class ArmSystemSim {
   }
 
   public void updateSim() {
-    if (Constants.getMode() != Constants.Mode.SIM) {
-      return;
-    }
-
     // update the sim states supply voltage based on the simulated battery
     this.motorSimState.setSupplyVoltage(RobotController.getBatteryVoltage());
     this.encoderSimState.setSupplyVoltage(RobotController.getBatteryVoltage());

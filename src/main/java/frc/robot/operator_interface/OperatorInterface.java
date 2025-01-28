@@ -43,11 +43,7 @@ public interface OperatorInterface {
     return new Trigger(() -> false);
   }
 
-  public default Trigger getTranslationSlowModeButton() {
-    return new Trigger(() -> false);
-  }
-
-  public default Trigger getRotationSlowModeButton() {
+  public default Trigger getSlowModeSwitch() {
     return new Trigger(() -> false);
   }
 
