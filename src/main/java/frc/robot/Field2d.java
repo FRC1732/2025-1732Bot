@@ -49,6 +49,7 @@ public class Field2d {
     }
     return instance;
   }
+
   /**
    * Construct a Field2d from an array of regions. These regions should not be overlapping (aside
    * from edges) and any regions with overlapping edges should be neighbors (see
