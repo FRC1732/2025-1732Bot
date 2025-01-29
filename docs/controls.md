@@ -6,8 +6,8 @@ This page describes the control scheme for our FRC robotics team’s robot, incl
 
 ### Driver Controls
 - **Two Logitech Attack 3 joysticks**
-  - **Left joystick** (Joystick 1) handles robot rotation.
-  - **Right joystick** (Joystick 2) handles robot translation.
+  - **Left joystick** (Joystick 1) handles robot translation.
+  - **Right joystick** (Joystick 2) handles robot rotation.
 
 ![My Image](images/attack3.png)
 
@@ -20,8 +20,8 @@ This page describes the control scheme for our FRC robotics team’s robot, incl
 ## Control Schemes
 
 ### Full Manual Control
-- **Left Joystick** rotates the robot.
-- **Right Joystick** translates (moves) the robot.
+- **Left Joystick** translates (moves) the robot.
+- **Right Joystick** rotates the robot.
 
 ### Hybrid Control
 In certain circumstances, the robot automatically handles orientation or alignment when a button is pressed:
@@ -41,8 +41,8 @@ In certain circumstances, the robot automatically handles orientation or alignme
 ## Detailed Control Layout
 
 ### Joystick 1 (Left Joystick)
-- **Axis X**: Rotate Robot
-- **Axis Y**: (Not specifically used in rotation mode)
+- **Axis X**: Translate Robot (horizontal)
+- **Axis Y**: Translate Robot (vertical)
 - **Button 1 (Trigger)**: Hold to aim at branch for coral scoring (orients and locks sideways translation to the nearest branch)
 - **Button 2**: Hold to eject all
 - **Button 3**: Hold to aim at net
@@ -50,8 +50,8 @@ In certain circumstances, the robot automatically handles orientation or alignme
 
 
 ### Joystick 2 (Right Joystick)
-- **Axis X**: Translate Robot (horizontal)
-- **Axis Y**: Translate Robot (vertical)
+- **Axis X**: Rotate Robot
+- **Axis Y**: (Not specifically used in rotation mode)
 - **Button 1 (Trigger)**: Hold to intake coral (orients to nearest HP station)
 - **Button 2**: Hold to intake algae
 - **Button 3**: Hold to clear algae
