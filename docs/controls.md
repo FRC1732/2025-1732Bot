@@ -26,15 +26,15 @@ This page describes the control scheme for our FRC robotics team’s robot, incl
 ### Hybrid Control
 In certain circumstances, the robot automatically handles orientation or alignment when a button is pressed:
 
-1. **Intake Coral (Right Joystick Trigger)**
+1. **Intake Coral (Left Joystick Trigger)**
    - Holding this trigger will orient the robot to the nearest HP station for coral intake.
-2. **Aim at Branch (Left Joystick Trigger)**
+2. **Aim at Branch (Right Joystick Trigger)**
    - By default, holding this trigger automatically orients the robot to the nearest branch and locks sideways translation to align with that branch.
 3. **Aim at Net (Left Joystick Button)**
    - Holding this button automatically orients the robot to the net.
 
 ### Full Autonomous Operation
-- Engaged when the **full auto placement switch** on the operator panel is **enabled** **and** the **left joystick trigger (aim at branch)** is held.
+- Engaged when the **full auto placement switch** on the operator panel is **enabled** **and** the **right joystick trigger (aim at branch)** is held.
 - In this scenario, the robot automatically drives to the branch scoring location specified by the operator and places the coral.
 
 ---
@@ -43,19 +43,17 @@ In certain circumstances, the robot automatically handles orientation or alignme
 ### Joystick 1 (Left Joystick)
 - **Axis X**: Translate Robot (horizontal)
 - **Axis Y**: Translate Robot (vertical)
-- **Button 1 (Trigger)**: Hold to aim at branch for coral scoring (orients and locks sideways translation to the nearest branch)
-- **Button 2**: Hold to eject all
+- **Button 1 (Trigger)**: Hold to intake coral (orients to nearest HP station)
+- **Button 2**: Hold to clear/remove algae from reef
 - **Button 3**: Hold to aim at net
 - **Button 8**: Press to reset gyro
-
 
 ### Joystick 2 (Right Joystick)
 - **Axis X**: Rotate Robot
 - **Axis Y**: (Not specifically used in rotation mode)
-- **Button 1 (Trigger)**: Hold to intake coral (orients to nearest HP station)
-- **Button 2**: Hold to intake algae
-- **Button 3**: Hold to clear algae
-
+- **Button 1 (Trigger)**: Hold to aim at branch for coral scoring (orients and locks sideways translation to the nearest branch)
+- **Button 2**: Hold to eject all
+- **Button 3**: Hold to intake algae
 
 ### Operator Panel
 - **Button 1**: Hold to eject all
