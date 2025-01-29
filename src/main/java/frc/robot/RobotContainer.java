@@ -13,6 +13,8 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.pathplanner.lib.events.EventTrigger;
 import com.pathplanner.lib.path.PathPlannerPath;
 import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -69,14 +71,17 @@ public class RobotContainer {
 
   private final Telemetry telemetryLogger = new Telemetry(MaxSpeed);
 
-  private final SwerveRequest.FieldCentric drive =
+  private final SwerveRequest.FieldCentric driveRequest =
       new SwerveRequest.FieldCentric()
           .withDeadband(MaxSpeed * 0.01)
           .withRotationalDeadband(MaxAngularRate * 0.01) // Add a 10% deadband to raw input
           .withDriveRequestType(
               DriveRequestType.OpenLoopVoltage); // Use open-loop control for drive motors
-  private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
-  private final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
+  private final SwerveRequest.SwerveDriveBrake brakeRequest = new SwerveRequest.SwerveDriveBrake();
+  private final SwerveRequest.ApplyRobotSpeeds driveWithSpeedsRequest =
+      new SwerveRequest.ApplyRobotSpeeds();
+  private final SwerveRequest.FieldCentricFacingAngle driveFacingAngleRequest =
+      new SwerveRequest.FieldCentricFacingAngle().withDeadband(MaxSpeed * 0.01);
 
   // use AdvantageKit's LoggedDashboardChooser instead of SendableChooser to ensure accurate logging
   private final LoggedDashboardChooser<Command> autoChooser =
@@ -187,35 +192,65 @@ public class RobotContainer {
      * useful for tuning the drive velocity PID controller
      *
      */
-    /*autoChooser.addOption(
-    "Drive Velocity Tuning",
-    Commands.sequence(
-        Commands.repeatingSequence(
+    autoChooser.addOption(
+        "Drive Velocity Tuning",
+        Commands.sequence(
             Commands.deadline(
                 Commands.waitSeconds(1.0),
-                Commands.run(() -> drivetrain.drive(2.0, 0.0, 0.0, false, false), drivetrain)),
+                drivetrain.run(
+                    () ->
+                        drivetrain.setControl(
+                            driveWithSpeedsRequest.withSpeeds(new ChassisSpeeds(2.0, 0, 0))))),
             Commands.deadline(
                 Commands.waitSeconds(1.0),
-                Commands.run(() -> drivetrain.drive(-0.5, 0.0, 0.0, false, false), drivetrain)),
+                drivetrain.run(
+                    () ->
+                        drivetrain.setControl(
+                            driveWithSpeedsRequest.withSpeeds(new ChassisSpeeds(-0.5, 0, 0))))),
             Commands.deadline(
                 Commands.waitSeconds(1.0),
-                Commands.run(() -> drivetrain.drive(1.0, 0.0, 0.0, false, false), drivetrain)),
+                drivetrain.run(
+                    () ->
+                        drivetrain.setControl(
+                            driveWithSpeedsRequest.withSpeeds(new ChassisSpeeds(1.0, 0, 0))))),
             Commands.deadline(
                 Commands.waitSeconds(0.5),
-                Commands.run(() -> drivetrain.drive(3.0, 0.0, 0.0, false, false), drivetrain)),
+                drivetrain.run(
+                    () ->
+                        drivetrain.setControl(
+                            driveWithSpeedsRequest.withSpeeds(new ChassisSpeeds(3.0, 0, 0))))),
             Commands.deadline(
-                Commands.waitSeconds(2.0),
-                Commands.run(() -> drivetrain.drive(1.0, 0.0, 0.0, false, false), drivetrain)),
+                Commands.waitSeconds(1.0),
+                drivetrain.run(
+                    () ->
+                        drivetrain.setControl(
+                            driveWithSpeedsRequest.withSpeeds(new ChassisSpeeds(1.0, 0, 0))))),
             Commands.deadline(
-                Commands.waitSeconds(2.0),
-                Commands.run(() -> drivetrain.drive(-1.0, 0.0, 0.0, false, false), drivetrain)),
+                Commands.waitSeconds(1.0),
+                drivetrain.run(
+                    () ->
+                        drivetrain.setControl(
+                            driveWithSpeedsRequest.withSpeeds(new ChassisSpeeds(-1.0, 0, 0))))),
             Commands.deadline(
-                Commands.waitSeconds(0.5),
-                Commands.run(() -> drivetrain.drive(-3.0, 0.0, 0.0, false, false), drivetrain)),
+                Commands.waitSeconds(1.0),
+                drivetrain.run(
+                    () ->
+                        drivetrain.setControl(
+                            driveWithSpeedsRequest.withSpeeds(new ChassisSpeeds(-3.0, 0, 0))))),
             Commands.deadline(
-                Commands.waitSeconds(2.0),
-                Commands.run(
-                    () -> drivetrain.drive(-1.0, 0.0, 0.0, false, false), drivetrain))));*/
+                Commands.waitSeconds(1.0),
+                drivetrain.run(
+                    () ->
+                        drivetrain.setControl(
+                            driveWithSpeedsRequest.withSpeeds(new ChassisSpeeds(2.0, 0, 0)))))));
+  }
+
+  private void driveFacingAngle(double xVelocity, double yVelocity, Rotation2d targetDirection) {
+    drivetrain.setControl(
+        driveFacingAngleRequest
+            .withVelocityX(xVelocity)
+            .withVelocityY(yVelocity)
+            .withTargetDirection(targetDirection));
   }
 
   private void configureDrivetrainCommands() {
@@ -234,7 +269,7 @@ public class RobotContainer {
         // Drivetrain will execute this command periodically
         drivetrain.applyRequest(
             () ->
-                drive
+                driveRequest
                     .withVelocityX(
                         -oi.getTranslateX()
                             * (slowModeSupplier.getAsBoolean()
@@ -251,6 +286,8 @@ public class RobotContainer {
                                 ? MaxSlowAngularRate
                                 : MaxAngularRate)) // Drive counterclockwise with negative X (left)
             ));
+
+    driveFacingAngleRequest.HeadingController.setPID(7, 0, 0); // @todo use sysid to tune this
 
     // slow-mode toggle
     oi.getSlowModeSwitch().onTrue(Commands.runOnce(() -> isSlowMode = true));
@@ -271,7 +308,7 @@ public class RobotContainer {
             .withName("reset pose to vision"));*/
 
     // x-stance
-    oi.getXStanceButton().whileTrue(drivetrain.applyRequest(() -> brake));
+    oi.getXStanceButton().whileTrue(drivetrain.applyRequest(() -> brakeRequest));
 
     oi.getSysIdDynamicForward().whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
     oi.getSysIdDynamicReverse().whileTrue(drivetrain.sysIdDynamic(Direction.kReverse));
@@ -288,9 +325,25 @@ public class RobotContainer {
     oi.getClawTriggerBackwards().whileTrue(new ClawBackwards(claw));
     oi.getIntakeCoral()
         .whileTrue(
-            new InstantCommand(() -> joint.setJointPose(JointPosition.CORAL_STATION))
+            joint
+                .runOnce(() -> joint.setJointPose(JointPosition.CORAL_STATION))
                 .andThen(new IntakeCoral(claw))
-                .andThen(new InstantCommand(() -> joint.setJointPose(JointPosition.LEVEL_2))));
+                .andThen(joint.runOnce(() -> joint.setJointPose(JointPosition.LEVEL_2))));
+
+    // @todo uncomment when we tune the rotation
+    // oi.getIntakeCoral()
+    //     .whileTrue(
+    //         Commands.deadline(
+    //             Commands.sequence(
+    //                 joint.runOnce(() -> joint.setJointPose(JointPosition.CORAL_STATION)),
+    //                 new IntakeCoral(claw),
+    //                 joint.runOnce(() -> joint.setJointPose(JointPosition.LEVEL_2))),
+    //             drivetrain.run(
+    //                 () ->
+    //                     driveFacingAngle(
+    //                         -oi.getTranslateX(),
+    //                         -oi.getTranslateY(),
+    //                         Rotation2d.fromDegrees(55)))));
 
     oi.scoreL1().whileTrue(new InstantCommand(() -> joint.setJointPose(JointPosition.LEVEL_1)));
     oi.scoreL2().whileTrue(new InstantCommand(() -> joint.setJointPose(JointPosition.LEVEL_2)));

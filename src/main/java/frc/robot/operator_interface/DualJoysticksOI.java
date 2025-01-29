@@ -127,4 +127,25 @@ public class DualJoysticksOI implements OperatorInterface {
   public Trigger scoreL4() {
     return rotateJoystickButtons[2];
   }
+
+  // @todo disable these after using sysid
+  @Override
+  public Trigger getSysIdDynamicForward() {
+    return rotateJoystickButtons[6];
+  }
+
+  @Override
+  public Trigger getSysIdDynamicReverse() {
+    return rotateJoystickButtons[7];
+  }
+
+  @Override
+  public Trigger getSysIdQuasistaticForward() {
+    return rotateJoystickButtons[11];
+  }
+
+  @Override
+  public Trigger getSysIdQuasistaticReverse() {
+    return rotateJoystickButtons[10];
+  }
 }
