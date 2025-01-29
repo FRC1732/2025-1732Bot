@@ -113,4 +113,108 @@ public interface OperatorInterface {
   public default Trigger getInterruptAll() {
     return new Trigger(() -> false);
   }
+
+  public default Trigger operatorEjectAll() {
+    return new Trigger(() -> false);
+  } 
+  
+  public default Trigger operatorResetGyro() {
+    return new Trigger(() -> false);
+  } 
+  
+  public default Trigger operatorExtendClimber() {
+    return new Trigger(() -> false);
+  } 
+  
+  public default Trigger operatorRetractClimber() {
+    return new Trigger(() -> false);
+  } 
+  
+  public default Trigger operatorSlowMode() {
+    return new Trigger(() -> false);
+  } 
+  
+  public default Trigger operatorL1() {
+    return new Trigger(() -> false);
+  } 
+  
+  public default Trigger operatorL2() {
+    return new Trigger(() -> false);
+  } 
+  
+  public default Trigger operatorL3() {
+    return new Trigger(() -> false);
+  } 
+  
+  public default Trigger operatorL4() {
+    return new Trigger(() -> false);
+  } 
+  
+  public default Trigger operatorF1() {
+    return new Trigger(() -> false);
+  } 
+  
+  public default Trigger operatorF2() {
+    return new Trigger(() -> false);
+  } 
+  
+  public default Trigger operatorFR1() {
+    return new Trigger(() -> false);
+  } 
+  
+  public default Trigger operatorFR2() {
+    return new Trigger(() -> false);
+  } 
+  
+  public default Trigger operatorFL1() {
+    return new Trigger(() -> false);
+  } 
+  
+  public default Trigger operatorFL2() {
+    return new Trigger(() -> false);
+  } 
+
+  public default Trigger operatorBR1() {
+    return new Trigger(() -> false);
+  } 
+  
+  public default Trigger operatorBR2() {
+    return new Trigger(() -> false);
+  } 
+
+  public default Trigger operatorBL1() {
+    return new Trigger(() -> false);
+  } 
+
+  public default Trigger operatorBL2() {
+    return new Trigger(() -> false);
+  } 
+
+  public default Trigger operatorB1() {
+    return new Trigger(() -> false);
+  } 
+
+  public default Trigger operatorB2() {
+    return new Trigger(() -> false);
+  } 
+
+  public default Trigger operatorSetPreferedCoralSide() {
+    return new Trigger(() -> false);
+  } 
+
+  public default Trigger operatorSwitchAlgaeClearingHeight() {
+    return new Trigger(() -> false);
+  } 
+
+  public default Trigger operatorHoldToClearAlgae() {
+    return new Trigger(() -> false);
+  }
+
+  public default Trigger operatorTargetLowOrHigh() {
+    return new Trigger(() -> false);
+  } 
+
+  public default Trigger operatorToggleFullAutoPlacement() {
+    return new Trigger(() -> false);
+  } 
 }
