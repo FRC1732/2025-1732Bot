@@ -35,129 +35,130 @@ public class FullOperatorConsoleOI extends DualJoysticksOI {
   @Override
   public Trigger operatorEjectAll() {
     return operatorPanelButtonsOne[0];
-  } 
-  
+  }
+
   @Override
-  public Trigger operatorResetGyro() {
-    return  operatorPanelButtonsOne[1];
-  } 
-  
+  public Trigger operatorResetGyroButton() {
+    return operatorPanelButtonsOne[1];
+  }
+
   @Override
   public Trigger operatorExtendClimber() {
-    return  operatorPanelButtonsOne[2];
-  } 
-  
+    return operatorPanelButtonsOne[2];
+  }
+
   @Override
   public Trigger operatorRetractClimber() {
     return operatorPanelButtonsOne[3];
-  } 
-  
+  }
+
   @Override
   public Trigger operatorSlowMode() {
-    return  operatorPanelButtonsOne[4];
-  } 
-  
+    return operatorPanelButtonsOne[4];
+  }
+
   @Override
   public Trigger operatorL1() {
-    return  operatorPanelButtonsOne[5];
-  } 
-  
+    return operatorPanelButtonsOne[5];
+  }
+
   @Override
   public Trigger operatorL2() {
-    return  operatorPanelButtonsOne[6];
-  } 
-  
+    return operatorPanelButtonsOne[6];
+  }
+
   @Override
   public Trigger operatorL3() {
-    return  operatorPanelButtonsOne[7];
-  } 
-  
+    return operatorPanelButtonsOne[7];
+  }
+
   @Override
   public Trigger operatorL4() {
-    return  operatorPanelButtonsOne[8];
-  } 
-  
+    return operatorPanelButtonsOne[8];
+  }
+
   @Override
   public Trigger operatorF1() {
-    return  operatorPanelButtonsOne[9];
-  } 
-  
+    return operatorPanelButtonsOne[9];
+  }
+
   @Override
   public Trigger operatorF2() {
-    return  operatorPanelButtonsOne[10];
-  } 
-  
+    return operatorPanelButtonsOne[10];
+  }
+
   @Override
   public Trigger operatorFR1() {
-    return  operatorPanelButtonsOne[11];
-  } 
-  
+    return operatorPanelButtonsOne[11];
+  }
+
   @Override
   public Trigger operatorFR2() {
     return operatorPanelButtonsOne[12];
-  } 
-  
+  }
+
   @Override
   public Trigger operatorFL1() {
     return operatorPanelButtonsTwo[0];
-  } 
-  
+  }
+
   @Override
   public Trigger operatorFL2() {
     return operatorPanelButtonsTwo[1];
-  } 
+  }
 
   @Override
   public Trigger operatorBR1() {
     return operatorPanelButtonsTwo[2];
-  } 
-  
+  }
+
   @Override
   public Trigger operatorBR2() {
     return operatorPanelButtonsTwo[3];
-  } 
+  }
 
   @Override
   public Trigger operatorBL1() {
     return operatorPanelButtonsTwo[4];
-  } 
+  }
 
   @Override
   public Trigger operatorBL2() {
     return operatorPanelButtonsTwo[5];
-  } 
+  }
 
   @Override
   public Trigger operatorB1() {
     return operatorPanelButtonsTwo[6];
-  } 
+  }
 
   @Override
   public Trigger operatorB2() {
     return operatorPanelButtonsTwo[7];
-  } 
+  }
 
   @Override
-  public Trigger operatorSetPreferedCoralSide() {
+  public Trigger operatorCoralSideSwitch() {
     return operatorPanelButtonsTwo[8];
-  } 
-
-  public Trigger operatorSwitchAlgaeClearingHeight() {
-    return operatorPanelButtonsTwo[9];
-  } 
+  }
 
   @Override
-  public Trigger operatorHoldToClearAlgae() {
+  public Trigger operatorAlgaeClearingHeightSwitch() {
+    return operatorPanelButtonsTwo[9];
+  }
+
+  @Override
+  public Trigger operatorClearAlgaeButton() {
     return operatorPanelButtonsTwo[10];
   }
 
   @Override
-  public Trigger operatorTargetLowOrHigh() {
+  public Trigger operatorAlgaeTargetSwitch() {
     return operatorPanelButtonsTwo[11];
-  } 
+  }
 
   @Override
-  public Trigger operatorToggleFullAutoPlacement() {
+  public Trigger operatorFullAutoPlacementSwitch() {
     return operatorPanelButtonsTwo[12];
-  } 
+  }
 }

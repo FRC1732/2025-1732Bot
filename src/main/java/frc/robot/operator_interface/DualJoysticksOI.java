@@ -29,6 +29,8 @@ public class DualJoysticksOI implements OperatorInterface {
     }
   }
 
+  // Robot Movement
+
   @Override
   public double getTranslateX() {
     double input = -translateJoystick.getY();
@@ -50,85 +52,46 @@ public class DualJoysticksOI implements OperatorInterface {
     return Math.copySign(Math.pow(input, 2), input);
   }
 
-  @Override
-  public Trigger getFieldRelativeButton() {
-    return translateJoystickButtons[3];
-  }
+  // Translation Joystick Buttons
 
   @Override
-  public Trigger getResetGyroButton() {
-    return rotateJoystickButtons[8];
-  }
-
-  @Override
-  public Trigger getLock180Button() {
-    return new Trigger(() -> false);
-  }
-
-  @Override
-  public Trigger getXStanceButton() {
-    return rotateJoystickButtons[4];
-  }
-
-  @Override
-  public Trigger getVisionIsEnabledSwitch() {
-    // vision is always enabled with dual joysticks as there is no switch to disable
-    return new Trigger(() -> true);
-  }
-
-  @Override
-  public Trigger getResetPoseToVisionButton() {
-    return translateJoystickButtons[10];
-  }
-
-  /*@Override
-    public Trigger getArmTriggerForward() {
-      return rotateJoystickButtons[3];
-    }
-  */
-
-  /*@Override
-    public Trigger getArmTriggerBackwards() {
-      return rotateJoystickButtons[2];
-    }
-  */
-
-  @Override
-  public Trigger getClawTriggerForwards() {
-    return translateJoystickButtons[4];
-  }
-
-  @Override
-  public Trigger getClawTriggerBackwards() {
-    return rotateJoystickButtons[1];
-  }
-
-  @Override
-  public Trigger getIntakeCoral() {
+  public Trigger intakeCoralButton() {
     return translateJoystickButtons[1];
   }
 
   @Override
-  public Trigger scoreL1() {
-    return rotateJoystickButtons[4];
+  public Trigger clearAlgaeButton() {
+    return translateJoystickButtons[2];
   }
 
   @Override
-  public Trigger scoreL2() {
-    return rotateJoystickButtons[3];
+  public Trigger aimAtNetButton() {
+    return translateJoystickButtons[3];
+  }
+
+  // Rotate Joystick Buttons
+
+  @Override
+  public Trigger scoreCoralButton() {
+    return rotateJoystickButtons[1];
   }
 
   @Override
-  public Trigger scoreL3() {
-    return rotateJoystickButtons[5];
-  }
-
-  @Override
-  public Trigger scoreL4() {
+  public Trigger ejectAllButton() {
     return rotateJoystickButtons[2];
   }
 
-  // @todo disable these after using sysid
+  @Override
+  public Trigger intakeAlgaeButton() {
+    return rotateJoystickButtons[2];
+  }
+
+  @Override
+  public Trigger resetGyroButton() {
+    return rotateJoystickButtons[8];
+  }
+
+  // SysId Buttons @todo disable these after using sysid
   @Override
   public Trigger getSysIdDynamicForward() {
     return rotateJoystickButtons[6];

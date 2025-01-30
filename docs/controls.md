@@ -46,7 +46,6 @@ In certain circumstances, the robot automatically handles orientation or alignme
 - **Button 1 (Trigger)**: Hold to intake coral (orients to nearest HP station)
 - **Button 2**: Hold to clear/remove algae from reef
 - **Button 3**: Hold to aim at net
-- **Button 8**: Press to reset gyro
 
 ### Joystick 2 (Right Joystick)
 - **Axis X**: Rotate Robot
@@ -54,6 +53,7 @@ In certain circumstances, the robot automatically handles orientation or alignme
 - **Button 1 (Trigger)**: Hold to aim at branch for coral scoring (orients and locks sideways translation to the nearest branch)
 - **Button 2**: Hold to eject all
 - **Button 3**: Hold to intake algae
+- **Button 8**: Press to reset gyro
 
 ### Operator Panel
 - **Button 1**: Hold to eject all
@@ -81,7 +81,8 @@ In certain circumstances, the robot automatically handles orientation or alignme
 - **Button 22**: Switch to set algae clearing height to 2 or 3
 - **Button 23**: Hold to clear algae
 - **Button 24**: Switch to set algae target to low or high
-- **Button 25**: Switch to Enable/disable full auto placement
+- **Button 25**: Switch to enable/disable full auto placement
+- **Button 25**: Switch to enable/disable vision
 
 ---
 ## Scoring Targets Explanation

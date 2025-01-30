@@ -31,29 +31,13 @@ public class SingleHandheldOI implements OperatorInterface {
   }
 
   @Override
-  public Trigger getFieldRelativeButton() {
-    return controller.b();
-  }
-
-  @Override
-  public Trigger getResetGyroButton() {
+  public Trigger resetGyroButton() {
     return controller.start();
   }
 
   @Override
-  public Trigger getXStanceButton() {
+  public Trigger xStanceButton() {
     return controller.y();
-  }
-
-  @Override
-  public Trigger getVisionIsEnabledSwitch() {
-    // vision is always enabled with Xbox as there is no switch to disable
-    return new Trigger(() -> true);
-  }
-
-  @Override
-  public Trigger getLock180Button() {
-    return controller.a();
   }
 
   @Override

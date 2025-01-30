@@ -290,11 +290,11 @@ public class RobotContainer {
     driveFacingAngleRequest.HeadingController.setPID(7, 0, 0); // @todo use sysid to tune this
 
     // slow-mode toggle
-    oi.getSlowModeSwitch().onTrue(Commands.runOnce(() -> isSlowMode = true));
-    oi.getSlowModeSwitch().onFalse(Commands.runOnce(() -> isSlowMode = false));
+    oi.slowModeSwitch().onTrue(Commands.runOnce(() -> isSlowMode = true));
+    oi.slowModeSwitch().onFalse(Commands.runOnce(() -> isSlowMode = false));
 
     // reset gyro to 0 degrees
-    oi.getResetGyroButton().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
+    oi.resetGyroButton().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
 
     // reset pose based on vision
     /*oi.getResetPoseToVisionButton()
@@ -308,7 +308,7 @@ public class RobotContainer {
             .withName("reset pose to vision"));*/
 
     // x-stance
-    oi.getXStanceButton().whileTrue(drivetrain.applyRequest(() -> brakeRequest));
+    oi.xStanceButton().whileTrue(drivetrain.applyRequest(() -> brakeRequest));
 
     oi.getSysIdDynamicForward().whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
     oi.getSysIdDynamicReverse().whileTrue(drivetrain.sysIdDynamic(Direction.kReverse));
@@ -319,11 +319,8 @@ public class RobotContainer {
   }
 
   private void configureSubsystemCommands() {
-    // FIXME: add commands for the subsystem
-    // oi.getArmTriggerForward().whileTrue(new JointForward(joint));
-    // oi.getArmTriggerBackwards().whileTrue(new JointBackwards(joint));
-    oi.getClawTriggerBackwards().whileTrue(new ClawBackwards(claw));
-    oi.getIntakeCoral()
+    oi.scoreCoralButton().whileTrue(new ClawBackwards(claw));
+    oi.intakeCoralButton()
         .whileTrue(
             joint
                 .runOnce(() -> joint.setJointPose(JointPosition.CORAL_STATION))
@@ -344,11 +341,6 @@ public class RobotContainer {
     //                         -oi.getTranslateX(),
     //                         -oi.getTranslateY(),
     //                         Rotation2d.fromDegrees(55)))));
-
-    oi.scoreL1().whileTrue(new InstantCommand(() -> joint.setJointPose(JointPosition.LEVEL_1)));
-    oi.scoreL2().whileTrue(new InstantCommand(() -> joint.setJointPose(JointPosition.LEVEL_2)));
-    oi.scoreL3().whileTrue(new InstantCommand(() -> joint.setJointPose(JointPosition.LEVEL_3)));
-    oi.scoreL4().whileTrue(new InstantCommand(() -> joint.setJointPose(JointPosition.LEVEL_4)));
 
     // oi.getIntakeCoral().whileTrue(new IntakeCoral(claw));
   }
