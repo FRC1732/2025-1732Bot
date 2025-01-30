@@ -80,6 +80,7 @@ public class RobotContainer {
   private final SwerveRequest.SwerveDriveBrake brakeRequest = new SwerveRequest.SwerveDriveBrake();
   private final SwerveRequest.ApplyRobotSpeeds driveWithSpeedsRequest =
       new SwerveRequest.ApplyRobotSpeeds();
+  // @todo try using motion magic
   private final SwerveRequest.FieldCentricFacingAngle driveFacingAngleRequest =
       new SwerveRequest.FieldCentricFacingAngle().withDeadband(MaxSpeed * 0.01);
 
@@ -287,7 +288,7 @@ public class RobotContainer {
                                 : MaxAngularRate)) // Drive counterclockwise with negative X (left)
             ));
 
-    driveFacingAngleRequest.HeadingController.setPID(7, 0, 0); // @todo use sysid to tune this
+    driveFacingAngleRequest.HeadingController.setPID(7, 0, 0);
 
     // slow-mode toggle
     oi.slowModeSwitch().onTrue(Commands.runOnce(() -> isSlowMode = true));
@@ -320,29 +321,21 @@ public class RobotContainer {
 
   private void configureSubsystemCommands() {
     oi.scoreCoralButton().whileTrue(new ClawBackwards(claw));
+
     oi.intakeCoralButton()
         .whileTrue(
-            joint
-                .runOnce(() -> joint.setJointPose(JointPosition.CORAL_STATION))
-                .andThen(new IntakeCoral(claw))
-                .andThen(joint.runOnce(() -> joint.setJointPose(JointPosition.LEVEL_2))));
-
-    // @todo uncomment when we tune the rotation
-    // oi.getIntakeCoral()
-    //     .whileTrue(
-    //         Commands.deadline(
-    //             Commands.sequence(
-    //                 joint.runOnce(() -> joint.setJointPose(JointPosition.CORAL_STATION)),
-    //                 new IntakeCoral(claw),
-    //                 joint.runOnce(() -> joint.setJointPose(JointPosition.LEVEL_2))),
-    //             drivetrain.run(
-    //                 () ->
-    //                     driveFacingAngle(
-    //                         -oi.getTranslateX(),
-    //                         -oi.getTranslateY(),
-    //                         Rotation2d.fromDegrees(55)))));
-
-    // oi.getIntakeCoral().whileTrue(new IntakeCoral(claw));
+            Commands.deadline(
+                Commands.sequence(
+                    joint.runOnce(() -> joint.setJointPose(JointPosition.CORAL_STATION)),
+                    new IntakeCoral(claw),
+                    joint.runOnce(() -> joint.setJointPose(JointPosition.LEVEL_2))),
+                drivetrain.run(
+                    () ->
+                        driveFacingAngle(
+                            -oi.getTranslateX() * MaxSpeed,
+                            -oi.getTranslateY() * MaxSpeed,
+                            Rotation2d.fromDegrees(125)))));
+    oi.intakeCoralButton().onFalse(joint.runOnce(() -> joint.setJointPose(JointPosition.LEVEL_2)));
   }
 
   private void configureVisionCommands() {
