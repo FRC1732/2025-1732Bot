@@ -3,6 +3,7 @@ package frc.robot;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Quaternion;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.networktables.DoubleSubscriber;
 import edu.wpi.first.networktables.FloatArraySubscriber;
@@ -34,6 +35,9 @@ public class QuestNav {
   private float yaw_offset = 0.0f;
   private Pose2d resetPosition = new Pose2d();
 
+  // Transformation from Quest coordinates to Robot coordinates
+  private Transform2d questToRobotTransform = new Transform2d();
+
   // Gets the Quest's measured position.
   public Pose2d getPose() {
     return new Pose2d(
@@ -48,7 +52,7 @@ public class QuestNav {
 
   // Returns if the Quest is connected.
   public boolean connected() {
-    return ((RobotController.getFPGATime() - questBatteryPercent.getLastChange()) / 1000) < 250;
+    return ((RobotController.getFPGATime() - questPosition.getLastChange()) / 1000) < 250;
   }
 
   // Gets the Quaternion of the Quest.
@@ -57,9 +61,14 @@ public class QuestNav {
     return new Quaternion(qqFloats[0], qqFloats[1], qqFloats[2], qqFloats[3]);
   }
 
-  // Gets the Quests's timestamp.
+  // Gets the Quests's timestamp in seconds.
   public double timestamp() {
-    return questTimestamp.get();
+    // return questTimestamp.get();
+
+    // This ensures the timestamp is synchronized with the robot's timestamp
+    // The quest timestamp doesn't account for latency anyways, so there isn't much point in using
+    // it
+    return questPosition.getLastChange() / 1000000.0;
   }
 
   // Zero the relativerobot heading
@@ -103,5 +112,16 @@ public class QuestNav {
     var oculousPositionCompensated =
         getQuestNavTranslation().minus(new Translation2d(0, 0.1651)); // 6.5
     return new Pose2d(oculousPositionCompensated, Rotation2d.fromDegrees(getOculusYaw()));
+  }
+
+  // Sets the transformation from the Quest coordinate system to the Robot coordinate system
+  public void setRobotTransform(Pose2d robotPose) {
+    Pose2d questPose = getPose();
+    questToRobotTransform = new Transform2d(questPose, robotPose);
+  }
+
+  // Transforms the current Quest pose into Robot coordinates
+  public Pose2d getPoseInRobotCoordinates() {
+    return getPose().transformBy(questToRobotTransform);
   }
 }

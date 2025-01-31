@@ -104,7 +104,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
               this));
 
   /* The SysId routine to test */
-  private SysIdRoutine m_sysIdRoutineToApply = m_sysIdRoutineRotation;
+  private SysIdRoutine m_sysIdRoutineToApply = m_sysIdRoutineSteer;
 
   /**
    * Constructs a CTRE SwerveDrivetrain using the specified constants.
@@ -316,5 +316,26 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
       Matrix<N3, N1> visionMeasurementStdDevs) {
     super.addVisionMeasurement(
         visionRobotPoseMeters, Utils.fpgaToCurrentTime(timestampSeconds), visionMeasurementStdDevs);
+  }
+
+  /**
+   * Adds a vision measurement to the Kalman Filter. This will correct the odometry pose estimate
+   * while still accounting for measurement noise.
+   *
+   * <p>Note that this method will assume the timestamp of the vision measurement is the current
+   * FPGA.
+   *
+   * <p>Note that the vision measurement standard deviations passed into this method will continue
+   * to apply to future measurements until a subsequent call to {@link
+   * #setVisionMeasurementStdDevs(Matrix)} or this method.
+   *
+   * @param visionRobotPoseMeters The pose of the robot as measured by the vision camera.
+   * @param visionMeasurementStdDevs Standard deviations of the vision pose measurement in the form
+   *     [x, y, theta]ᵀ, with units in meters and radians.
+   */
+  public void addVisionMeasurement(
+      Pose2d visionRobotPoseMeters, Matrix<N3, N1> visionMeasurementStdDevs) {
+    addVisionMeasurement(
+        visionRobotPoseMeters, Utils.getCurrentTimeSeconds(), visionMeasurementStdDevs);
   }
 }

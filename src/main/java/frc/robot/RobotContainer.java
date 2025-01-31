@@ -54,6 +54,7 @@ public class RobotContainer {
   private Joint joint;
   private Claw claw;
   private VisionApriltagSubsystem visionApriltagSubsystem;
+  private QuestNav questNav = new QuestNav();
 
   private Alliance lastAlliance = Field2d.getInstance().getAlliance();
 
@@ -334,7 +335,9 @@ public class RobotContainer {
                         driveFacingAngle(
                             -oi.getTranslateX() * MaxSpeed,
                             -oi.getTranslateY() * MaxSpeed,
-                            Rotation2d.fromDegrees(125)))));
+                            drivetrain.getPose().getRotation().getDegrees() < 0
+                                ? Rotation2d.fromDegrees(-125)
+                                : Rotation2d.fromDegrees(125)))));
     oi.intakeCoralButton().onFalse(joint.runOnce(() -> joint.setJointPose(JointPosition.LEVEL_2)));
   }
 
@@ -394,6 +397,11 @@ public class RobotContainer {
   }
 
   public void updateVisionPose() {
+    if (questNav.connected()) {
+      drivetrain.addVisionMeasurement(questNav.getPose(), VecBuilder.fill(0, 0, 0));
+      return;
+    }
+
     LimelightHelpers.PoseEstimate limelightMeasurement = visionApriltagSubsystem.getPoseEstimate();
     if (limelightMeasurement.tagCount >= 2
         || (limelightMeasurement.tagCount == 1 && limelightMeasurement.avgTagDist < 1.25)) {
