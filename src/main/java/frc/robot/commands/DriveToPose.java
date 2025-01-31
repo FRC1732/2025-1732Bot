@@ -257,7 +257,7 @@ public class DriveToPose extends Command {
    */
   @Override
   public void end(boolean interrupted) {
-    drivetrain.stop();
+    // drivetrain.stop();
     running = false;
   }
 }

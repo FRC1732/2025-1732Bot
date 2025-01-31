@@ -21,10 +21,6 @@ public class VelocitySystemSim {
     this.motor = motor;
     this.gearRatio = gearRatio;
 
-    if (Constants.getMode() != Constants.Mode.SIM) {
-      return;
-    }
-
     this.motorSimState = this.motor.getSimState();
     this.motorSimState.Orientation =
         motorInverted
@@ -35,9 +31,6 @@ public class VelocitySystemSim {
   }
 
   public void updateSim() {
-    if (Constants.getMode() != Constants.Mode.SIM) {
-      return;
-    }
 
     // update the sim states supply voltage based on the simulated battery
     this.motorSimState.setSupplyVoltage(RobotController.getBatteryVoltage());
