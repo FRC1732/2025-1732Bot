@@ -24,6 +24,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 /**
@@ -34,6 +35,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
   private static final double kSimLoopPeriod = 0.005; // 5 ms
   private Notifier m_simNotifier = null;
   private double m_lastSimTime;
+
+  private Consumer<Pose2d> m_questPoseResetConsumer;
 
   /* Blue alliance sees forward as 0 degrees (toward red alliance wall) */
   private static final Rotation2d kBlueAlliancePerspectiveRotation = Rotation2d.kZero;
@@ -116,8 +119,11 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
    * @param modules Constants for each specific module
    */
   public CommandSwerveDrivetrain(
-      SwerveDrivetrainConstants drivetrainConstants, SwerveModuleConstants<?, ?, ?>... modules) {
+      Consumer<Pose2d> questPoseReset,
+      SwerveDrivetrainConstants drivetrainConstants,
+      SwerveModuleConstants<?, ?, ?>... modules) {
     super(drivetrainConstants, modules);
+    m_questPoseResetConsumer = questPoseReset;
     if (Utils.isSimulation()) {
       startSimThread();
     }
@@ -184,7 +190,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
       var config = RobotConfig.fromGUISettings();
       AutoBuilder.configure(
           () -> getState().Pose, // Supplier of current robot pose
-          this::resetPose, // Consumer for seeding pose against auto
+          this::resetQuestPose, // Consumer for seeding pose against auto
           () -> getState().Speeds, // Supplier of current robot speeds
           // Consumer of ChassisSpeeds and feedforwards to drive the robot
           (speeds, feedforwards) ->
@@ -207,6 +213,11 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
       DriverStation.reportError(
           "Failed to load PathPlanner config and configure AutoBuilder", ex.getStackTrace());
     }
+  }
+
+  private void resetQuestPose(Pose2d pose) {
+    m_questPoseResetConsumer.accept(pose);
+    resetPose(pose);
   }
 
   /**

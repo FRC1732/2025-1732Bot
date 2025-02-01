@@ -5,6 +5,7 @@ import edu.wpi.first.math.geometry.Quaternion;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.networktables.DoubleArrayPublisher;
 import edu.wpi.first.networktables.DoubleSubscriber;
 import edu.wpi.first.networktables.FloatArraySubscriber;
 import edu.wpi.first.networktables.IntegerPublisher;
@@ -19,6 +20,7 @@ public class QuestNav {
   NetworkTable nt4Table = nt4Instance.getTable("questnav");
   private IntegerSubscriber questMiso = nt4Table.getIntegerTopic("miso").subscribe(0);
   private IntegerPublisher questMosi = nt4Table.getIntegerTopic("mosi").publish();
+  private DoubleArrayPublisher posePublisher = nt4Table.getDoubleArrayTopic("resetpose").publish();
 
   // Subscribe to the Network Tables questnav data topics
   private DoubleSubscriber questTimestamp = nt4Table.getDoubleTopic("timestamp").subscribe(0.0f);
@@ -85,9 +87,20 @@ public class QuestNav {
     }
   }
 
+  // Sets the current pose of the quest
+  public void resetPose(Pose2d currentPose) {
+    posePublisher.set(
+        new double[] {
+          currentPose.getX(), currentPose.getY(), currentPose.getRotation().getDegrees()
+        });
+    if (questMiso.get() != 98) {
+      questMosi.set(2);
+    }
+  }
+
   // Clean up questnav subroutine messages after processing on the headset
   public void cleanUpQuestNavMessages() {
-    if (questMiso.get() == 99) {
+    if (questMiso.get() >= 98) {
       questMosi.set(0);
     }
   }

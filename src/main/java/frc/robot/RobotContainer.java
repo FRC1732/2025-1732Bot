@@ -60,7 +60,8 @@ public class RobotContainer {
 
   private Alliance lastAlliance = Field2d.getInstance().getAlliance();
 
-  public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
+  public final CommandSwerveDrivetrain drivetrain =
+      TunerConstants.createDrivetrain((pose) -> questNav.resetPose(pose));
 
   private double MaxSpeed =
       TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
@@ -381,6 +382,7 @@ public class RobotContainer {
 
   public void periodic() {
     // add robot-wide periodic code here
+    questNav.cleanUpQuestNavMessages();
   }
 
   public void disablePeriodic() {
