@@ -37,6 +37,7 @@ import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.claw.Claw;
 import frc.robot.subsystems.joint.Joint;
 import frc.robot.subsystems.joint.JointPosition;
+import frc.robot.subsystems.rgb.StatusRgb;
 import java.util.Optional;
 import java.util.function.BooleanSupplier;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
@@ -53,6 +54,7 @@ public class RobotContainer {
 
   private Joint joint;
   private Claw claw;
+  private StatusRgb statusRgb;
   private VisionApriltagSubsystem visionApriltagSubsystem;
   private QuestNav questNav = new QuestNav();
 
@@ -125,6 +127,7 @@ public class RobotContainer {
   private void defineSubsystems() {
     joint = new Joint();
     claw = new Claw();
+    statusRgb = new StatusRgb();
   }
 
   /**
@@ -328,7 +331,7 @@ public class RobotContainer {
             Commands.deadline(
                 Commands.sequence(
                     joint.runOnce(() -> joint.setJointPose(JointPosition.CORAL_STATION)),
-                    new IntakeCoral(claw),
+                    new IntakeCoral(claw, statusRgb),
                     joint.runOnce(() -> joint.setJointPose(JointPosition.LEVEL_2))),
                 drivetrain.run(
                     () ->
