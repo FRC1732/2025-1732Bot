@@ -20,6 +20,8 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
@@ -44,6 +46,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
   private static final Rotation2d kRedAlliancePerspectiveRotation = Rotation2d.k180deg;
   /* Keep track if we've ever applied the operator perspective before or not */
   private boolean m_hasAppliedOperatorPerspective = false;
+
+  ShuffleboardTab tab;
 
   /** Swerve request to apply during robot-centric path following */
   private final SwerveRequest.ApplyRobotSpeeds m_pathApplyRobotSpeeds =
@@ -107,7 +111,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
               this));
 
   /* The SysId routine to test */
-  private SysIdRoutine m_sysIdRoutineToApply = m_sysIdRoutineSteer;
+  private SysIdRoutine m_sysIdRoutineToApply = m_sysIdRoutineTranslation;
 
   /**
    * Constructs a CTRE SwerveDrivetrain using the specified constants.
@@ -124,6 +128,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
       SwerveModuleConstants<?, ?, ?>... modules) {
     super(drivetrainConstants, modules);
     m_questPoseResetConsumer = questPoseReset;
+
     if (Utils.isSimulation()) {
       startSimThread();
     }
@@ -186,6 +191,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
   }
 
   private void configureAutoBuilder() {
+    setupShuffleboard();
     try {
       var config = RobotConfig.fromGUISettings();
       AutoBuilder.configure(
@@ -348,5 +354,31 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
       Pose2d visionRobotPoseMeters, Matrix<N3, N1> visionMeasurementStdDevs) {
     addVisionMeasurement(
         visionRobotPoseMeters, Utils.getCurrentTimeSeconds(), visionMeasurementStdDevs);
+  }
+
+  private void setupShuffleboard() {
+    tab = Shuffleboard.getTab("Drivetrain");
+    tab.addDouble("Robot_Velocity_x", () -> getState().Speeds.vxMetersPerSecond);
+    tab.addDouble("Robot_Velocity_y", () -> getState().Speeds.vyMetersPerSecond);
+    tab.addDouble(
+        "FR_Velocity",
+        () -> getModule(0).getDriveMotor().getVelocity().getValueAsDouble() * 0.0541);
+    tab.addDouble("FR_Turn", () -> getModule(0).getSteerMotor().getVelocity().getValueAsDouble());
+    tab.addDouble(
+        "FL_Velocity",
+        () -> getModule(1).getDriveMotor().getVelocity().getValueAsDouble() * 0.0541);
+    tab.addDouble("FL_Turn", () -> getModule(1).getSteerMotor().getVelocity().getValueAsDouble());
+    tab.addDouble(
+        "BR_Velocity",
+        () -> getModule(2).getDriveMotor().getVelocity().getValueAsDouble() * 0.0541);
+    tab.addDouble("BR_Turn", () -> getModule(2).getSteerMotor().getVelocity().getValueAsDouble());
+    tab.addDouble(
+        "BL_Velocity",
+        () -> getModule(3).getDriveMotor().getVelocity().getValueAsDouble() * 0.0541);
+    tab.addDouble("BL_Turn", () -> getModule(3).getSteerMotor().getVelocity().getValueAsDouble());
+
+    tab.addDouble("Pose_Rotation", () -> getPose().getRotation().getDegrees());
+    tab.addDouble("PoseX", () -> getPose().getX());
+    tab.addDouble("PoseY", () -> getPose().getY());
   }
 }

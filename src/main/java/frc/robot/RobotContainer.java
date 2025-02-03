@@ -9,17 +9,23 @@ import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
+import com.ctre.phoenix6.swerve.SwerveModule.SteerRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
+import com.pathplanner.lib.commands.PathPlannerAuto;
 import com.pathplanner.lib.events.EventTrigger;
-import com.pathplanner.lib.path.PathPlannerPath;
 import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -72,7 +78,7 @@ public class RobotContainer {
   private double MaxSlowAngularRate = 0.25 * MaxAngularRate; // 25% of max angular rate
   private boolean isSlowMode = false;
   private BooleanSupplier slowModeSupplier = () -> isSlowMode;
-
+  private ShuffleboardTab tab;
   private final Telemetry telemetryLogger = new Telemetry(MaxSpeed);
 
   private final SwerveRequest.FieldCentric driveRequest =
@@ -86,7 +92,9 @@ public class RobotContainer {
       new SwerveRequest.ApplyRobotSpeeds();
   // @todo try using motion magic
   private final SwerveRequest.FieldCentricFacingAngle driveFacingAngleRequest =
-      new SwerveRequest.FieldCentricFacingAngle().withDeadband(MaxSpeed * 0.01);
+      new SwerveRequest.FieldCentricFacingAngle()
+          .withDeadband(MaxSpeed * 0.01)
+          .withSteerRequestType(SteerRequestType.MotionMagicExpo);
 
   // use AdvantageKit's LoggedDashboardChooser instead of SendableChooser to ensure accurate logging
   private final LoggedDashboardChooser<Command> autoChooser =
@@ -102,6 +110,11 @@ public class RobotContainer {
       "Could not find the specified AprilTags layout file";
   private Alert layoutFileMissingAlert = new Alert(LAYOUT_FILE_MISSING, AlertType.kError);
   private Alert tuningAlert = new Alert("Tuning mode enabled", AlertType.kInfo);
+
+  StructPublisher<Pose2d> posePublisher =
+      NetworkTableInstance.getDefault().getStructTopic("robotPose", Pose2d.struct).publish();
+  StructPublisher<Pose2d> questPosePublisher =
+      NetworkTableInstance.getDefault().getStructTopic("questPose", Pose2d.struct).publish();
 
   /**
    * Create the container for the robot. Contains subsystems, operator interface (OI) devices, and
@@ -179,19 +192,29 @@ public class RobotContainer {
     // add commands to the auto chooser
     autoChooser.addDefaultOption("Do Nothing", new InstantCommand());
 
-    Command startPoint =
-        Commands.runOnce(
-            () -> {
-              try {
-                drivetrain.resetPose(
-                    PathPlannerPath.fromPathFile("Start Point").getStartingDifferentialPose());
-              } catch (Exception e) {
-                pathFileMissingAlert.setText("Could not find the specified path file: Start Point");
-                pathFileMissingAlert.set(true);
-              }
-            },
-            drivetrain);
+    Command startPoint = new PathPlannerAuto("Start Point");
     autoChooser.addOption("Start Point", startPoint);
+
+    Command curve = new PathPlannerAuto("Curve");
+    autoChooser.addOption("Curve", curve);
+
+    Command fourPiece = new PathPlannerAuto("4 piece");
+    autoChooser.addOption("4 piece", fourPiece);
+
+    // Command startPoint =
+    //     Commands.runOnce(
+    //         () -> {
+    //           try {
+    //             drivetrain.resetPose(
+    //                 PathPlannerPath.fromPathFile("Start Point").getStartingDifferentialPose());
+    //           } catch (Exception e) {
+    //             pathFileMissingAlert.setText("Could not find the specified path file: Start
+    // Point");
+    //             pathFileMissingAlert.set(true);
+    //           }
+    //         },
+    //         drivetrain);
+    // autoChooser.addOption("Start Point", startPoint);
 
     /************ Drive Velocity Tuning ************
      *
@@ -248,7 +271,9 @@ public class RobotContainer {
                 drivetrain.run(
                     () ->
                         drivetrain.setControl(
-                            driveWithSpeedsRequest.withSpeeds(new ChassisSpeeds(2.0, 0, 0)))))));
+                            driveWithSpeedsRequest.withSpeeds(new ChassisSpeeds(-1.0, 0, 0)))))));
+
+    Shuffleboard.getTab("MAIN").add(autoChooser.getSendableChooser());
   }
 
   private void driveFacingAngle(double xVelocity, double yVelocity, Rotation2d targetDirection) {
@@ -383,6 +408,9 @@ public class RobotContainer {
   public void periodic() {
     // add robot-wide periodic code here
     questNav.cleanUpQuestNavMessages();
+    posePublisher.set(drivetrain.getPose());
+    // updateVisionPose();
+    // questPosePublisher.set(questNav.getPose());
   }
 
   public void disablePeriodic() {
