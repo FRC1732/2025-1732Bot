@@ -32,17 +32,12 @@ import java.util.Queue;
 import java.util.Set;
 
 /**
- * This singleton class models the field as a collection of regions. This class
- * is used to create a
- * path from a starting pose in one region to an ending pose in another region
- * that passes through
+ * This singleton class models the field as a collection of regions. This class is used to create a
+ * path from a starting pose in one region to an ending pose in another region that passes through
  * the transition points defined for those regions.
  *
- * <p>
- * The coordinate system of the field is oriented such that the origin is in the
- * lower left
- * corner when the blue alliance is to the left (i.e., to the blue alliance
- * driver's right).
+ * <p>The coordinate system of the field is oriented such that the origin is in the lower left
+ * corner when the blue alliance is to the left (i.e., to the blue alliance driver's right).
  */
 public class Field2d implements NTSendable, AutoCloseable {
   private static Field2d instance = null;
@@ -56,7 +51,6 @@ public class Field2d implements NTSendable, AutoCloseable {
 
   private static final double PIPE_FROM_REEF_CENTER_INCHES =
       6.469; // taken from FieldConstants adjustY for reef y offset
-
 
   private final String name = "Field2d";
   private final Map<FieldObject, FieldObject2d> fieldObjectsMap = new HashMap<>();
@@ -86,8 +80,7 @@ public class Field2d implements NTSendable, AutoCloseable {
   }
 
   /**
-   * Construct a Field2d from an array of regions. These regions should not be
-   * overlapping (aside
+   * Construct a Field2d from an array of regions. These regions should not be overlapping (aside
    * from edges) and any regions with overlapping edges should be neighbors (see
    * Region2d::addNeighbor).
    *
@@ -98,17 +91,14 @@ public class Field2d implements NTSendable, AutoCloseable {
   }
 
   /**
-   * Create a path from a starting pose in one region to an ending pose in another
-   * region that
+   * Create a path from a starting pose in one region to an ending pose in another region that
    * passes through the transition points defined for those regions.
    *
-   * @param start         the starting pose
-   * @param end           the ending pose
-   * @param pathConstants the path constraints (i.e., max velocity, max
-   *                      acceleration)
-   * @param subsystem     the drivetrain subsystem
-   * @return the path from the starting pose to the ending pose; null if no path
-   *         exists
+   * @param start the starting pose
+   * @param end the ending pose
+   * @param pathConstants the path constraints (i.e., max velocity, max acceleration)
+   * @param subsystem the drivetrain subsystem
+   * @return the path from the starting pose to the ending pose; null if no path exists
    */
   public PathPlannerPath makePath(
       Pose2d start, Pose2d end, PathConstraints pathConstants, CommandSwerveDrivetrain subsystem) {
@@ -126,13 +116,11 @@ public class Field2d implements NTSendable, AutoCloseable {
     }
 
     // make sure both start and end are on the field
-    if (startRegion == null || endRegion == null)
-      return null;
+    if (startRegion == null || endRegion == null) return null;
 
     // BFS to find the shortest path to the end
     List<Region2d> path = breadthFirstSearch(startRegion, endRegion);
-    if (path.isEmpty())
-      return null;
+    if (path.isEmpty()) return null;
 
     // create point locations
     ArrayList<Translation2d> pointLocations = new ArrayList<>();
@@ -167,20 +155,16 @@ public class Field2d implements NTSendable, AutoCloseable {
   }
 
   /**
-   * Create the path points based on the starting and ending poses and the point
-   * locations. The path
-   * will be created such that the first path point matches the robot's current
-   * heading and velocity
-   * to ensure a smooth transition to the path. The the starting and ending poses
-   * have different
-   * rotations, the change in rotation will occur between the first and second
-   * points. The final
+   * Create the path points based on the starting and ending poses and the point locations. The path
+   * will be created such that the first path point matches the robot's current heading and velocity
+   * to ensure a smooth transition to the path. The the starting and ending poses have different
+   * rotations, the change in rotation will occur between the first and second points. The final
    * speed of the robot will be as specified by the robot's configuration class'
    * getMoveToPathFinalVelocity method.
    *
-   * @param start          the starting pose
-   * @param end            the ending pose
-   * @param subsystem      the drivetrain subsystem
+   * @param start the starting pose
+   * @param end the ending pose
+   * @param subsystem the drivetrain subsystem
    * @param pointLocations the locations of the points in the path
    * @return the path points
    */
@@ -244,12 +228,9 @@ public class Field2d implements NTSendable, AutoCloseable {
   }
 
   /**
-   * This method should be invoked once the alliance color is known. Refer to the
-   * RobotContainer's
-   * checkAllianceColor method for best practices on when to check the alliance's
-   * color. The
-   * alliance color is needed when running auto paths as those paths are always
-   * defined for
+   * This method should be invoked once the alliance color is known. Refer to the RobotContainer's
+   * checkAllianceColor method for best practices on when to check the alliance's color. The
+   * alliance color is needed when running auto paths as those paths are always defined for
    * blue-alliance robots and need to be flipped for red-alliance robots.
    *
    * @param newAlliance the new alliance color
