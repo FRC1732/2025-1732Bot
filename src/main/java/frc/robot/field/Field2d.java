@@ -1,6 +1,6 @@
-package frc.robot;
+package frc.robot.field;
 
-import static edu.wpi.first.units.Units.*;
+import static edu.wpi.first.units.Units.Meters;
 
 import com.pathplanner.lib.path.GoalEndState;
 import com.pathplanner.lib.path.PathConstraints;
@@ -9,6 +9,10 @@ import com.pathplanner.lib.path.Waypoint;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.networktables.NTSendable;
+import edu.wpi.first.networktables.NTSendableBuilder;
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.util.sendable.SendableRegistry;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import frc.lib.team3061.RobotConfig;
@@ -17,9 +21,11 @@ import frc.lib.team6328.util.FieldConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 
@@ -31,12 +37,16 @@ import java.util.Set;
  * <p>The coordinate system of the field is oriented such that the origin is in the lower left
  * corner when the blue alliance is to the left (i.e., to the blue alliance driver's right).
  */
-public class Field2d {
+public class Field2d implements NTSendable, AutoCloseable {
   private static Field2d instance = null;
 
   private Region2d[] regions;
 
   private Alliance alliance = DriverStation.Alliance.Blue;
+
+  private final String name = "Field2d";
+  private final Map<FieldObject, FieldObject2d> fieldObjectsMap = new HashMap<>();
+  private NetworkTable networkTable;
 
   /**
    * Get the singleton instance of the Field2d class.
@@ -48,6 +58,13 @@ public class Field2d {
       instance = new Field2d();
     }
     return instance;
+  }
+
+  private Field2d() {
+    fieldObjectsMap.put(
+        FieldObject.ROBOT_POSE, new FieldObject2d(FieldObject.ROBOT_POSE.getPoseName()));
+
+    SendableRegistry.add(this, name);
   }
 
   /**
@@ -150,7 +167,8 @@ public class Field2d {
           new Pose2d(pointLocations.get(i).getX(), pointLocations.get(i).getY(), lastHeading));
     }
 
-    // the final path point will match the ending pose's rotation and the velocity as specified by
+    // the final path point will match the ending pose's rotation and the velocity
+    // as specified by
     // the robot's configuration class' getMoveToPathFinalVelocity method.
     pathPoses.add(
         new Pose2d(
@@ -227,6 +245,34 @@ public class Field2d {
       return RobotOdometry.getInstance().getEstimatedPose().getX()
           < FieldConstants.StagingLocations.centerlineX
               - RobotConfig.getInstance().getRobotLengthWithBumpers().in(Meters) / 2;
+    }
+  }
+
+  @Override
+  public void initSendable(NTSendableBuilder builder) {
+    builder.setSmartDashboardType(name);
+
+    synchronized (this) {
+      networkTable = builder.getTable();
+      for (FieldObject2d obj : fieldObjectsMap.values()) {
+        synchronized (obj) {
+          obj.m_entry = networkTable.getDoubleArrayTopic(obj.m_name).getEntry(new double[] {});
+          obj.updateEntry(true);
+        }
+      }
+    }
+  }
+
+  @Override
+  public void close() {
+    for (FieldObject2d obj : fieldObjectsMap.values()) {
+      obj.close();
+    }
+  }
+
+  public void setPose(FieldObject robotPose, Pose2d pose) {
+    synchronized (fieldObjectsMap) {
+      fieldObjectsMap.get(robotPose).setPose(pose);
     }
   }
 }

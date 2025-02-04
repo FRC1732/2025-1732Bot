@@ -1,4 +1,4 @@
-package frc.robot;
+package frc.robot.field;
 
 /**
  * This class defines the points for all of the regions that defines the field along with the
