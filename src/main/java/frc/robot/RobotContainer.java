@@ -8,9 +8,11 @@ import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
+import com.ctre.phoenix6.swerve.SwerveModule;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveModule.SteerRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
+import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.commands.PathPlannerAuto;
 import com.pathplanner.lib.events.EventTrigger;
 import edu.wpi.first.math.VecBuilder;
@@ -90,7 +92,7 @@ public class RobotContainer {
   private final SwerveRequest.SwerveDriveBrake brakeRequest = new SwerveRequest.SwerveDriveBrake();
   private final SwerveRequest.ApplyRobotSpeeds driveWithSpeedsRequest =
       new SwerveRequest.ApplyRobotSpeeds();
-  // @todo try using motion magic
+
   private final SwerveRequest.FieldCentricFacingAngle driveFacingAngleRequest =
       new SwerveRequest.FieldCentricFacingAngle()
           .withDeadband(MaxSpeed * 0.01)
@@ -182,6 +184,15 @@ public class RobotContainer {
 
   /** Use this method to define your commands for autonomous mode. */
   private void configureAutoCommands() {
+    NamedCommands.registerCommand(
+        "intakeCoral",
+        Commands.sequence(
+            joint.runOnce(() -> joint.setJointPose(JointPosition.CORAL_STATION)),
+            new IntakeCoral(claw, statusRgb)));
+    NamedCommands.registerCommand("ejectCoral", new IntakeCoral(claw, statusRgb));
+    NamedCommands.registerCommand(
+        "setPoseL4", joint.runOnce(() -> joint.setJointPose(JointPosition.LEVEL_4)));
+
     // Event Markers
     new EventTrigger("Marker").onTrue(Commands.print("reached event marker"));
     new EventTrigger("ZoneMarker").onTrue(Commands.print("entered zone"));
@@ -194,9 +205,6 @@ public class RobotContainer {
 
     Command startPoint = new PathPlannerAuto("Start Point");
     autoChooser.addOption("Start Point", startPoint);
-
-    Command curve = new PathPlannerAuto("Curve");
-    autoChooser.addOption("Curve", curve);
 
     Command fourPiece = new PathPlannerAuto("4 piece");
     autoChooser.addOption("4 piece", fourPiece);
@@ -229,49 +237,73 @@ public class RobotContainer {
                 drivetrain.run(
                     () ->
                         drivetrain.setControl(
-                            driveWithSpeedsRequest.withSpeeds(new ChassisSpeeds(2.0, 0, 0))))),
+                            driveWithSpeedsRequest
+                                .withDriveRequestType(SwerveModule.DriveRequestType.Velocity)
+                                .withSteerRequestType(SwerveModule.SteerRequestType.MotionMagicExpo)
+                                .withSpeeds(new ChassisSpeeds(2.0, 0, 0))))),
             Commands.deadline(
                 Commands.waitSeconds(1.0),
                 drivetrain.run(
                     () ->
                         drivetrain.setControl(
-                            driveWithSpeedsRequest.withSpeeds(new ChassisSpeeds(-0.5, 0, 0))))),
+                            driveWithSpeedsRequest
+                                .withDriveRequestType(SwerveModule.DriveRequestType.Velocity)
+                                .withSteerRequestType(SwerveModule.SteerRequestType.MotionMagicExpo)
+                                .withSpeeds(new ChassisSpeeds(-0.5, 0, 0))))),
             Commands.deadline(
                 Commands.waitSeconds(1.0),
                 drivetrain.run(
                     () ->
                         drivetrain.setControl(
-                            driveWithSpeedsRequest.withSpeeds(new ChassisSpeeds(1.0, 0, 0))))),
+                            driveWithSpeedsRequest
+                                .withDriveRequestType(SwerveModule.DriveRequestType.Velocity)
+                                .withSteerRequestType(SwerveModule.SteerRequestType.MotionMagicExpo)
+                                .withSpeeds(new ChassisSpeeds(1.0, 0, 0))))),
             Commands.deadline(
                 Commands.waitSeconds(0.5),
                 drivetrain.run(
                     () ->
                         drivetrain.setControl(
-                            driveWithSpeedsRequest.withSpeeds(new ChassisSpeeds(3.0, 0, 0))))),
+                            driveWithSpeedsRequest
+                                .withDriveRequestType(SwerveModule.DriveRequestType.Velocity)
+                                .withSteerRequestType(SwerveModule.SteerRequestType.MotionMagicExpo)
+                                .withSpeeds(new ChassisSpeeds(3.0, 0, 0))))),
             Commands.deadline(
                 Commands.waitSeconds(1.0),
                 drivetrain.run(
                     () ->
                         drivetrain.setControl(
-                            driveWithSpeedsRequest.withSpeeds(new ChassisSpeeds(1.0, 0, 0))))),
+                            driveWithSpeedsRequest
+                                .withDriveRequestType(SwerveModule.DriveRequestType.Velocity)
+                                .withSteerRequestType(SwerveModule.SteerRequestType.MotionMagicExpo)
+                                .withSpeeds(new ChassisSpeeds(1.0, 0, 0))))),
             Commands.deadline(
                 Commands.waitSeconds(1.0),
                 drivetrain.run(
                     () ->
                         drivetrain.setControl(
-                            driveWithSpeedsRequest.withSpeeds(new ChassisSpeeds(-1.0, 0, 0))))),
+                            driveWithSpeedsRequest
+                                .withDriveRequestType(SwerveModule.DriveRequestType.Velocity)
+                                .withSteerRequestType(SwerveModule.SteerRequestType.MotionMagicExpo)
+                                .withSpeeds(new ChassisSpeeds(-1.0, 0, 0))))),
             Commands.deadline(
                 Commands.waitSeconds(1.0),
                 drivetrain.run(
                     () ->
                         drivetrain.setControl(
-                            driveWithSpeedsRequest.withSpeeds(new ChassisSpeeds(-3.0, 0, 0))))),
+                            driveWithSpeedsRequest
+                                .withDriveRequestType(SwerveModule.DriveRequestType.Velocity)
+                                .withSteerRequestType(SwerveModule.SteerRequestType.MotionMagicExpo)
+                                .withSpeeds(new ChassisSpeeds(-3.0, 0, 0))))),
             Commands.deadline(
                 Commands.waitSeconds(1.0),
                 drivetrain.run(
                     () ->
                         drivetrain.setControl(
-                            driveWithSpeedsRequest.withSpeeds(new ChassisSpeeds(-1.0, 0, 0)))))));
+                            driveWithSpeedsRequest
+                                .withDriveRequestType(SwerveModule.DriveRequestType.Velocity)
+                                .withSteerRequestType(SwerveModule.SteerRequestType.MotionMagicExpo)
+                                .withSpeeds(new ChassisSpeeds(-1.0, 0, 0)))))));
 
     Shuffleboard.getTab("MAIN").add(autoChooser.getSendableChooser());
   }
@@ -410,7 +442,7 @@ public class RobotContainer {
     questNav.cleanUpQuestNavMessages();
     posePublisher.set(drivetrain.getPose());
     // updateVisionPose();
-    // questPosePublisher.set(questNav.getPose());
+    questPosePublisher.set(questNav.getPose());
   }
 
   public void disablePeriodic() {
