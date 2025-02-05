@@ -64,25 +64,25 @@ In certain circumstances, the robot automatically handles orientation or alignme
 - **Button 6**: Set coral target height to 1
 - **Button 7**: Set coral target height to 2
 - **Button 8**: Set coral target height to 3
-- **Button 8**: Set coral target height to 4
-- **Button 9**: Set coral target to F1
-- **Button 10**: Set coral target to F2
-- **Button 11**: Set coral target to FR1
-- **Button 12**: Set coral target to FR2
-- **Button 13**: Set coral target to FL1
-- **Button 14**: Set coral target to FL2
-- **Button 15**: Set coral target to BR1
-- **Button 16**: Set coral target to BR2
-- **Button 17**: Set coral target to BL1
-- **Button 18**: Set coral target to BL2
-- **Button 19**: Set coral target to B1
-- **Button 20**: Set coral target to B2
-- **Button 21**: Switch to set preferred coral target side to 1 or 2
-- **Button 22**: Switch to set algae clearing height to 2 or 3
-- **Button 23**: Hold to clear algae
-- **Button 24**: Switch to set algae target to low or high
-- **Button 25**: Switch to enable/disable full auto placement
-- **Button 25**: Switch to enable/disable vision
+- **Button 9**: Set coral target height to 4
+- **Button 10**: Set coral target to F1
+- **Button 11**: Set coral target to F2
+- **Button 12**: Set coral target to FR1
+- **Button 13**: Set coral target to FR2
+- **Button 14**: Set coral target to FL1
+- **Button 15**: Set coral target to FL2
+- **Button 16**: Set coral target to BR1
+- **Button 17**: Set coral target to BR2
+- **Button 18**: Set coral target to BL1
+- **Button 19**: Set coral target to BL2
+- **Button 20**: Set coral target to B1
+- **Button 21**: Set coral target to B2
+- **Button 22**: Switch to set preferred coral target side to 1 or 2
+- **Button 23**: Switch to set algae clearing height to 2 or 3
+- **Button 24**: Hold to clear algae
+- **Button 25**: Switch to set algae target to low or high
+- **Button 26**: Switch to enable/disable full auto placement
+- **Button 27**: Switch to enable/disable vision
 
 ---
 ## Scoring Targets Explanation
