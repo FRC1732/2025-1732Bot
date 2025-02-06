@@ -1,6 +1,6 @@
-package frc.robot;
+package frc.robot.field;
 
-import static edu.wpi.first.units.Units.*;
+import static edu.wpi.first.units.Units.Meters;
 
 import com.pathplanner.lib.path.GoalEndState;
 import com.pathplanner.lib.path.PathConstraints;
@@ -8,7 +8,13 @@ import com.pathplanner.lib.path.PathPlannerPath;
 import com.pathplanner.lib.path.Waypoint;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.util.Units;
+import edu.wpi.first.networktables.NTSendable;
+import edu.wpi.first.networktables.NTSendableBuilder;
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.util.sendable.SendableRegistry;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import frc.lib.team3061.RobotConfig;
@@ -17,9 +23,11 @@ import frc.lib.team6328.util.FieldConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 
@@ -31,12 +39,22 @@ import java.util.Set;
  * <p>The coordinate system of the field is oriented such that the origin is in the lower left
  * corner when the blue alliance is to the left (i.e., to the blue alliance driver's right).
  */
-public class Field2d {
+public class Field2d implements NTSendable, AutoCloseable {
   private static Field2d instance = null;
 
   private Region2d[] regions;
 
   private Alliance alliance = DriverStation.Alliance.Blue;
+
+  private Map<Pose2d, Pose2d> leftReefPoses = new HashMap<Pose2d, Pose2d>();
+  private Map<Pose2d, Pose2d> rightReefPoses = new HashMap<Pose2d, Pose2d>();
+
+  private static final double PIPE_FROM_REEF_CENTER_INCHES =
+      6.469; // taken from FieldConstants adjustY for reef y offset
+
+  private final String name = "Field2d";
+  private final Map<FieldObject, FieldObject2d> fieldObjectsMap = new HashMap<>();
+  private NetworkTable networkTable;
 
   /**
    * Get the singleton instance of the Field2d class.
@@ -48,6 +66,17 @@ public class Field2d {
       instance = new Field2d();
     }
     return instance;
+  }
+
+  private Field2d() {
+    fieldObjectsMap.put(
+        FieldObject.ROBOT_POSE, new FieldObject2d(FieldObject.ROBOT_POSE.getPoseName()));
+    fieldObjectsMap.put(
+        FieldObject.QUEST_POSE, new FieldObject2d(FieldObject.QUEST_POSE.getPoseName()));
+    fieldObjectsMap.put(
+        FieldObject.LIMELIGHT_POSE, new FieldObject2d(FieldObject.LIMELIGHT_POSE.getPoseName()));
+
+    SendableRegistry.add(this, name);
   }
 
   /**
@@ -150,7 +179,8 @@ public class Field2d {
           new Pose2d(pointLocations.get(i).getX(), pointLocations.get(i).getY(), lastHeading));
     }
 
-    // the final path point will match the ending pose's rotation and the velocity as specified by
+    // the final path point will match the ending pose's rotation and the velocity
+    // as specified by
     // the robot's configuration class' getMoveToPathFinalVelocity method.
     pathPoses.add(
         new Pose2d(
@@ -218,15 +248,75 @@ public class Field2d {
     return alliance;
   }
 
-  public boolean hasFullyLeftAllianceSideOfField() {
-    if (alliance == Alliance.Blue) {
-      return RobotOdometry.getInstance().getEstimatedPose().getX()
-          > FieldConstants.StagingLocations.centerlineX
-              + RobotConfig.getInstance().getRobotLengthWithBumpers().in(Meters) / 2;
+  public void populateReefBranchPoseMaps() {
+    // get each transformed pose on the reef (center of the hexagonal side)
+    // add left or right offset (y) as well as bumper offset (x)
+    Pose2d[] reefCenterFaces = FieldConstants.Reef.centerFaces;
+    for (Pose2d reefCenterFace : reefCenterFaces) {
+      Pose2d leftPose =
+          reefCenterFace.transformBy(
+              new Transform2d(
+                  RobotConfig.getInstance().getRobotLengthWithBumpers().in(Meters) / 2.0,
+                  -Units.inchesToMeters(PIPE_FROM_REEF_CENTER_INCHES),
+                  Rotation2d.fromDegrees(180)));
+      Pose2d rightPose =
+          reefCenterFace.transformBy(
+              new Transform2d(
+                  RobotConfig.getInstance().getRobotLengthWithBumpers().in(Meters) / 2.0,
+                  Units.inchesToMeters(PIPE_FROM_REEF_CENTER_INCHES),
+                  Rotation2d.fromDegrees(180)));
+
+      leftReefPoses.put(reefCenterFace, leftPose);
+      rightReefPoses.put(reefCenterFace, rightPose);
+    }
+  }
+
+  public Pose2d getNearestBranch(Side side) {
+    Pose2d nearestReefCenterFace =
+        RobotOdometry.getInstance()
+            .getEstimatedPose()
+            .nearest(Arrays.asList(FieldConstants.Reef.centerFaces));
+
+    Pose2d bumpersOnReefAlignedToBranch;
+    if (side == Side.LEFT) {
+      bumpersOnReefAlignedToBranch = leftReefPoses.get(nearestReefCenterFace);
     } else {
-      return RobotOdometry.getInstance().getEstimatedPose().getX()
-          < FieldConstants.StagingLocations.centerlineX
-              - RobotConfig.getInstance().getRobotLengthWithBumpers().in(Meters) / 2;
+      bumpersOnReefAlignedToBranch = rightReefPoses.get(nearestReefCenterFace);
+    }
+
+    return bumpersOnReefAlignedToBranch;
+  }
+
+  public enum Side {
+    LEFT,
+    RIGHT
+  }
+
+  @Override
+  public void initSendable(NTSendableBuilder builder) {
+    builder.setSmartDashboardType(name);
+
+    synchronized (this) {
+      networkTable = builder.getTable();
+      for (FieldObject2d obj : fieldObjectsMap.values()) {
+        synchronized (obj) {
+          obj.m_entry = networkTable.getDoubleArrayTopic(obj.m_name).getEntry(new double[] {});
+          obj.updateEntry(true);
+        }
+      }
+    }
+  }
+
+  @Override
+  public void close() {
+    for (FieldObject2d obj : fieldObjectsMap.values()) {
+      obj.close();
+    }
+  }
+
+  public void setPose(FieldObject robotPose, Pose2d pose) {
+    synchronized (fieldObjectsMap) {
+      fieldObjectsMap.get(robotPose).setPose(pose);
     }
   }
 }

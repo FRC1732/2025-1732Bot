@@ -28,6 +28,7 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -36,8 +37,12 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 // import frc.lib.team3061.leds.LEDs;
 import frc.robot.commands.clawcommands.ClawBackwards;
 import frc.robot.commands.clawcommands.IntakeCoral;
+import frc.robot.field.Field2d;
+import frc.robot.field.FieldObject;
+import frc.robot.field.Region2d;
 import frc.robot.generated.TunerConstants;
 import frc.robot.limelightVision.ApriltagVision.VisionApriltagSubsystem;
+import frc.robot.limelightVision.LimelightHelpers;
 import frc.robot.operator_interface.OISelector;
 import frc.robot.operator_interface.OperatorInterface;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
@@ -117,6 +122,8 @@ public class RobotContainer {
   StructPublisher<Pose2d> questPosePublisher =
       NetworkTableInstance.getDefault().getStructTopic("questPose", Pose2d.struct).publish();
 
+  private Field2d field2d;
+
   /**
    * Create the container for the robot. Contains subsystems, operator interface (OI) devices, and
    * commands.
@@ -150,7 +157,10 @@ public class RobotContainer {
    * neighbor. The field is used to generate paths.
    */
   private void constructField() {
-    Field2d.getInstance().setRegions(new Region2d[] {});
+    field2d = Field2d.getInstance();
+    field2d.setRegions(new Region2d[] {});
+
+    SmartDashboard.putData("Field", field2d);
   }
 
   /**
@@ -443,8 +453,27 @@ public class RobotContainer {
     // add robot-wide periodic code here
     questNav.cleanUpQuestNavMessages();
     posePublisher.set(drivetrain.getPose());
-    updateVisionPose();
-    questPosePublisher.set(questNav.getRobotPose());
+    // updateVisionPose();
+    // questPosePublisher.set(questNav.getPose());
+
+    // new field pose updates (overlaps above code)
+    field2d.setPose(FieldObject.ROBOT_POSE, drivetrain.getPose());
+    field2d.setPose(FieldObject.QUEST_POSE, questNav.getRobotPose());
+
+    Pose2d llPose2d = extractLimelightPose();
+    if (llPose2d != null) {
+      field2d.setPose(FieldObject.LIMELIGHT_POSE, llPose2d);
+    }
+  }
+
+  private Pose2d extractLimelightPose() {
+    LimelightHelpers.PoseEstimate limelightMeasurement = visionApriltagSubsystem.getPoseEstimate();
+    if (limelightMeasurement.tagCount >= 2
+        || (limelightMeasurement.tagCount == 1 && limelightMeasurement.avgTagDist < 1.25)) {
+
+      return limelightMeasurement.pose;
+    }
+    return null;
   }
 
   public void disablePeriodic() {
