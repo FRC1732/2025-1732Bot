@@ -80,15 +80,15 @@ public interface OperatorInterface {
     return new Trigger(() -> false);
   }
 
-  public default Trigger operatorVisionIsEnabledSwitch() {  // button 27
+  public default Trigger operatorVisionIsEnabledSwitch() { // button 27
     return new Trigger(() -> false);
   }
 
-  public default Trigger operatorResetGyroButton() { // button 2 
+  public default Trigger operatorResetGyroButton() { // button 2
     return new Trigger(() -> false);
   }
 
-  public default Trigger operatorExtendClimber() { // button 3 
+  public default Trigger operatorExtendClimber() { // button 3
     return new Trigger(() -> false);
   }
 
@@ -104,7 +104,7 @@ public interface OperatorInterface {
     return new Trigger(() -> false);
   }
 
-  public default Trigger operatorL2() {  // button 7
+  public default Trigger operatorL2() { // button 7
     return new Trigger(() -> false);
   }
 
@@ -112,7 +112,7 @@ public interface OperatorInterface {
     return new Trigger(() -> false);
   }
 
-  public default Trigger operatorL4() {  // button 9
+  public default Trigger operatorL4() { // button 9
     return new Trigger(() -> false);
   }
 
@@ -124,7 +124,7 @@ public interface OperatorInterface {
     return new Trigger(() -> false);
   }
 
-  public default Trigger operatorFR1() {  // button 12
+  public default Trigger operatorFR1() { // button 12
     return new Trigger(() -> false);
   }
 
@@ -164,7 +164,7 @@ public interface OperatorInterface {
     return new Trigger(() -> false);
   }
 
-  public default Trigger operatorCoralSideSwitch() {  // button 22
+  public default Trigger operatorCoralSideSwitch() { // button 22
     return new Trigger(() -> false);
   }
 

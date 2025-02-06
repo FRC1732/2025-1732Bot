@@ -181,7 +181,8 @@ public class RobotContainer {
 
     configureVisionCommands();
 
-    new PrintOperatorPanelTests(oi); // this is for verifying operator panel buttons. not for competition
+    new PrintOperatorPanelTests(
+        oi); // this is for verifying operator panel buttons. not for competition
   }
 
   /** Use this method to define your commands for autonomous mode. */

@@ -7,10 +7,7 @@ package frc.robot.operator_interface;
 import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
-/**
- * Class for controlling the robot with two joysticks, and 2 operator button
- * panels.
- */
+/** Class for controlling the robot with two joysticks, and 2 operator button panels. */
 public class FullOperatorConsoleOI extends DualJoysticksOI {
   private final CommandJoystick operatorPanelOne;
   private final CommandJoystick operatorPanelTwo;
@@ -77,7 +74,7 @@ public class FullOperatorConsoleOI extends DualJoysticksOI {
 
   @Override
   public Trigger operatorL4() {
-    return new Trigger(() -> operatorPanelTwo.getX() > 0.5);
+    return new Trigger(() -> operatorPanelTwo.getY() > 0.5);
   }
 
   @Override
@@ -142,7 +139,7 @@ public class FullOperatorConsoleOI extends DualJoysticksOI {
 
   @Override
   public Trigger operatorCoralSideSwitch() {
-    return operatorPanelButtonsTwo[8];
+    return operatorPanelButtonsOne[4];
   }
 
   @Override
