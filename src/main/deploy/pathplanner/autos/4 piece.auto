@@ -197,9 +197,22 @@
           }
         },
         {
-          "type": "path",
+          "type": "deadline",
           "data": {
-            "pathName": "HP-R4"
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "HP-R4"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "setPoseL4"
+                }
+              }
+            ]
           }
         },
         {

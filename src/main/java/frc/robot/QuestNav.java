@@ -1,11 +1,13 @@
 package frc.robot;
 
+import static edu.wpi.first.math.util.Units.inchesToMeters;
+
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Quaternion;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.networktables.DoubleArrayPublisher;
 import edu.wpi.first.networktables.DoubleSubscriber;
 import edu.wpi.first.networktables.FloatArraySubscriber;
 import edu.wpi.first.networktables.IntegerPublisher;
@@ -14,13 +16,16 @@ import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.RobotController;
 
+/**
+ * Interface with the QuestNav on VR headset for pose estimation. See
+ * https://www.chiefdelphi.com/t/questnav-the-best-robot-pose-tracking-system-in-frc/
+ */
 public class QuestNav {
   // Configure Network Tables topics (questnav/...) to communicate with the Quest HMD
   NetworkTableInstance nt4Instance = NetworkTableInstance.getDefault();
   NetworkTable nt4Table = nt4Instance.getTable("questnav");
   private IntegerSubscriber questMiso = nt4Table.getIntegerTopic("miso").subscribe(0);
   private IntegerPublisher questMosi = nt4Table.getIntegerTopic("mosi").publish();
-  private DoubleArrayPublisher posePublisher = nt4Table.getDoubleArrayTopic("resetpose").publish();
 
   // Subscribe to the Network Tables questnav data topics
   private DoubleSubscriber questTimestamp = nt4Table.getDoubleTopic("timestamp").subscribe(0.0f);
@@ -33,108 +38,117 @@ public class QuestNav {
   private DoubleSubscriber questBatteryPercent =
       nt4Table.getDoubleTopic("batteryPercent").subscribe(0.0f);
 
-  // Local heading helper variables
-  private float yaw_offset = 0.0f;
-  private Pose2d resetPosition = new Pose2d();
+  // Pose of the Quest when the pose was reset
+  private Pose2d resetPoseOculus = new Pose2d();
 
-  // Transformation from Quest coordinates to Robot coordinates
-  private Transform2d questToRobotTransform = new Transform2d();
+  // Pose of the robot when the pose was reset
+  private Pose2d resetPoseRobot = new Pose2d();
 
-  // Gets the Quest's measured position.
-  public Pose2d getPose() {
-    return new Pose2d(
-        getQuestNavPose().minus(resetPosition).getTranslation(),
-        Rotation2d.fromDegrees(getOculusYaw()));
-  }
+  private final Transform2d robotToQuest =
+      new Transform2d(inchesToMeters(0.5), inchesToMeters(9.207), Rotation2d.fromDegrees(90));
 
-  // Gets the battery percent of the Quest.
-  public double getBatteryPercent() {
-    return questBatteryPercent.get();
-  }
-
-  // Returns if the Quest is connected.
-  public boolean connected() {
-    return ((RobotController.getFPGATime() - questPosition.getLastChange()) / 1000) < 250;
-  }
-
-  // Gets the Quaternion of the Quest.
-  public Quaternion getQuaternion() {
-    float[] qqFloats = questQuaternion.get();
-    return new Quaternion(qqFloats[0], qqFloats[1], qqFloats[2], qqFloats[3]);
-  }
-
-  // Gets the Quests's timestamp in seconds.
-  public double timestamp() {
-    // return questTimestamp.get();
-
-    // This ensures the timestamp is synchronized with the robot's timestamp
-    // The quest timestamp doesn't account for latency anyways, so there isn't much point in using
-    // it
-    return questPosition.getLastChange() / 1000000.0;
-  }
-
-  // Zero the relativerobot heading
-  public void zeroHeading() {
-    float[] eulerAngles = questEulerAngles.get();
-    yaw_offset = eulerAngles[1];
-  }
-
-  // Zero the absolute 3D position of the robot (similar to long-pressing the quest logo)
-  public void zeroPosition() {
-    resetPosition = getPose();
+  /* Constructor */
+  public QuestNav() {
+    // Zero the absolute 3D position of the robot (similar to long-pressing the quest logo)
     if (questMiso.get() != 99) {
       questMosi.set(1);
     }
   }
 
-  // Sets the current pose of the quest
-  public void resetPose(Pose2d currentPose) {
-    posePublisher.set(
-        new double[] {
-          currentPose.getX(), currentPose.getY(), currentPose.getRotation().getDegrees()
-        });
-    if (questMiso.get() != 98) {
-      questMosi.set(2);
-    }
+  /**
+   * Gets the pose of the robot on the field
+   *
+   * @return pose of the robot
+   */
+  public Pose2d getRobotPose() {
+    // The robot is the Quest's pose transformed back by the quest->robot offset
+    return getQuestPose().transformBy(robotToQuest.inverse());
   }
 
-  // Clean up questnav subroutine messages after processing on the headset
+  /**
+   * Gets the pose of the Quest on the field
+   *
+   * @return pose of the Quest
+   */
+  public Pose2d getQuestPose() {
+    var rawPose = getUncorrectedOculusPose();
+    var poseRelativeToReset = rawPose.minus(resetPoseOculus);
+    // Transform from "reset quest pose" to "current quest pose"
+
+    return resetPoseRobot // the robot's field pose at reset
+        .transformBy(robotToQuest) // offset to get the Quest's field pose at reset
+        .transformBy(poseRelativeToReset);
+  }
+
+  /*
+   * Gets the battery percent of the Quest.
+   *
+   * @return battery percent of the Quest
+   */
+  public double getBatteryPercent() {
+    return questBatteryPercent.get();
+  }
+
+  /**
+   * Returns if the Quest is connected
+   *
+   * @return true if the Quest is connected
+   */
+  public boolean isConnected() {
+    return ((RobotController.getFPGATime() - questBatteryPercent.getLastChange()) / 1000) < 250;
+  }
+
+  /**
+   * Gets the raw Rotation3d of the Quest
+   *
+   * @return Rotation3d of the Quest, not adjusted for the reset pose
+   */
+  public Rotation3d getQuaternion() {
+    float[] qqFloats = questQuaternion.get();
+    return new Rotation3d(new Quaternion(qqFloats[0], qqFloats[1], qqFloats[2], qqFloats[3]));
+  }
+
+  /**
+   * Gets the Quests's timestamp
+   *
+   * @return the Quest timestamp
+   */
+  public double getTimestamp() {
+    return questTimestamp.get();
+  }
+
+  /**
+   * Set the robot's pose on the field. This is useful to seed the robot to a known position. This
+   * is usually called at the start of the autonomous period.
+   *
+   * @param newPose new robot pose
+   */
+  public void resetPose(Pose2d newPose) {
+    resetPoseOculus = getUncorrectedOculusPose();
+    resetPoseRobot = newPose;
+  }
+
+  /**
+   * Clean up questnav subroutine messages after processing on the headset. Call this each iteration
+   * to reset the command after it has been processed.
+   */
   public void cleanUpQuestNavMessages() {
-    if (questMiso.get() >= 98) {
+    if (questMiso.get() == 99) {
       questMosi.set(0);
     }
   }
 
-  // Get the yaw Euler angle of the headset
-  private float getOculusYaw() {
-    float[] eulerAngles = questEulerAngles.get();
-    var ret = eulerAngles[1] - yaw_offset;
-    ret %= 360;
-    if (ret < 0) {
-      ret += 360;
-    }
-    return ret;
-  }
+  /**
+   * Gets the raw pose of the oculus, relative to the position where it started
+   *
+   * @return pose of the oculus
+   */
+  private Pose2d getUncorrectedOculusPose() {
+    var eulerAngles = questEulerAngles.get();
+    var rotation = Rotation2d.fromDegrees(-Math.IEEEremainder(eulerAngles[1], 360d));
 
-  private Translation2d getQuestNavTranslation() {
-    float[] questnavPosition = questPosition.get();
-    return new Translation2d(questnavPosition[2], -questnavPosition[0]);
-  }
-
-  private Pose2d getQuestNavPose() {
-    var oculousPositionCompensated =
-        getQuestNavTranslation().minus(new Translation2d(0, 0.1651)); // 6.5
-    return new Pose2d(oculousPositionCompensated, Rotation2d.fromDegrees(getOculusYaw()));
-  }
-
-  // Sets the transformation from the Quest coordinate system to the Robot coordinate system
-  public void setRobotTransform(Pose2d robotPose) {
-    Pose2d questPose = getPose();
-    questToRobotTransform = new Transform2d(questPose, robotPose);
-  }
-
-  // Transforms the current Quest pose into Robot coordinates
-  public Pose2d getPoseInRobotCoordinates() {
-    return getPose().transformBy(questToRobotTransform);
+    var questnavPosition = questPosition.get();
+    var translation = new Translation2d(questnavPosition[2], -questnavPosition[0]);
+    return new Pose2d(translation, rotation);
   }
 }

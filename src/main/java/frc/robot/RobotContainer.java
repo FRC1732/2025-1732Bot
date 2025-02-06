@@ -38,7 +38,6 @@ import frc.robot.commands.clawcommands.ClawBackwards;
 import frc.robot.commands.clawcommands.IntakeCoral;
 import frc.robot.generated.TunerConstants;
 import frc.robot.limelightVision.ApriltagVision.VisionApriltagSubsystem;
-import frc.robot.limelightVision.LimelightHelpers;
 import frc.robot.operator_interface.OISelector;
 import frc.robot.operator_interface.OperatorInterface;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
@@ -441,8 +440,8 @@ public class RobotContainer {
     // add robot-wide periodic code here
     questNav.cleanUpQuestNavMessages();
     posePublisher.set(drivetrain.getPose());
-    // updateVisionPose();
-    questPosePublisher.set(questNav.getPose());
+    updateVisionPose();
+    questPosePublisher.set(questNav.getRobotPose());
   }
 
   public void disablePeriodic() {
@@ -462,18 +461,19 @@ public class RobotContainer {
   }
 
   public void updateVisionPose() {
-    if (questNav.connected()) {
-      drivetrain.addVisionMeasurement(questNav.getPose(), VecBuilder.fill(0, 0, 0));
+    if (questNav.isConnected()) {
+      drivetrain.addVisionMeasurement(questNav.getRobotPose(), VecBuilder.fill(0.0, 0.0, 0.0));
       return;
     }
 
-    LimelightHelpers.PoseEstimate limelightMeasurement = visionApriltagSubsystem.getPoseEstimate();
-    if (limelightMeasurement.tagCount >= 2
-        || (limelightMeasurement.tagCount == 1 && limelightMeasurement.avgTagDist < 1.25)) {
-      drivetrain.addVisionMeasurement(
-          limelightMeasurement.pose,
-          limelightMeasurement.timestampSeconds,
-          VecBuilder.fill(.6, .6, 9999999));
-    }
+    // LimelightHelpers.PoseEstimate limelightMeasurement =
+    // visionApriltagSubsystem.getPoseEstimate();
+    // if (limelightMeasurement.tagCount >= 2
+    //     || (limelightMeasurement.tagCount == 1 && limelightMeasurement.avgTagDist < 1.25)) {
+    //   drivetrain.addVisionMeasurement(
+    //       limelightMeasurement.pose,
+    //       limelightMeasurement.timestampSeconds,
+    //       VecBuilder.fill(.6, .6, 9999999));
+    // }
   }
 }
