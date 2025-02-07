@@ -18,10 +18,10 @@
 #define NUMPIXELS_FRONT 24  // number of neopixels in strip
 #define NUMPIXELS_SIDES 24  // number of neopixels in strip
 
-#define EYES_START 0 // start of where we turn the eyes red
-#define EYES_START_SECOND 3 // second start of where we turn the eyes red
-#define EYES_LENGTH 2 // number of pixels we want to turn red for the ram
-#define EYES_LENGTH_SECOND 2 // second number of pixels we want to turn red for the ram
+#define EYES_START 0          // start of where we turn the eyes red
+#define EYES_START_SECOND 3   // second start of where we turn the eyes red
+#define EYES_LENGTH 2         // number of pixels we want to turn red for the ram
+#define EYES_LENGTH_SECOND 2  // second number of pixels we want to turn red for the ram
 
 #define DELAY_TIME 200
 #define INTENSITY 255
@@ -65,7 +65,7 @@ void setup() {
   pixelsSides.begin();
 }
 
-void redEyes(Adafruit_NeoPixel *pixels) { // method that turns the ram eyes red
+void redEyes(Adafruit_NeoPixel *pixels) {  // method that turns the ram eyes red
   uint32_t pickColor = fullRed;
   if (doBlueEyes) {
     uint32_t pickColor = fullBlue;
@@ -126,52 +126,19 @@ void loop() {
   Serial.print("Mode: ");
   Serial.println(mode);
 
-  if (mode >= 16) {
-    Serial.println("Fast Flash");
-    flashFast(false, true, false, &pixelsFront, NUMPIXELS_FRONT);
-    flashFast(false, true, false, &pixelsSides, NUMPIXELS_SIDES);
-  } else {
-    switch (mode) {
-      case 0:  // idle
-        idleMode(&pixelsFront, NUMPIXELS_FRONT);
-        idleMode(&pixelsSides, NUMPIXELS_SIDES);
-        break;
+  switch (mode) {
+    case 0:  // idle
+      idleMode(&pixelsFront, NUMPIXELS_FRONT);
+      idleMode(&pixelsSides, NUMPIXELS_SIDES);
+      break;
 
-      case 1:  // mode == speaker
-        Serial.println("Speaker Mode");
-        setColorInt(255, 90, 200, &pixelsFront, NUMPIXELS_FRONT);
-        setColorInt(255, 90, 200, &pixelsSides, NUMPIXELS_SIDES);
-        break;
+    case 1:  // fast flash
+      flashFast(false, true, false, &pixelsFront, NUMPIXELS_FRONT);
+      flashFast(false, true, false, &pixelsSides, NUMPIXELS_SIDES);
+      break;
 
-      case 2:  // !hasClearance
-        Serial.println("Clearance");
-        setColorInt(255, 0, 0, &pixelsFront, NUMPIXELS_FRONT);
-        setColorInt(255, 0, 0, &pixelsSides, NUMPIXELS_SIDES);
-        break;
-
-      case 3:  // target ready
-        setColorInt(0, 125, 0, &pixelsFront, NUMPIXELS_FRONT);
-        setColorInt(0, 125, 0, &pixelsSides, NUMPIXELS_SIDES);
-        break;
-
-      case 4:  // climbing
-        // climberColors(true, true, true, pixelsFront, NUMPIXELS_FRONT);
-        // climberColors(true, true, true, pixelsSides, NUMPIXELS_SIDES);
-        climberColorsRainbow(&pixelsFront, NUMPIXELS_FRONT);
-        climberColorsRainbow(&pixelsSides, NUMPIXELS_SIDES);
-        break;
-      case 5:  // note seen by intake limelight
-        setColorInt(255, 50, 0, &pixelsFront, NUMPIXELS_FRONT);
-        setColorInt(255, 50, 0, &pixelsSides, NUMPIXELS_SIDES);
-        break;
-
-      default:
-        break;
-    }
-
-
-    // pixelsFront.show();
-
+    default:
+      break;
   }
 
   myTime = millis();
@@ -307,7 +274,7 @@ void climberColorsRainbow(Adafruit_NeoPixel *pixels, int size) {
       } else if (pickTable[i] > 0) {
         pickTable[i] = max(0, pickTable[i] - 20);
       }
-      
+
       uint32_t setColor = pixels->Color(pickTableColor[i][0] * (pickTable[i] / 250.0), pickTableColor[i][1] * (pickTable[i] / 250.0), pickTableColor[i][2] * (pickTable[i] / 250.0));
       pixels->setPixelColor(i, setColor);
     }

@@ -79,7 +79,6 @@ public class StatusRgb extends SubsystemBase {
         switch (specialMode) {
           case CORAL_CAPTURED: // blue and gold
             setMode(1);
-            ;
             return;
           default: // do nothing
             break;
