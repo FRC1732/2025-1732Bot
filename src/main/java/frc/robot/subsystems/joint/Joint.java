@@ -4,6 +4,7 @@
 
 package frc.robot.subsystems.joint;
 
+import com.revrobotics.AbsoluteEncoder;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
@@ -15,7 +16,6 @@ import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -28,7 +28,7 @@ public class Joint extends SubsystemBase {
   private ShuffleboardTab jointTab;
   private double setpoint;
   private RelativeEncoder jointEncoder;
-  private DutyCycleEncoder jointAbsoluteEncoder;
+  private AbsoluteEncoder jointAbsoluteEncoder;
   private ProfiledPIDController jointPID;
   private ArmFeedforward jointFeedforward;
 
@@ -38,7 +38,8 @@ public class Joint extends SubsystemBase {
 
   public Joint() {
     jointMotor = new SparkMax(JointConstants.JOINT_MOTOR_CAN_ID, SparkMax.MotorType.kBrushless);
-    jointAbsoluteEncoder = new DutyCycleEncoder(8, 1.0, JointConstants.JOINT_ABSOLUTE_OFFSET);
+    // jointAbsoluteEncoder = new DutyCycleEncoder(8, 1.0, JointConstants.JOINT_ABSOLUTE_OFFSET);
+    jointAbsoluteEncoder = jointMotor.getAbsoluteEncoder();
     SparkMaxConfig config = new SparkMaxConfig();
 
     prevJointP = JointConstants.JOINT_KP;
@@ -122,7 +123,7 @@ public class Joint extends SubsystemBase {
   }
 
   private double getAbsolutePosition() {
-    return ((jointAbsoluteEncoder.get() + 0.85) % 1.0) * -360.0 / 2.4 + 198.0;
+    return ((jointAbsoluteEncoder.getPosition() + 0.85) % 1.0) * -360.0 / 2.4 + 198.0;
   }
 
   @Override
@@ -165,16 +166,17 @@ public class Joint extends SubsystemBase {
         jointFeedforward.calculate(
             Math.toRadians(jointEncoder.getPosition() + JointConstants.JOINT_COG_OFFSET),
             jointEncoder.getVelocity()));
-    Logger.recordOutput(
-        JointConstants.SUBSYSTEM_NAME + "/AbsoluteIsConnected", jointAbsoluteEncoder.isConnected());
+    // Logger.recordOutput(
+    //     JointConstants.SUBSYSTEM_NAME + "/AbsoluteIsConnected",
+    // jointAbsoluteEncoder.isConnected());
     Logger.recordOutput(
         JointConstants.SUBSYSTEM_NAME + "/AbsoluteEncoderDegrees", getAbsolutePosition());
   }
 
   public void resetToAbsoluteEncoder() {
-    if (jointAbsoluteEncoder.isConnected()) {
-      jointEncoder.setPosition(angleModulusDegZero360(getAbsolutePosition()));
-    }
+    // if (jointAbsoluteEncoder.isConnected()) {
+    jointEncoder.setPosition(angleModulusDegZero360(getAbsolutePosition()));
+    // }
   }
 
   public void runJointForward() {
@@ -197,7 +199,7 @@ public class Joint extends SubsystemBase {
     jointTab = Shuffleboard.getTab("Joint Tab");
     jointTab.addDouble("Setpoint", () -> getSetPoint());
     jointTab.addDouble("Encoder Position", () -> jointEncoder.getPosition());
-    jointTab.addDouble("Absolute Position", () -> jointAbsoluteEncoder.get());
+    jointTab.addDouble("Absolute Position", () -> jointAbsoluteEncoder.getPosition());
     jointTab.addDouble("Absolute Position (Degrees)", () -> getAbsolutePosition());
 
     jointTab.add("PID Controllor", this.jointPID);
