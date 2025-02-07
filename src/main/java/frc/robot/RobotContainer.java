@@ -150,6 +150,9 @@ public class RobotContainer {
     joint = new Joint();
     claw = new Claw();
     statusRgb = new StatusRgb();
+
+    visionApriltagSubsystem =
+        new VisionApriltagSubsystem(() -> drivetrain.getPigeon2().getRotation2d().getDegrees());
   }
 
   /**
