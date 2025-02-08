@@ -20,8 +20,8 @@
 
 #define EYES_START 0          // start of where we turn the eyes red
 #define EYES_START_SECOND 3   // second start of where we turn the eyes red
-#define EYES_LENGTH 2         // number of pixels we want to turn red for the ram
-#define EYES_LENGTH_SECOND 2  // second number of pixels we want to turn red for the ram
+#define EYES_LENGTH 0         // number of pixels we want to turn red for the ram
+#define EYES_LENGTH_SECOND 0  // second number of pixels we want to turn red for the ram
 
 #define DELAY_TIME 200
 #define INTENSITY 255
@@ -66,6 +66,7 @@ void setup() {
 }
 
 void redEyes(Adafruit_NeoPixel *pixels) {  // method that turns the ram eyes red
+  return;
   uint32_t pickColor = fullRed;
   if (doBlueEyes) {
     uint32_t pickColor = fullBlue;
@@ -91,7 +92,6 @@ void setColorInt(int red, int green, int blue, Adafruit_NeoPixel *pixels, int si
     pixels->setPixelColor(i, pixels->Color(red, green, blue));
   }
   if (size == NUMPIXELS_FRONT) {
-    redEyes(pixels);
   }
   pixels->show();
 }
