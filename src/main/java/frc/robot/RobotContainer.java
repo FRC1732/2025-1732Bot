@@ -12,9 +12,12 @@ import com.ctre.phoenix6.swerve.SwerveModule;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveModule.SteerRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
+import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.commands.PathPlannerAuto;
 import com.pathplanner.lib.events.EventTrigger;
+import com.pathplanner.lib.path.PathConstraints;
+import com.pathplanner.lib.path.PathPlannerPath;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -123,6 +126,9 @@ public class RobotContainer {
   StructPublisher<Pose2d> questPosePublisher =
       NetworkTableInstance.getDefault().getStructTopic("questPose", Pose2d.struct).publish();
 
+  PathConstraints pathConstraints = new PathConstraints(4.855, 5.8, 9.42, 14.8876585);
+  PathPlannerPath pathF1;
+
   private Field2d field2d;
 
   /**
@@ -130,6 +136,12 @@ public class RobotContainer {
    * commands.
    */
   public RobotContainer() {
+    try {
+      pathF1 = PathPlannerPath.fromPathFile("F1");
+    } catch (Exception e) {
+      System.out.println(e.getMessage());
+    }
+
     defineSubsystems();
 
     // disable all telemetry in the LiveWindow to reduce the processing during each iteration
@@ -205,7 +217,7 @@ public class RobotContainer {
         Commands.sequence(
             joint.runOnce(() -> joint.setJointPose(JointPosition.CORAL_STATION)),
             new IntakeCoral(claw, statusRgb)));
-    NamedCommands.registerCommand("ejectCoral", new IntakeCoral(claw, statusRgb));
+    NamedCommands.registerCommand("ejectCoral", new ClawBackwards(claw));
     NamedCommands.registerCommand(
         "setPoseL4", joint.runOnce(() -> joint.setJointPose(JointPosition.LEVEL_4)));
 
@@ -401,7 +413,12 @@ public class RobotContainer {
   }
 
   private void configureSubsystemCommands() {
-    oi.scoreCoralButton().whileTrue(new ClawBackwards(claw));
+    // oi.scoreCoralButton().whileTrue(new ClawBackwards(claw));
+    oi.scoreCoralButton()
+        .whileTrue(
+            AutoBuilder.pathfindThenFollowPath(pathF1, pathConstraints)
+                .andThen(joint.runOnce(() -> joint.setJointPose(JointPosition.LEVEL_2)))
+                .andThen(new ClawBackwards(claw)));
 
     oi.intakeCoralButton()
         .whileTrue(
@@ -416,8 +433,8 @@ public class RobotContainer {
                             -oi.getTranslateX() * MaxSpeed,
                             -oi.getTranslateY() * MaxSpeed,
                             drivetrain.getPose().getRotation().getDegrees() < 0
-                                ? Rotation2d.fromDegrees(-125)
-                                : Rotation2d.fromDegrees(125)))));
+                                ? Rotation2d.fromDegrees(-55)
+                                : Rotation2d.fromDegrees(55)))));
     oi.intakeCoralButton().onFalse(joint.runOnce(() -> joint.setJointPose(JointPosition.LEVEL_2)));
   }
 
@@ -459,9 +476,9 @@ public class RobotContainer {
   public void periodic() {
     // add robot-wide periodic code here
     questNav.cleanUpQuestNavMessages();
-    //posePublisher.set(drivetrain.getPose());
-    // updateVisionPose();
-    // questPosePublisher.set(questNav.getPose());
+    posePublisher.set(drivetrain.getPose());
+    updateVisionPose();
+    questPosePublisher.set(questNav.getRobotPose());
 
     // new field pose updates (overlaps above code)
     field2d.setPose(FieldObject.ROBOT_POSE, drivetrain.getPose());
@@ -500,8 +517,9 @@ public class RobotContainer {
   }
 
   public void updateVisionPose() {
-    if (questNav.isConnected()) {
-      drivetrain.addVisionMeasurement(questNav.getRobotPose(), VecBuilder.fill(0.0, 0.0, 0.0));
+    if (true) {
+      drivetrain.addVisionMeasurement(
+          questNav.getRobotPose(), VecBuilder.fill(0.0, 0.0, 9999999.0));
       return;
     }
 
