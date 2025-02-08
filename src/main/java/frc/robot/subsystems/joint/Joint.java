@@ -203,7 +203,7 @@ public class Joint extends SubsystemBase {
     jointTab.addDouble("Absolute Position (Degrees)", () -> getAbsolutePosition());
 
     jointTab.add("PID Controllor", this.jointPID);
-    jointTab.add("Absolute Encoder", jointAbsoluteEncoder);
+    //    jointTab.add("Absolute Encoder", jointAbsoluteEncoder);
 
     // jointP = jointTab.add("Shooter P", JointConstants.JOINT_KP).getEntry();
     // jointI = jointTab.add("Shooter I", JointConstants.JOINT_KI).getEntry();

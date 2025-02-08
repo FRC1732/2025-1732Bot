@@ -394,12 +394,8 @@ public class RobotContainer {
     oi.getSysIdQuasistaticForward().whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
     oi.getSysIdQuasistaticReverse().whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
 
-    oi.operatorB1().onTrue(
-            new DriveToPose(drivetrain,
-                    () ->
-                            new Pose2d(0.0, 0.0, new Rotation2d(0.0))
-            )
-    );
+    oi.operatorB1()
+        .onTrue(new DriveToPose(drivetrain, () -> new Pose2d(0.0, 0.0, new Rotation2d(0.0))));
 
     // drivetrain.registerTelemetry(telemetryLogger::telemeterize);
   }

@@ -20,9 +20,8 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.lib.team3061.RobotConfig;
 // import frc.lib.team3061.drivetrain.Drivetrain;
-import frc.lib.team6328.util.LoggedTunableNumber;
+import frc.robot.configs.CompRobotConfig;
 import frc.robot.field.Field2d;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
@@ -49,74 +48,46 @@ public class DriveToPose extends Command {
   private boolean running = false;
   private Timer timer;
 
-  private static final LoggedTunableNumber driveKp =
-      new LoggedTunableNumber(
-          "DriveToPose/DriveKp", RobotConfig.getInstance().getDriveToPoseDriveKP());
-  private static final LoggedTunableNumber driveKd =
-      new LoggedTunableNumber(
-          "DriveToPose/DriveKd", RobotConfig.getInstance().getDriveToPoseDriveKD());
-  private static final LoggedTunableNumber driveKi =
-      new LoggedTunableNumber("DriveToPose/DriveKi", 0);
-  private static final LoggedTunableNumber thetaKp =
-      new LoggedTunableNumber(
-          "DriveToPose/ThetaKp", RobotConfig.getInstance().getDriveToPoseThetaKP());
-  private static final LoggedTunableNumber thetaKd =
-      new LoggedTunableNumber(
-          "DriveToPose/ThetaKd", RobotConfig.getInstance().getDriveToPoseThetaKD());
-  private static final LoggedTunableNumber thetaKi =
-      new LoggedTunableNumber(
-          "DriveToPose/ThetaKi", RobotConfig.getInstance().getDriveToPoseThetaKI());
-  private static final LoggedTunableNumber driveMaxVelocity =
-      new LoggedTunableNumber(
-          "DriveToPose/DriveMaxVelocityMetersPerSecond",
-          RobotConfig.getInstance().getDriveToPoseDriveMaxVelocity().in(MetersPerSecond));
-  private static final LoggedTunableNumber driveMaxAcceleration =
-      new LoggedTunableNumber(
-          "DriveToPose/DriveMaxAccelerationMetersPerSecondPerSecond",
-          RobotConfig.getInstance()
-              .getDriveToPoseDriveMaxAcceleration()
-              .in(MetersPerSecondPerSecond));
-  private static final LoggedTunableNumber thetaMaxVelocity =
-      new LoggedTunableNumber(
-          "DriveToPose/ThetaMaxVelocityRadiansPerSecond",
-          RobotConfig.getInstance().getDriveToPoseTurnMaxVelocity().in(RadiansPerSecond));
-  private static final LoggedTunableNumber thetaMaxAcceleration =
-      new LoggedTunableNumber(
-          "DriveToPose/ThetaMaxAccelerationRadiansPerSecondPerSecond",
-          RobotConfig.getInstance()
-              .getDriveToPoseTurnMaxAcceleration()
-              .in(RadiansPerSecondPerSecond));
-  private static final LoggedTunableNumber driveTolerance =
-      new LoggedTunableNumber(
-          "DriveToPose/DriveToleranceMeters",
-          RobotConfig.getInstance().getDriveToPoseDriveTolerance().in(Meters));
-  private static final LoggedTunableNumber thetaTolerance =
-      new LoggedTunableNumber(
-          "DriveToPose/ThetaToleranceRadians",
-          RobotConfig.getInstance().getDriveToPoseThetaTolerance().in(Radians));
-  private static final LoggedTunableNumber timeout =
-      new LoggedTunableNumber("DriveToPose/timeout", 5.0);
+  private static final double driveKp = CompRobotConfig.DRIVE_TO_POSE_DRIVE_KP;
+  private static final double driveKd = CompRobotConfig.DRIVE_TO_POSE_DRIVE_KD;
+  private static final double driveKi = CompRobotConfig.DRIVE_TO_POSE_THETA_KI;
+  private static final double thetaKp = CompRobotConfig.DRIVE_TO_POSE_THETA_KP;
+  private static final double thetaKd = CompRobotConfig.DRIVE_TO_POSE_THETA_KD;
+  private static final double thetaKi = CompRobotConfig.DRIVE_TO_POSE_THETA_KI;
+  private static final double driveMaxVelocity =
+      CompRobotConfig.DRIVE_TO_POSE_MAX_VELOCITY.in(MetersPerSecond);
+  private static final double driveMaxAcceleration =
+      CompRobotConfig.DRIVE_TO_POSE_MAX_ACCELERATION.in(MetersPerSecondPerSecond);
+  private static final double thetaMaxVelocity =
+      CompRobotConfig.DRIVE_TO_POSE_MAX_VELOCITY.in(MetersPerSecond) * 2.0;
+  private static final double thetaMaxAcceleration =
+      CompRobotConfig.DRIVE_TO_POSE_MAX_ACCELERATION.in(MetersPerSecondPerSecond) * 2.0;
+  private static final double driveTolerance =
+      CompRobotConfig.DRIVE_TO_POSE_DRIVE_TOLERANCE.in(Meters);
+  private static final double thetaTolerance =
+      CompRobotConfig.DRIVE_TO_POSE_THETA_TOLERANCE.in(Radians);
+  private static final double timeout = 5.0;
 
   private final ProfiledPIDController xController =
       new ProfiledPIDController(
-          driveKp.get(),
-          driveKi.get(),
-          driveKd.get(),
-          new TrapezoidProfile.Constraints(driveMaxVelocity.get(), driveMaxAcceleration.get()),
+          driveKp,
+          driveKi,
+          driveKd,
+          new TrapezoidProfile.Constraints(driveMaxVelocity, driveMaxAcceleration),
           LOOP_PERIOD_SECS);
   private final ProfiledPIDController yController =
       new ProfiledPIDController(
-          driveKp.get(),
-          driveKi.get(),
-          driveKd.get(),
-          new TrapezoidProfile.Constraints(driveMaxVelocity.get(), driveMaxAcceleration.get()),
+          driveKp,
+          driveKi,
+          driveKd,
+          new TrapezoidProfile.Constraints(driveMaxVelocity, driveMaxAcceleration),
           LOOP_PERIOD_SECS);
   private final ProfiledPIDController thetaController =
       new ProfiledPIDController(
-          thetaKp.get(),
-          thetaKi.get(),
-          thetaKd.get(),
-          new TrapezoidProfile.Constraints(thetaMaxVelocity.get(), thetaMaxAcceleration.get()),
+          thetaKp,
+          thetaKi,
+          thetaKd,
+          new TrapezoidProfile.Constraints(thetaMaxVelocity, thetaMaxAcceleration),
           LOOP_PERIOD_SECS);
 
   /**
@@ -149,9 +120,9 @@ public class DriveToPose extends Command {
     xController.reset(currentPose.getX());
     yController.reset(currentPose.getY());
     thetaController.reset(currentPose.getRotation().getRadians());
-    xController.setTolerance(driveTolerance.get());
-    yController.setTolerance(driveTolerance.get());
-    thetaController.setTolerance(thetaTolerance.get());
+    xController.setTolerance(driveTolerance);
+    yController.setTolerance(driveTolerance);
+    thetaController.setTolerance(thetaTolerance);
     this.targetPose = poseSupplier.get();
 
     Logger.recordOutput("DriveToPose/targetPose", targetPose);
@@ -160,11 +131,13 @@ public class DriveToPose extends Command {
   }
 
   private final SwerveRequest.FieldCentric drive =
-          new SwerveRequest.FieldCentric()
-                  .withDeadband(TunerConstants.kSpeedAt12Volts.in(MetersPerSecond) * 0.03)
-                  .withRotationalDeadband(RotationsPerSecond.of(.75).in(RadiansPerSecond) * 0.1) // Add a 10% deadband
-                  .withDriveRequestType(
-                          SwerveModule.DriveRequestType.OpenLoopVoltage); // Use open-loop control for drive motors
+      new SwerveRequest.FieldCentric()
+          .withDeadband(TunerConstants.kSpeedAt12Volts.in(MetersPerSecond) * 0.03)
+          .withRotationalDeadband(
+              RotationsPerSecond.of(.75).in(RadiansPerSecond) * 0.1) // Add a 10% deadband
+          .withDriveRequestType(
+              SwerveModule.DriveRequestType
+                  .OpenLoopVoltage); // Use open-loop control for drive motors
 
   /**
    * This method is invoked periodically while this command is scheduled. It calculates the
@@ -179,59 +152,71 @@ public class DriveToPose extends Command {
     running = true;
 
     // Update from tunable numbers
-    LoggedTunableNumber.ifChanged(
-        hashCode(),
-        pid -> {
-          xController.setPID(pid[0], pid[1], pid[2]);
-          yController.setPID(pid[0], pid[1], pid[2]);
-        },
-        driveKp,
-        driveKi,
-        driveKd);
-    LoggedTunableNumber.ifChanged(
-        hashCode(),
-        max -> {
-          xController.setConstraints(new TrapezoidProfile.Constraints(max[0], max[1]));
-          yController.setConstraints(new TrapezoidProfile.Constraints(max[0], max[1]));
-        },
-        driveMaxVelocity,
-        driveMaxAcceleration);
-    LoggedTunableNumber.ifChanged(
-        hashCode(),
-        tolerance -> {
-          xController.setTolerance(tolerance[0]);
-          yController.setTolerance(tolerance[0]);
-        },
-        driveTolerance);
+    //    LoggedTunableNumber.ifChanged(
+    //        hashCode(),
+    //        pid -> {
+    //          xController.setPID(pid[0], pid[1], pid[2]);
+    //          yController.setPID(pid[0], pid[1], pid[2]);
+    //        },
+    //        driveKp,
+    //        driveKi,
+    //        driveKd);
+    //    LoggedTunableNumber.ifChanged(
+    //        hashCode(),
+    //        max -> {
+    //          xController.setConstraints(new TrapezoidProfile.Constraints(max[0], max[1]));
+    //          yController.setConstraints(new TrapezoidProfile.Constraints(max[0], max[1]));
+    //        },
+    //        driveMaxVelocity,
+    //        driveMaxAcceleration);
+    //    LoggedTunableNumber.ifChanged(
+    //        hashCode(),
+    //        tolerance -> {
+    //          xController.setTolerance(tolerance[0]);
+    //          yController.setTolerance(tolerance[0]);
+    //        },
+    //        driveTolerance);
 
-    LoggedTunableNumber.ifChanged(
-        hashCode(),
-        pid -> thetaController.setPID(pid[0], pid[1], pid[2]),
-        thetaKp,
-        thetaKi,
-        thetaKd);
-    LoggedTunableNumber.ifChanged(
-        hashCode(),
-        max -> thetaController.setConstraints(new TrapezoidProfile.Constraints(max[0], max[1])),
-        thetaMaxVelocity,
-        thetaMaxAcceleration);
-    LoggedTunableNumber.ifChanged(
-        hashCode(), tolerance -> thetaController.setTolerance(tolerance[0]), thetaTolerance);
+    //    LoggedTunableNumber.ifChanged(
+    //        hashCode(),
+    //        pid -> thetaController.setPID(pid[0], pid[1], pid[2]),
+    //        thetaKp,
+    //        thetaKi,
+    //        thetaKd);
+    //    LoggedTunableNumber.ifChanged(
+    //        hashCode(),
+    //        max -> thetaController.setConstraints(new TrapezoidProfile.Constraints(max[0],
+    // max[1])),
+    //        thetaMaxVelocity,
+    //        thetaMaxAcceleration);
+    //    LoggedTunableNumber.ifChanged(
+    //        hashCode(), tolerance -> thetaController.setTolerance(tolerance[0]), thetaTolerance);
 
     Pose2d currentPose = drivetrain.getPose();
 
-    double xVelocity = xController.atGoal() ? xController.calculate(currentPose.getX(), this.targetPose.getX()) : 0.0;
-    double yVelocity = yController.atGoal() ? yController.calculate(currentPose.getY(), this.targetPose.getY()) : 0.0;
-    double thetaVelocity = thetaController.atGoal() ?
-            thetaController.calculate(currentPose.getRotation().getRadians(), this.targetPose.getRotation().getRadians())
+    double xVelocity =
+        xController.atGoal()
+            ? xController.calculate(currentPose.getX(), this.targetPose.getX())
+            : 0.0;
+    double yVelocity =
+        yController.atGoal()
+            ? yController.calculate(currentPose.getY(), this.targetPose.getY())
+            : 0.0;
+    double thetaVelocity =
+        thetaController.atGoal()
+            ? thetaController.calculate(
+                currentPose.getRotation().getRadians(), this.targetPose.getRotation().getRadians())
             : 0.0;
 
     int allianceMultiplier = Field2d.getInstance().getAlliance() == Alliance.Blue ? 1 : -1;
 
-    drivetrain.applyRequest(() ->
-            drive.withVelocityX(xVelocity) // Drive forward with negative Y (forward)
-                    .withVelocityY(yVelocity) // Drive left with negative X (left)
-                    .withRotationalRate(thetaVelocity)); // Drive counterclockwise with negative X (left))
+    drivetrain.applyRequest(
+        () ->
+            drive
+                .withVelocityX(xVelocity) // Drive forward with negative Y (forward)
+                .withVelocityY(yVelocity) // Drive left with negative X (left)
+                .withRotationalRate(
+                    thetaVelocity)); // Drive counterclockwise with negative X (left))
   }
 
   /**
