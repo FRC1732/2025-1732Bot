@@ -35,6 +35,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 // import frc.lib.team3061.leds.LEDs;
+import frc.robot.commands.DriveToPose;
 import frc.robot.commands.clawcommands.ClawBackwards;
 import frc.robot.commands.clawcommands.IntakeCoral;
 import frc.robot.field.Field2d;
@@ -392,6 +393,13 @@ public class RobotContainer {
     oi.getSysIdDynamicReverse().whileTrue(drivetrain.sysIdDynamic(Direction.kReverse));
     oi.getSysIdQuasistaticForward().whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
     oi.getSysIdQuasistaticReverse().whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
+
+    oi.operatorB1().onTrue(
+            new DriveToPose(drivetrain,
+                    () ->
+                            new Pose2d(0.0, 0.0, new Rotation2d(0.0))
+            )
+    );
 
     // drivetrain.registerTelemetry(telemetryLogger::telemeterize);
   }

@@ -12,6 +12,8 @@ package frc.robot.commands;
 import static edu.wpi.first.units.Units.*;
 import static frc.robot.Constants.*;
 
+import com.ctre.phoenix6.swerve.SwerveModule;
+import com.ctre.phoenix6.swerve.SwerveRequest;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
@@ -22,6 +24,7 @@ import frc.lib.team3061.RobotConfig;
 // import frc.lib.team3061.drivetrain.Drivetrain;
 import frc.lib.team6328.util.LoggedTunableNumber;
 import frc.robot.field.Field2d;
+import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.Logger;
@@ -156,6 +159,13 @@ public class DriveToPose extends Command {
     this.timer.restart();
   }
 
+  private final SwerveRequest.FieldCentric drive =
+          new SwerveRequest.FieldCentric()
+                  .withDeadband(TunerConstants.kSpeedAt12Volts.in(MetersPerSecond) * 0.03)
+                  .withRotationalDeadband(RotationsPerSecond.of(.75).in(RadiansPerSecond) * 0.1) // Add a 10% deadband
+                  .withDriveRequestType(
+                          SwerveModule.DriveRequestType.OpenLoopVoltage); // Use open-loop control for drive motors
+
   /**
    * This method is invoked periodically while this command is scheduled. It calculates the
    * velocities based on the current and target poses and invokes the drivetrain subsystem's drive
@@ -210,20 +220,18 @@ public class DriveToPose extends Command {
 
     Pose2d currentPose = drivetrain.getPose();
 
-    double xVelocity = xController.calculate(currentPose.getX(), this.targetPose.getX());
-    double yVelocity = yController.calculate(currentPose.getY(), this.targetPose.getY());
-    double thetaVelocity =
-        thetaController.calculate(
-            currentPose.getRotation().getRadians(), this.targetPose.getRotation().getRadians());
-    if (xController.atGoal()) xVelocity = 0.0;
-    if (yController.atGoal()) yVelocity = 0.0;
-    if (thetaController.atGoal()) thetaVelocity = 0.0;
+    double xVelocity = xController.atGoal() ? xController.calculate(currentPose.getX(), this.targetPose.getX()) : 0.0;
+    double yVelocity = yController.atGoal() ? yController.calculate(currentPose.getY(), this.targetPose.getY()) : 0.0;
+    double thetaVelocity = thetaController.atGoal() ?
+            thetaController.calculate(currentPose.getRotation().getRadians(), this.targetPose.getRotation().getRadians())
+            : 0.0;
 
     int allianceMultiplier = Field2d.getInstance().getAlliance() == Alliance.Blue ? 1 : -1;
 
-    // drivetrain.drive(
-    //  allianceMultiplier * xVelocity, allianceMultiplier * yVelocity, thetaVelocity, true, true);
-    // TODO:needs new drive mechanism
+    drivetrain.applyRequest(() ->
+            drive.withVelocityX(xVelocity) // Drive forward with negative Y (forward)
+                    .withVelocityY(yVelocity) // Drive left with negative X (left)
+                    .withRotationalRate(thetaVelocity)); // Drive counterclockwise with negative X (left))
   }
 
   /**
