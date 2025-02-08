@@ -459,7 +459,7 @@ public class RobotContainer {
   public void periodic() {
     // add robot-wide periodic code here
     questNav.cleanUpQuestNavMessages();
-    posePublisher.set(drivetrain.getPose());
+    //posePublisher.set(drivetrain.getPose());
     // updateVisionPose();
     // questPosePublisher.set(questNav.getPose());
 

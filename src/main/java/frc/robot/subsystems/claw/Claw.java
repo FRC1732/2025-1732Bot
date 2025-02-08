@@ -7,7 +7,6 @@ package frc.robot.subsystems.claw;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkAnalogSensor;
 import com.revrobotics.spark.SparkMax;
-import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
@@ -59,10 +58,15 @@ public class Claw extends SubsystemBase {
     return encoder.getPosition();
   }
 
+  public double getBeambreakVoltage() {
+    return beamBreakSensor.getVoltage();
+  }
+
   public void setupShuffleboard() {
     tab = Shuffleboard.getTab("Claw");
     tab.addDouble("Claw Encoder Position", this::getEncoderPosition);
     tab.addDouble("Claw Speed", this::getClawSpeed);
+    tab.addDouble("Beambreak Voltage", this::getBeambreakVoltage);
     tab.addBoolean("Has Coral", this::hasCoral);
   }
 

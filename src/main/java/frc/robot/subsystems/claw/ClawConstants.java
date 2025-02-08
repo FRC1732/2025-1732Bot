@@ -1,7 +1,5 @@
 package frc.robot.subsystems.claw;
 
-import com.revrobotics.spark.SparkAnalogSensor;
-
 public class ClawConstants {
   private static final String CONSTRUCTOR_EXCEPTION = "constant class";
 

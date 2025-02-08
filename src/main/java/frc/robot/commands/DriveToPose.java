@@ -19,6 +19,8 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.Command;
 // import frc.lib.team3061.drivetrain.Drivetrain;
 import frc.robot.configs.CompRobotConfig;
@@ -41,6 +43,8 @@ import org.littletonrobotics.junction.Logger;
  * <p>At End: stops the drivetrain
  */
 public class DriveToPose extends Command {
+  private ShuffleboardTab driveToPoseTab;
+
   private final CommandSwerveDrivetrain drivetrain;
   private final Supplier<Pose2d> poseSupplier;
   private Pose2d targetPose;
@@ -252,5 +256,15 @@ public class DriveToPose extends Command {
   public void end(boolean interrupted) {
     // drivetrain.stop();
     running = false;
+  }
+
+  public void setupShuffleboard() {
+    driveToPoseTab = Shuffleboard.getTab("Drive To Pose Tab");
+    driveToPoseTab.add("Current Pose", this.poseSupplier);
+    // driveToPoseTab.addDoubleArray("Target Pose", () -> this.targetPose.);
+
+    driveToPoseTab.add("PID X Controllor", this.xController);
+    driveToPoseTab.add("PID Y Controllor", this.yController);
+    driveToPoseTab.add("PID Theta Controllor", this.thetaController);
   }
 }
