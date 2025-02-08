@@ -44,15 +44,19 @@ public class QuestNav {
   // Pose of the robot when the pose was reset
   private Pose2d resetPoseRobot = new Pose2d();
 
+  private Pose2d[] rollingAverage;
+
   private final Transform2d robotToQuest =
       new Transform2d(inchesToMeters(0.5), inchesToMeters(9.207), Rotation2d.fromDegrees(90));
 
   /* Constructor */
-  public QuestNav() {
+  public QuestNav(int rollingAveragelength) {
     // Zero the absolute 3D position of the robot (similar to long-pressing the quest logo)
     if (questMiso.get() != 99) {
       questMosi.set(1);
     }
+
+    this.rollingAverage = new Pose2d[rollingAveragelength];
   }
 
   /**
@@ -78,6 +82,28 @@ public class QuestNav {
     return resetPoseRobot // the robot's field pose at reset
         .transformBy(robotToQuest) // offset to get the Quest's field pose at reset
         .transformBy(poseRelativeToReset);
+  }
+
+  public Pose2d getRobotPoseWithRollingAverage() {
+    double totalx = 0;
+    double totaly = 0;
+    for (int i = 0; i < rollingAverage.length; i++) {
+      totalx += rollingAverage[i].getX();
+      totaly += rollingAverage[i].getY();
+    }
+
+    return new Pose2d(totalx/rollingAverage.length, totaly/rollingAverage.length, getRobotPose().getRotation());
+  }
+
+  public void updateRollingAverage() {
+    Pose2d[] newRollingAverage = new Pose2d[rollingAverage.length];
+
+    newRollingAverage[0] = getRobotPose();
+    for (int i = 1; i < newRollingAverage.length; i++) {
+      newRollingAverage[i] = rollingAverage[i - 1];
+    }
+
+    rollingAverage = newRollingAverage;
   }
 
   /*
@@ -126,6 +152,9 @@ public class QuestNav {
   public void resetPose(Pose2d newPose) {
     resetPoseOculus = getUncorrectedOculusPose();
     resetPoseRobot = newPose;
+    // for (int i = 0; i < rollingAverage.length; i++) {
+    //   rollingAverage[i] = null;
+    // }
   }
 
   /**
