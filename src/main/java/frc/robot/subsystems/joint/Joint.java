@@ -118,6 +118,10 @@ public class Joint extends SubsystemBase {
     jointPID.setGoal(setpoint);
   }
 
+  public double getJointPosition() {
+    return setpoint;
+  }
+
   public boolean isAtGoal() {
     return jointPID.atGoal();
   }

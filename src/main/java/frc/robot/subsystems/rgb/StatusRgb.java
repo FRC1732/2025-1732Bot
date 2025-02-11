@@ -8,6 +8,8 @@ import edu.wpi.first.wpilibj.DigitalOutput;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.subsystems.joint.Joint;
+import frc.robot.subsystems.joint.JointConstants;
 
 public class StatusRgb extends SubsystemBase {
   private DigitalOutput out0 = new DigitalOutput(0);
@@ -19,10 +21,13 @@ public class StatusRgb extends SubsystemBase {
   private Timer timer;
   private double targetElapsedTimeSeconds;
 
+  private Joint joint;
+
   private SpecialMode specialMode = SpecialMode.NONE;
 
-  public StatusRgb() {
+  public StatusRgb(Joint joint) {
     timer = new Timer();
+    this.joint = joint;
   }
 
   public void acquiredCoral() {
@@ -88,6 +93,21 @@ public class StatusRgb extends SubsystemBase {
     // add more modes once more parts of the robot are added
     if (DriverStation.isDisabled()) {
       setMode(0);
+
+    } else if (joint.getSetPoint() == JointConstants.JOINT_CORAL_SETPOINT) {
+      setMode(6);
+
+    } else if (joint.getSetPoint() == JointConstants.JOINT_LV1_SETPOINT) {
+      setMode(2);
+
+    } else if (joint.getSetPoint() == JointConstants.JOINT_LV2_SETPOINT) {
+      setMode(3);
+
+    } else if (joint.getSetPoint() == JointConstants.JOINT_LV3_SETPOINT) {
+      setMode(4);
+
+    } else if (joint.getSetPoint() == JointConstants.JOINT_LV4_SETPOINT) {
+      setMode(5);
     } else {
       setMode(0);
     }

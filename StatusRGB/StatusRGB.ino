@@ -137,6 +137,31 @@ void loop() {
       flashFast(false, true, false, &pixelsSides, NUMPIXELS_SIDES);
       break;
 
+    case 2:  // L1
+      setColorInt(255 / 4, 255 / 4, 255, &pixelsFront, NUMPIXELS_FRONT);
+      setColorInt(255 / 4, 255 / 4, 255, &pixelsSides, NUMPIXELS_SIDES);
+      break;
+
+    case 3:  // L2
+      setColorInt(255 / 3, 255 / 3, 255, &pixelsFront, NUMPIXELS_FRONT);
+      setColorInt(255 / 3, 255 / 3, 255, &pixelsSides, NUMPIXELS_SIDES);
+      break;
+
+    case 4:  // L3
+      setColorInt(255 / 2, 255 / 2, 255, &pixelsFront, NUMPIXELS_FRONT);
+      setColorInt(255 / 2, 255 / 2, 255, &pixelsSides, NUMPIXELS_SIDES);
+      break;
+
+    case 5:  // L4
+      setColorInt(255 / 1, 255 / 1, 255, &pixelsFront, NUMPIXELS_FRONT);
+      setColorInt(255 / 1, 255 / 1, 255, &pixelsSides, NUMPIXELS_SIDES);
+      break;
+
+    case 6:  // Coral Station
+      setColorInt(255 / 1, 255 / 1, 255 / 4, &pixelsFront, NUMPIXELS_FRONT);
+      setColorInt(255 / 1, 255 / 1, 255 / 4, &pixelsSides, NUMPIXELS_SIDES);
+      break;
+
     default:
       break;
   }

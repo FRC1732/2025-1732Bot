@@ -162,7 +162,7 @@ public class RobotContainer {
   private void defineSubsystems() {
     joint = new Joint();
     claw = new Claw();
-    statusRgb = new StatusRgb();
+    statusRgb = new StatusRgb(joint);
 
     visionApriltagSubsystem =
         new VisionApriltagSubsystem(() -> drivetrain.getPigeon2().getRotation2d().getDegrees());
