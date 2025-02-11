@@ -14,6 +14,7 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.NTSendable;
 import edu.wpi.first.networktables.NTSendableBuilder;
 import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.util.protobuf.Protobuf;
 import edu.wpi.first.util.sendable.SendableRegistry;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
@@ -53,7 +54,7 @@ public class Field2d implements NTSendable, AutoCloseable {
       6.469; // taken from FieldConstants adjustY for reef y offset
 
   private final String name = "Field2d";
-  private final Map<FieldObject, FieldObject2d> fieldObjectsMap = new HashMap<>();
+  private final Map<FieldPoseObject, FieldPose2d> fieldObjectsMap = new HashMap<>();
   private NetworkTable networkTable;
 
   /**
@@ -70,11 +71,11 @@ public class Field2d implements NTSendable, AutoCloseable {
 
   private Field2d() {
     fieldObjectsMap.put(
-        FieldObject.ROBOT_POSE, new FieldObject2d(FieldObject.ROBOT_POSE.getPoseName()));
+        FieldPoseObject.ROBOT_POSE, new FieldPose2d(FieldPoseObject.ROBOT_POSE.getPoseName()));
     fieldObjectsMap.put(
-        FieldObject.QUEST_POSE, new FieldObject2d(FieldObject.QUEST_POSE.getPoseName()));
+        FieldPoseObject.QUEST_POSE, new FieldPose2d(FieldPoseObject.QUEST_POSE.getPoseName()));
     fieldObjectsMap.put(
-        FieldObject.LIMELIGHT_POSE, new FieldObject2d(FieldObject.LIMELIGHT_POSE.getPoseName()));
+        FieldPoseObject.LIMELIGHT_POSE, new FieldPose2d(FieldPoseObject.LIMELIGHT_POSE.getPoseName()));
 
     SendableRegistry.add(this, name);
   }
@@ -298,9 +299,9 @@ public class Field2d implements NTSendable, AutoCloseable {
 
     synchronized (this) {
       networkTable = builder.getTable();
-      for (FieldObject2d obj : fieldObjectsMap.values()) {
+      for (FieldPose2d obj : fieldObjectsMap.values()) {
         synchronized (obj) {
-          obj.m_entry = networkTable.getDoubleArrayTopic(obj.m_name).getEntry(new double[] {});
+          obj.m_entry = networkTable.getStructTopic(obj.m_name, Pose2d.struct).getEntry(Pose2d.kZero);
           obj.updateEntry(true);
         }
       }
@@ -309,12 +310,12 @@ public class Field2d implements NTSendable, AutoCloseable {
 
   @Override
   public void close() {
-    for (FieldObject2d obj : fieldObjectsMap.values()) {
+    for (FieldPose2d obj : fieldObjectsMap.values()) {
       obj.close();
     }
   }
 
-  public void setPose(FieldObject robotPose, Pose2d pose) {
+  public void setPose(FieldPoseObject robotPose, Pose2d pose) {
     synchronized (fieldObjectsMap) {
       fieldObjectsMap.get(robotPose).setPose(pose);
     }

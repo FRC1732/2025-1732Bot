@@ -42,7 +42,7 @@ import frc.robot.commands.DriveToPose;
 import frc.robot.commands.clawcommands.ClawBackwards;
 import frc.robot.commands.clawcommands.IntakeCoral;
 import frc.robot.field.Field2d;
-import frc.robot.field.FieldObject;
+import frc.robot.field.FieldPoseObject;
 import frc.robot.field.Region2d;
 import frc.robot.generated.TunerConstants;
 import frc.robot.limelightVision.ApriltagVision.VisionApriltagSubsystem;
@@ -482,12 +482,12 @@ public class RobotContainer {
     questPosePublisher.set(questNav.getRobotPose());
 
     // new field pose updates (overlaps above code)
-    field2d.setPose(FieldObject.ROBOT_POSE, drivetrain.getPose());
-    field2d.setPose(FieldObject.QUEST_POSE, questNav.getRobotPose());
+    field2d.setPose(FieldPoseObject.ROBOT_POSE, drivetrain.getPose());
+    field2d.setPose(FieldPoseObject.QUEST_POSE, questNav.getRobotPose());
 
     Pose2d llPose2d = extractLimelightPose();
     if (llPose2d != null) {
-      field2d.setPose(FieldObject.LIMELIGHT_POSE, llPose2d);
+      field2d.setPose(FieldPoseObject.LIMELIGHT_POSE, llPose2d);
     }
   }
 

@@ -1,5 +1,9 @@
 package frc.robot.field;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 // Copyright (c) FIRST and other WPILib contributors.
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
@@ -8,21 +12,22 @@ package frc.robot.field;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.trajectory.Trajectory;
-import edu.wpi.first.networktables.DoubleArrayEntry;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import edu.wpi.first.networktables.StructEntry;
 
 /** Game field object on a Field2d. */
-public class FieldObject2d implements AutoCloseable {
+public class FieldPose2d implements AutoCloseable {
+  String m_name;
+  StructEntry<Pose2d> m_entry;
+  private final List<Pose2d> m_poses = new ArrayList<>();
+
+
   /**
    * Package-local constructor.
    *
    * @param name name
    */
-  FieldObject2d(String name) {
+  FieldPose2d(String name) {
     m_name = name;
   }
 
@@ -45,8 +50,8 @@ public class FieldObject2d implements AutoCloseable {
   /**
    * Set the pose from x, y, and rotation.
    *
-   * @param xMeters X location, in meters
-   * @param yMeters Y location, in meters
+   * @param xMeters  X location, in meters
+   * @param yMeters  Y location, in meters
    * @param rotation rotation
    */
   public synchronized void setPose(double xMeters, double yMeters, Rotation2d rotation) {
@@ -67,7 +72,8 @@ public class FieldObject2d implements AutoCloseable {
   }
 
   /**
-   * Set multiple poses from a list of Pose objects. The total number of poses is limited to 85.
+   * Set multiple poses from a list of Pose objects. The total number of poses is
+   * limited to 85.
    *
    * @param poses list of 2D poses
    */
@@ -78,7 +84,8 @@ public class FieldObject2d implements AutoCloseable {
   }
 
   /**
-   * Set multiple poses from a list of Pose objects. The total number of poses is limited to 85.
+   * Set multiple poses from a list of Pose objects. The total number of poses is
+   * limited to 85.
    *
    * @param poses list of 2D poses
    */
@@ -120,20 +127,12 @@ public class FieldObject2d implements AutoCloseable {
       return;
     }
 
-    double[] arr = new double[m_poses.size() * 3];
-    int ndx = 0;
-    for (Pose2d pose : m_poses) {
-      Translation2d translation = pose.getTranslation();
-      arr[ndx + 0] = translation.getX();
-      arr[ndx + 1] = translation.getY();
-      arr[ndx + 2] = pose.getRotation().getDegrees();
-      ndx += 3;
-    }
+    Pose2d p = m_poses.isEmpty() ? Pose2d.kZero : m_poses.get(0);
 
     if (setDefault) {
-      m_entry.setDefault(arr);
+      m_entry.setDefault(p);
     } else {
-      m_entry.set(arr);
+      m_entry.set(p);
     }
   }
 
@@ -142,20 +141,12 @@ public class FieldObject2d implements AutoCloseable {
       return;
     }
 
-    double[] arr = m_entry.get(null);
-    if (arr != null) {
-      if ((arr.length % 3) != 0) {
-        return;
-      }
-
+    Pose2d p = m_entry.get(null);
+    if (p != null) {
       m_poses.clear();
-      for (int i = 0; i < arr.length; i += 3) {
-        m_poses.add(new Pose2d(arr[i], arr[i + 1], Rotation2d.fromDegrees(arr[i + 2])));
-      }
+      m_poses.add(p);
     }
   }
 
-  String m_name;
-  DoubleArrayEntry m_entry;
-  private final List<Pose2d> m_poses = new ArrayList<>();
+
 }
