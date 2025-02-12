@@ -6,13 +6,17 @@ package frc.robot.subsystems.armevator;
 
 import java.util.HashMap;
 
+import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkLimitSwitch;
 import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.SparkMaxConfig;
 
+import edu.wpi.first.math.controller.ElevatorFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
@@ -31,11 +35,13 @@ public class Armevator extends SubsystemBase {
 
   private ProfiledPIDController armPID;
   private ProfiledPIDController elevatorPID;
+  private ElevatorFeedforward elevatorHeightFeedforward;
 
   private SparkMax elevatorRightMotor;
   private SparkMax elevatorLeftMotor;
 
-  private SparkLimitSwitch elevatorlimitSwitch;
+  private SparkLimitSwitch elevatorLimitSwitch;
+  private RelativeEncoder elevatorRelativeEncoder;
 
   public Armevator() {
     // setup poses
@@ -89,7 +95,7 @@ public class Armevator extends SubsystemBase {
     poseAlgaeAngleMap.put(ArmevatorPose.ALGAE_L2_DROP, 10.0);
 
     // setup motors
-    elevatorRightMotor = new SparkMax(ArmevatorConstants.RIGHT_MOTOR_ID, MotorType.kBrushless); // TODO get accurate device IDs
+    elevatorRightMotor = new SparkMax(ArmevatorConstants.RIGHT_MOTOR_ID, MotorType.kBrushless);
     elevatorLeftMotor = new SparkMax(ArmevatorConstants.LEFT_MOTOR_ID, MotorType.kBrushless);
 
     SparkMaxConfig rightConfig = new SparkMaxConfig();
@@ -97,7 +103,26 @@ public class Armevator extends SubsystemBase {
     SparkMaxConfig leftConfig = new SparkMaxConfig();
     leftConfig.follow(elevatorRightMotor, true);
 
-    elevatorRightMotor.configure(rightConfig, ResetMode.kNoResetSafeParameters);
+    elevatorRightMotor.configure(rightConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
+    elevatorLeftMotor.configure(leftConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
+
+    elevatorLimitSwitch = elevatorRightMotor.getForwardLimitSwitch();
+    elevatorRelativeEncoder = elevatorRightMotor.getEncoder();
+
+    elevatorHeightFeedforward = new ElevatorFeedforward(
+        ArmevatorConstants.ELEVATOR_HEIGHT_KS,
+        ArmevatorConstants.ELEVATOR_HEIGHT_KG,
+        ArmevatorConstants.ELEVATOR_HEIGHT_KV,
+        ArmevatorConstants.ELEVATOR_HEIGHT_KA);
+
+    elevatorPID = new ProfiledPIDController(
+        ArmevatorConstants.ELEVATOR_KP,
+        ArmevatorConstants.ELEVATOR_KI,
+        ArmevatorConstants.ELEVATOR_KD,
+        new TrapezoidProfile.Constraints(
+            ArmevatorConstants.ELEVATOR_MAX_VELOCITY,
+            ArmevatorConstants.ELEVATOR_MAX_ACCELERATION),
+        ArmevatorConstants.ELEVATOR_PERIOD_SEC);
 
   }
 
@@ -106,8 +131,6 @@ public class Armevator extends SubsystemBase {
     carriageHeightSetpoint = poseCarriageHeightMap.get(pose);
     algaeAngleSetpoint = poseAlgaeAngleMap.get(pose);
   }
-
-
 
   @Override
   public void periodic() {
@@ -119,20 +142,21 @@ public class Armevator extends SubsystemBase {
       limitSwitchCounter = 0;
     }
 
-        // turn off elevator when limit switch is pressed, leave it off if goal isn't changed
-        if (elevatorPID.getGoal().position != 0) {
-          elevatorPIDOverride = false;
-        } else if (limitSwitchCounter > 10) {
-          elevatorPIDOverride = true;
-        }
-    
-        if (elevatorPIDOverride) {
-          elevatorRightMotor.stopMotor();
-          // shooterHeightEncoder.setPosition(0);
-        } else {
-          // shooterHeightRightMotor.set(
-          //     shooterHeightPID.calculate(shooterHeightEncoder.getPosition())
-          //         + shooterHeightFeedforward.calculate(shooterHeightEncoder.getVelocity()));
-        }
+    // turn off elevator when limit switch is pressed, leave it off if goal isn't
+    // changed
+    if (elevatorPID.getGoal().position != 0) {
+      elevatorPIDOverride = false;
+    } else if (limitSwitchCounter > 10) {
+      elevatorPIDOverride = true;
+    }
+
+    if (elevatorPIDOverride) {
+      elevatorRightMotor.stopMotor();
+      elevatorRelativeEncoder.setPosition(0);
+    } else {
+      elevatorRightMotor.set(
+          elevatorPID.calculate(elevatorRelativeEncoder.getPosition())
+              + elevatorHeightFeedforward.calculate(elevatorRelativeEncoder.getVelocity()));
+    }
   }
 }
