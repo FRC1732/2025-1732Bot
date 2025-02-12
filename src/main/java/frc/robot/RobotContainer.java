@@ -517,9 +517,12 @@ public class RobotContainer {
   }
 
   public void updateVisionPose() {
-    if (true) {
+    if (questNav.isConnected()) {
+      questNav.updateAverageRobotPose();
       drivetrain.addVisionMeasurement(
           questNav.getRobotPose(), VecBuilder.fill(0.0, 0.0, 9999999.0));
+      drivetrain.addVisionMeasurement(
+          questNav.getAverageRobotPose(), VecBuilder.fill(0.0, 0.0, 0.0));
       return;
     }
 

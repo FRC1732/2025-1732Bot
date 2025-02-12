@@ -15,6 +15,7 @@ import edu.wpi.first.networktables.IntegerSubscriber;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.RobotController;
+import frc.robot.util.RollingAveragePose2d;
 
 /**
  * Interface with the QuestNav on VR headset for pose estimation. See
@@ -47,12 +48,28 @@ public class QuestNav {
   private final Transform2d robotToQuest =
       new Transform2d(inchesToMeters(0.5), inchesToMeters(9.207), Rotation2d.fromDegrees(90));
 
+  private final RollingAveragePose2d rollingAvg;
+
   /* Constructor */
-  public QuestNav() {
+  public QuestNav(int windowSize) {
     // Zero the absolute 3D position of the robot (similar to long-pressing the quest logo)
     if (questMiso.get() != 99) {
       questMosi.set(1);
     }
+
+    rollingAvg = new RollingAveragePose2d(windowSize);
+  }
+
+  public QuestNav() {
+    this(5);
+  }
+
+  public void updateAverageRobotPose() {
+    rollingAvg.addPose(getRobotPose());
+  }
+
+  public Pose2d getAverageRobotPose() {
+    return rollingAvg.getAveragePose();
   }
 
   /**
@@ -95,7 +112,12 @@ public class QuestNav {
    * @return true if the Quest is connected
    */
   public boolean isConnected() {
-    return ((RobotController.getFPGATime() - questBatteryPercent.getLastChange()) / 1000) < 250;
+    // System.out.println("FPGATime: " + RobotController.getFPGATime());
+    // System.out.println("Last Change: " + questBatteryPercent.getLastChange());
+    // System.out.println(
+    //     "Diff: " + (RobotController.getFPGATime() - questBatteryPercent.getLastChange()) /
+    // 1000.0);
+    return ((RobotController.getFPGATime() - questBatteryPercent.getLastChange()) / 1000.0) < 30.0;
   }
 
   /**
@@ -124,6 +146,7 @@ public class QuestNav {
    * @param newPose new robot pose
    */
   public void resetPose(Pose2d newPose) {
+    rollingAvg.reset();
     resetPoseOculus = getUncorrectedOculusPose();
     resetPoseRobot = newPose;
   }
