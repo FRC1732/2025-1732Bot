@@ -6,6 +6,8 @@ package frc.robot.subsystems.armevator;
 
 import java.util.HashMap;
 
+import org.littletonrobotics.junction.Logger;
+
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkLimitSwitch;
 import com.revrobotics.spark.SparkMax;
@@ -127,9 +129,8 @@ public class Armevator extends SubsystemBase {
   }
 
   public void setPose(ArmevatorPose pose) {
-    armAngleSetpoint = poseAngleMap.get(pose);
-    carriageHeightSetpoint = poseCarriageHeightMap.get(pose);
-    algaeAngleSetpoint = poseAlgaeAngleMap.get(pose);
+    elevatorPID.setGoal(poseCarriageHeightMap.get(pose));
+
   }
 
   @Override
@@ -158,5 +159,11 @@ public class Armevator extends SubsystemBase {
           elevatorPID.calculate(elevatorRelativeEncoder.getPosition())
               + elevatorHeightFeedforward.calculate(elevatorRelativeEncoder.getVelocity()));
     }
+  }
+
+  public void doLogging() {
+    Logger.recordOutput("Elevator Position", elevatorRelativeEncoder.getPosition());
+    Logger.recordOutput("Elevator Velocity", elevatorRelativeEncoder.getVelocity());
+    Logger.recordOutput("Elevator Goal", elevatorPID.getGoal().position);
   }
 }
