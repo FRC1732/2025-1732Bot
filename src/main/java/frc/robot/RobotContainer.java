@@ -72,7 +72,7 @@ public class RobotContainer {
   private Claw claw;
   private StatusRgb statusRgb;
   private VisionApriltagSubsystem visionApriltagSubsystem;
-  private QuestNav questNav = new QuestNav(5);
+  private QuestNav questNav = new QuestNav();
 
   private Alliance lastAlliance = Field2d.getInstance().getAlliance();
 
@@ -477,7 +477,6 @@ public class RobotContainer {
     // add robot-wide periodic code here
     questNav.cleanUpQuestNavMessages();
     posePublisher.set(drivetrain.getPose());
-    questNav.updateRollingAverage();
     updateVisionPose();
     questPosePublisher.set(questNav.getRobotPose());
 
@@ -520,7 +519,7 @@ public class RobotContainer {
   public void updateVisionPose() {
     if (true) {
       drivetrain.addVisionMeasurement(
-          questNav.getRobotPoseWithRollingAverage(), VecBuilder.fill(0.0, 0.0, 9999999.0));
+          questNav.getRobotPose(), VecBuilder.fill(0.0, 0.0, 9999999.0));
       return;
     }
 
