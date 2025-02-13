@@ -8,42 +8,51 @@ import java.util.HashMap;
 
 import org.littletonrobotics.junction.Logger;
 
+import com.revrobotics.AbsoluteEncoder;
 import com.revrobotics.RelativeEncoder;
-import com.revrobotics.spark.SparkLimitSwitch;
-import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
+import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
 
+import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.ElevatorFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
-import edu.wpi.first.wpilibj2.command.PrintCommand;
+import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class Armevator extends SubsystemBase {
   /** Creates a new Armevator. */
   private HashMap<ArmevatorPose, Double> poseAngleMap;
   private HashMap<ArmevatorPose, Double> poseCarriageHeightMap;
-  private HashMap<ArmevatorPose, Double> poseAlgaeAngleMap;
 
-  private double armAngleSetpoint;
-  private double carriageHeightSetpoint;
-  private double algaeAngleSetpoint;
+  // private double armAngleSetpoint;
+  // private double carriageHeightSetpoint;
 
   private int limitSwitchCounter;
   private boolean elevatorPIDOverride;
 
   private ProfiledPIDController armPID;
+  private ArmFeedforward armFeedforward;
+
   private ProfiledPIDController elevatorPID;
   private ElevatorFeedforward elevatorHeightFeedforward;
 
   private SparkMax elevatorRightMotor;
   private SparkMax elevatorLeftMotor;
+  private SparkMax armMotor;
 
-  private SparkLimitSwitch elevatorLimitSwitch;
+  private DigitalInput elevatorLimitSwitch;
   private RelativeEncoder elevatorRelativeEncoder;
+
+  private AbsoluteEncoder armAbsoluteEncoder;
+  private RelativeEncoder armRelativeEncoder;
 
   public Armevator() {
     // setup poses
@@ -80,36 +89,35 @@ public class Armevator extends SubsystemBase {
     poseCarriageHeightMap.put(ArmevatorPose.ALGAE_L2_PLUCK, 0.0);
     poseCarriageHeightMap.put(ArmevatorPose.ALGAE_L2_DROP, 4.5);
 
-    poseAlgaeAngleMap = new HashMap<>();
-    poseAlgaeAngleMap.put(ArmevatorPose.STARTING, 0.0);
-    poseAlgaeAngleMap.put(ArmevatorPose.CLIMB, 35.0);
-    poseAlgaeAngleMap.put(ArmevatorPose.CORAL_HP_LOAD, 5.0);
-    poseAlgaeAngleMap.put(ArmevatorPose.CORAL_L4_SCORE, 5.0);
-    poseAlgaeAngleMap.put(ArmevatorPose.CORAL_L3_SCORE, 5.0);
-    poseAlgaeAngleMap.put(ArmevatorPose.CORAL_L2_SCORE, 5.0);
-    poseAlgaeAngleMap.put(ArmevatorPose.CORAL_L1_SCORE, 5.0);
-    poseAlgaeAngleMap.put(ArmevatorPose.ALGAE_INTAKE, 55.0);
-    poseAlgaeAngleMap.put(ArmevatorPose.ALGAE_HANDOFF, 10.0);
-    poseAlgaeAngleMap.put(ArmevatorPose.ALGAE_NET_SCORE, 5.0);
-    poseAlgaeAngleMap.put(ArmevatorPose.ALGAE_L3_PLUCK, 5.0);
-    poseAlgaeAngleMap.put(ArmevatorPose.ALGAE_L3_DROP, 15.0);
-    poseAlgaeAngleMap.put(ArmevatorPose.ALGAE_L2_PLUCK, 5.0);
-    poseAlgaeAngleMap.put(ArmevatorPose.ALGAE_L2_DROP, 10.0);
-
-    // setup motors
+    // setup elevator motors
     elevatorRightMotor = new SparkMax(ArmevatorConstants.RIGHT_MOTOR_ID, MotorType.kBrushless);
     elevatorLeftMotor = new SparkMax(ArmevatorConstants.LEFT_MOTOR_ID, MotorType.kBrushless);
 
     SparkMaxConfig rightConfig = new SparkMaxConfig();
-
     SparkMaxConfig leftConfig = new SparkMaxConfig();
     leftConfig.follow(elevatorRightMotor, true);
+
+    rightConfig.idleMode(IdleMode.kBrake);
+    leftConfig.idleMode(IdleMode.kBrake);
 
     elevatorRightMotor.configure(rightConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
     elevatorLeftMotor.configure(leftConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
 
-    elevatorLimitSwitch = elevatorRightMotor.getForwardLimitSwitch();
+    // setup arm motor
+    armMotor = new SparkMax(ArmevatorConstants.ARM_MOTOR_ID, MotorType.kBrushless);
+
+    SparkMaxConfig armConfig = new SparkMaxConfig();
+
+    armConfig.idleMode(IdleMode.kBrake);
+
+    elevatorLeftMotor.configure(armConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
+
+    // motor extras
+    elevatorLimitSwitch = new DigitalInput(ArmevatorConstants.ELEVATOR_LIMIT_SWITCH_ID);
     elevatorRelativeEncoder = elevatorRightMotor.getEncoder();
+
+    armRelativeEncoder = armMotor.getEncoder();
+    armAbsoluteEncoder = armMotor.getAbsoluteEncoder();
 
     elevatorHeightFeedforward = new ElevatorFeedforward(
         ArmevatorConstants.ELEVATOR_HEIGHT_KS,
@@ -126,18 +134,72 @@ public class Armevator extends SubsystemBase {
             ArmevatorConstants.ELEVATOR_MAX_ACCELERATION),
         ArmevatorConstants.ELEVATOR_PERIOD_SEC);
 
+    armFeedforward = new ArmFeedforward(
+        ArmevatorConstants.ARM_HEIGHT_KS,
+        ArmevatorConstants.ARM_HEIGHT_KG,
+        ArmevatorConstants.ARM_HEIGHT_KV,
+        ArmevatorConstants.ARM_HEIGHT_KA);
+
+    armPID = new ProfiledPIDController(
+        ArmevatorConstants.ARM_KP,
+        ArmevatorConstants.ARM_KI,
+        ArmevatorConstants.ARM_KD,
+        new TrapezoidProfile.Constraints(
+            ArmevatorConstants.ARM_MAX_VELOCITY,
+            ArmevatorConstants.ARM_MAX_ACCELERATION),
+        ArmevatorConstants.ARM_PERIOD_SEC);
+
+    setupNT();
   }
 
   public void setPose(ArmevatorPose pose) {
     elevatorPID.setGoal(poseCarriageHeightMap.get(pose));
+    armPID.setGoal(poseAngleMap.get(pose));
 
+    // armAngleSetpoint = poseAngleMap.get(pose);
+    // carriageHeightSetpoint = poseCarriageHeightMap.get(pose);
+  }
+
+  public boolean isAtGoal() {
+    return armPID.atGoal() && elevatorPID.atGoal();
+  }
+
+  public void resetToAbsoluteEncoder() {
+    armRelativeEncoder.setPosition(getAbsolutePosition());
+  }
+
+  // motion validation methods. Remove once verified
+  public void runArmForward() {
+    armMotor.set(0.1);
+  }
+
+  public void runArmBackward() {
+    armMotor.set(-0.1);
+  }
+
+  public void stopJoint() {
+    armMotor.stopMotor();
+  }
+
+  public void runElevatorUp() {
+    elevatorRightMotor.set(0.1);
+  }
+
+  public void runElevatorDown() {
+    elevatorRightMotor.set(-0.1);
+  }
+
+  public void stopElevator() {
+    elevatorRightMotor.stopMotor();
   }
 
   @Override
   public void periodic() {
-    // This method will be called once per scheduler run
+    if (DriverStation.isDisabled()) {
+      armPID.reset(armRelativeEncoder.getPosition());
+    }
 
-    if (elevatorLimitSwitch.isPressed()) {
+    if (elevatorLimitSwitch.get()) {
       limitSwitchCounter++;
     } else {
       limitSwitchCounter = 0;
@@ -159,11 +221,40 @@ public class Armevator extends SubsystemBase {
           elevatorPID.calculate(elevatorRelativeEncoder.getPosition())
               + elevatorHeightFeedforward.calculate(elevatorRelativeEncoder.getVelocity()));
     }
+
+    armMotor.set(
+        MathUtil.clamp(armPID.calculate(armRelativeEncoder.getPosition()), -0.5, 0.5)
+            + armFeedforward.calculate(
+                Math.toRadians(armRelativeEncoder.getPosition() + ArmevatorConstants.ARM_COG_OFFSET),
+                armRelativeEncoder.getVelocity()));
+
+    doLogging();
   }
 
-  public void doLogging() {
-    Logger.recordOutput("Elevator Position", elevatorRelativeEncoder.getPosition());
-    Logger.recordOutput("Elevator Velocity", elevatorRelativeEncoder.getVelocity());
-    Logger.recordOutput("Elevator Goal", elevatorPID.getGoal().position);
+  private double getAbsolutePosition() {
+    return armAbsoluteEncoder.getPosition(); // TODO: needs an offset
   }
+
+  private void doLogging() {
+    Logger.recordOutput(ArmevatorConstants.SUBSYSTEM_NAME + "/Elevator Position",
+        elevatorRelativeEncoder.getPosition());
+    Logger.recordOutput(ArmevatorConstants.SUBSYSTEM_NAME + "/Elevator Velocity",
+        elevatorRelativeEncoder.getVelocity());
+    Logger.recordOutput(ArmevatorConstants.SUBSYSTEM_NAME + "/Elevator Goal", elevatorPID.getGoal().position);
+
+    Logger.recordOutput(ArmevatorConstants.SUBSYSTEM_NAME + "/Arm Position", armRelativeEncoder.getPosition());
+    Logger.recordOutput(ArmevatorConstants.SUBSYSTEM_NAME + "/Arm Velocity", armRelativeEncoder.getVelocity());
+    Logger.recordOutput(ArmevatorConstants.SUBSYSTEM_NAME + "/Arm Goal", armPID.getGoal().position);
+
+    Logger.recordOutput(ArmevatorConstants.SUBSYSTEM_NAME + "/Elevator Limit Switch", elevatorLimitSwitch.get());
+    Logger.recordOutput(ArmevatorConstants.SUBSYSTEM_NAME + "/Arm Absolute Encoder", getAbsolutePosition());
+  }
+
+  private void setupNT() {
+    SmartDashboard.putData(ArmevatorConstants.SUBSYSTEM_NAME + "/Elevator PID", elevatorPID);
+    SmartDashboard.putData(ArmevatorConstants.SUBSYSTEM_NAME + "/Arm PID", armPID);
+
+    // Does recordOutput also make these available from network tables?
+  }
+
 }
