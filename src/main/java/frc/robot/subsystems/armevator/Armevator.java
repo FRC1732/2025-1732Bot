@@ -4,10 +4,6 @@
 
 package frc.robot.subsystems.armevator;
 
-import java.util.HashMap;
-
-import org.littletonrobotics.junction.Logger;
-
 import com.revrobotics.AbsoluteEncoder;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkBase.PersistMode;
@@ -16,7 +12,6 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
-
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.ElevatorFeedforward;
@@ -26,10 +21,13 @@ import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import java.util.HashMap;
+import org.littletonrobotics.junction.Logger;
 
 public class Armevator extends SubsystemBase {
   /** Creates a new Armevator. */
   private HashMap<ArmevatorPose, Double> poseAngleMap;
+
   private HashMap<ArmevatorPose, Double> poseCarriageHeightMap;
 
   // private double armAngleSetpoint;
@@ -100,8 +98,10 @@ public class Armevator extends SubsystemBase {
     rightConfig.idleMode(IdleMode.kBrake);
     leftConfig.idleMode(IdleMode.kBrake);
 
-    elevatorRightMotor.configure(rightConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
-    elevatorLeftMotor.configure(leftConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
+    elevatorRightMotor.configure(
+        rightConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
+    elevatorLeftMotor.configure(
+        leftConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
 
     // setup arm motor
     armMotor = new SparkMax(ArmevatorConstants.ARM_MOTOR_ID, MotorType.kBrushless);
@@ -110,7 +110,8 @@ public class Armevator extends SubsystemBase {
 
     armConfig.idleMode(IdleMode.kBrake);
 
-    elevatorLeftMotor.configure(armConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
+    elevatorLeftMotor.configure(
+        armConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
 
     // motor extras
     elevatorLimitSwitch = new DigitalInput(ArmevatorConstants.ELEVATOR_LIMIT_SWITCH_ID);
@@ -119,35 +120,38 @@ public class Armevator extends SubsystemBase {
     armRelativeEncoder = armMotor.getEncoder();
     armAbsoluteEncoder = armMotor.getAbsoluteEncoder();
 
-    elevatorHeightFeedforward = new ElevatorFeedforward(
-        ArmevatorConstants.ELEVATOR_HEIGHT_KS,
-        ArmevatorConstants.ELEVATOR_HEIGHT_KG,
-        ArmevatorConstants.ELEVATOR_HEIGHT_KV,
-        ArmevatorConstants.ELEVATOR_HEIGHT_KA);
+    elevatorHeightFeedforward =
+        new ElevatorFeedforward(
+            ArmevatorConstants.ELEVATOR_HEIGHT_KS,
+            ArmevatorConstants.ELEVATOR_HEIGHT_KG,
+            ArmevatorConstants.ELEVATOR_HEIGHT_KV,
+            ArmevatorConstants.ELEVATOR_HEIGHT_KA);
 
-    elevatorPID = new ProfiledPIDController(
-        ArmevatorConstants.ELEVATOR_KP,
-        ArmevatorConstants.ELEVATOR_KI,
-        ArmevatorConstants.ELEVATOR_KD,
-        new TrapezoidProfile.Constraints(
-            ArmevatorConstants.ELEVATOR_MAX_VELOCITY,
-            ArmevatorConstants.ELEVATOR_MAX_ACCELERATION),
-        ArmevatorConstants.ELEVATOR_PERIOD_SEC);
+    elevatorPID =
+        new ProfiledPIDController(
+            ArmevatorConstants.ELEVATOR_KP,
+            ArmevatorConstants.ELEVATOR_KI,
+            ArmevatorConstants.ELEVATOR_KD,
+            new TrapezoidProfile.Constraints(
+                ArmevatorConstants.ELEVATOR_MAX_VELOCITY,
+                ArmevatorConstants.ELEVATOR_MAX_ACCELERATION),
+            ArmevatorConstants.ELEVATOR_PERIOD_SEC);
 
-    armFeedforward = new ArmFeedforward(
-        ArmevatorConstants.ARM_HEIGHT_KS,
-        ArmevatorConstants.ARM_HEIGHT_KG,
-        ArmevatorConstants.ARM_HEIGHT_KV,
-        ArmevatorConstants.ARM_HEIGHT_KA);
+    armFeedforward =
+        new ArmFeedforward(
+            ArmevatorConstants.ARM_HEIGHT_KS,
+            ArmevatorConstants.ARM_HEIGHT_KG,
+            ArmevatorConstants.ARM_HEIGHT_KV,
+            ArmevatorConstants.ARM_HEIGHT_KA);
 
-    armPID = new ProfiledPIDController(
-        ArmevatorConstants.ARM_KP,
-        ArmevatorConstants.ARM_KI,
-        ArmevatorConstants.ARM_KD,
-        new TrapezoidProfile.Constraints(
-            ArmevatorConstants.ARM_MAX_VELOCITY,
-            ArmevatorConstants.ARM_MAX_ACCELERATION),
-        ArmevatorConstants.ARM_PERIOD_SEC);
+    armPID =
+        new ProfiledPIDController(
+            ArmevatorConstants.ARM_KP,
+            ArmevatorConstants.ARM_KI,
+            ArmevatorConstants.ARM_KD,
+            new TrapezoidProfile.Constraints(
+                ArmevatorConstants.ARM_MAX_VELOCITY, ArmevatorConstants.ARM_MAX_ACCELERATION),
+            ArmevatorConstants.ARM_PERIOD_SEC);
 
     setupNT();
   }
@@ -225,7 +229,8 @@ public class Armevator extends SubsystemBase {
     armMotor.set(
         MathUtil.clamp(armPID.calculate(armRelativeEncoder.getPosition()), -0.5, 0.5)
             + armFeedforward.calculate(
-                Math.toRadians(armRelativeEncoder.getPosition() + ArmevatorConstants.ARM_COG_OFFSET),
+                Math.toRadians(
+                    armRelativeEncoder.getPosition() + ArmevatorConstants.ARM_COG_OFFSET),
                 armRelativeEncoder.getVelocity()));
 
     doLogging();
@@ -236,18 +241,25 @@ public class Armevator extends SubsystemBase {
   }
 
   private void doLogging() {
-    Logger.recordOutput(ArmevatorConstants.SUBSYSTEM_NAME + "/Elevator Position",
+    Logger.recordOutput(
+        ArmevatorConstants.SUBSYSTEM_NAME + "/Elevator Position",
         elevatorRelativeEncoder.getPosition());
-    Logger.recordOutput(ArmevatorConstants.SUBSYSTEM_NAME + "/Elevator Velocity",
+    Logger.recordOutput(
+        ArmevatorConstants.SUBSYSTEM_NAME + "/Elevator Velocity",
         elevatorRelativeEncoder.getVelocity());
-    Logger.recordOutput(ArmevatorConstants.SUBSYSTEM_NAME + "/Elevator Goal", elevatorPID.getGoal().position);
+    Logger.recordOutput(
+        ArmevatorConstants.SUBSYSTEM_NAME + "/Elevator Goal", elevatorPID.getGoal().position);
 
-    Logger.recordOutput(ArmevatorConstants.SUBSYSTEM_NAME + "/Arm Position", armRelativeEncoder.getPosition());
-    Logger.recordOutput(ArmevatorConstants.SUBSYSTEM_NAME + "/Arm Velocity", armRelativeEncoder.getVelocity());
+    Logger.recordOutput(
+        ArmevatorConstants.SUBSYSTEM_NAME + "/Arm Position", armRelativeEncoder.getPosition());
+    Logger.recordOutput(
+        ArmevatorConstants.SUBSYSTEM_NAME + "/Arm Velocity", armRelativeEncoder.getVelocity());
     Logger.recordOutput(ArmevatorConstants.SUBSYSTEM_NAME + "/Arm Goal", armPID.getGoal().position);
 
-    Logger.recordOutput(ArmevatorConstants.SUBSYSTEM_NAME + "/Elevator Limit Switch", elevatorLimitSwitch.get());
-    Logger.recordOutput(ArmevatorConstants.SUBSYSTEM_NAME + "/Arm Absolute Encoder", getAbsolutePosition());
+    Logger.recordOutput(
+        ArmevatorConstants.SUBSYSTEM_NAME + "/Elevator Limit Switch", elevatorLimitSwitch.get());
+    Logger.recordOutput(
+        ArmevatorConstants.SUBSYSTEM_NAME + "/Arm Absolute Encoder", getAbsolutePosition());
   }
 
   private void setupNT() {
@@ -256,5 +268,4 @@ public class Armevator extends SubsystemBase {
 
     // Does recordOutput also make these available from network tables?
   }
-
 }

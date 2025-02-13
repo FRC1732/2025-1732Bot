@@ -115,7 +115,7 @@ public class Joint extends SubsystemBase {
 
   public void setJointPosition(double setpoint) {
     this.setpoint = setpoint;
-    //jointPID.setGoal(setpoint);
+    // jointPID.setGoal(setpoint);
   }
 
   public double getJointPosition() {
@@ -124,7 +124,7 @@ public class Joint extends SubsystemBase {
 
   public boolean isAtGoal() {
     return false;
-    //return jointPID.atGoal();
+    // return jointPID.atGoal();
   }
 
   private double getAbsolutePosition() {
@@ -150,10 +150,10 @@ public class Joint extends SubsystemBase {
     }
 
     /*jointMotor.set(
-        MathUtil.clamp(jointPID.calculate(jointEncoder.getPosition()), -0.5, 0.5)
-            + jointFeedforward.calculate(
-                Math.toRadians(jointEncoder.getPosition() + JointConstants.JOINT_COG_OFFSET),
-                jointEncoder.getVelocity()));*/
+    MathUtil.clamp(jointPID.calculate(jointEncoder.getPosition()), -0.5, 0.5)
+        + jointFeedforward.calculate(
+            Math.toRadians(jointEncoder.getPosition() + JointConstants.JOINT_COG_OFFSET),
+            jointEncoder.getVelocity()));*/
 
     updateIO();
   }

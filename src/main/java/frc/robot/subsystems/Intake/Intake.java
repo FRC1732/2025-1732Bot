@@ -4,12 +4,7 @@
 
 package frc.robot.subsystems.intake;
 
-import java.util.HashMap;
-
-import org.littletonrobotics.junction.Logger;
-
 import com.ctre.phoenix6.hardware.TalonFX;
-
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
@@ -18,6 +13,8 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.subsystems.armevator.ArmevatorConstants;
 import frc.robot.subsystems.armevator.ArmevatorPose;
+import java.util.HashMap;
+import org.littletonrobotics.junction.Logger;
 
 public class Intake extends SubsystemBase {
   private HashMap<ArmevatorPose, Double> poseAlgaeAngleMap;
@@ -49,20 +46,21 @@ public class Intake extends SubsystemBase {
     poseAlgaeAngleMap.put(ArmevatorPose.ALGAE_L2_PLUCK, 5.0);
     poseAlgaeAngleMap.put(ArmevatorPose.ALGAE_L2_DROP, 10.0);
 
-    intakeFeedforward = new ArmFeedforward(
-        ArmevatorConstants.ARM_HEIGHT_KS,
-        ArmevatorConstants.ARM_HEIGHT_KG,
-        ArmevatorConstants.ARM_HEIGHT_KV,
-        ArmevatorConstants.ARM_HEIGHT_KA);
+    intakeFeedforward =
+        new ArmFeedforward(
+            ArmevatorConstants.ARM_HEIGHT_KS,
+            ArmevatorConstants.ARM_HEIGHT_KG,
+            ArmevatorConstants.ARM_HEIGHT_KV,
+            ArmevatorConstants.ARM_HEIGHT_KA);
 
-    intakePID = new ProfiledPIDController(
-        ArmevatorConstants.ARM_KP,
-        ArmevatorConstants.ARM_KI,
-        ArmevatorConstants.ARM_KD,
-        new TrapezoidProfile.Constraints(
-            ArmevatorConstants.ARM_MAX_VELOCITY,
-            ArmevatorConstants.ARM_MAX_ACCELERATION),
-        ArmevatorConstants.ARM_PERIOD_SEC);
+    intakePID =
+        new ProfiledPIDController(
+            ArmevatorConstants.ARM_KP,
+            ArmevatorConstants.ARM_KI,
+            ArmevatorConstants.ARM_KD,
+            new TrapezoidProfile.Constraints(
+                ArmevatorConstants.ARM_MAX_VELOCITY, ArmevatorConstants.ARM_MAX_ACCELERATION),
+            ArmevatorConstants.ARM_PERIOD_SEC);
 
     setupNT();
   }
@@ -84,11 +82,11 @@ public class Intake extends SubsystemBase {
   }
 
   public double getTiltPosition() {
-    return 0.0;// tiltMotor.getSelectedSensorPosition();
+    return 0.0; // tiltMotor.getSelectedSensorPosition();
   }
 
   public double getTiltVelocity() {
-    return 0.0;// tiltMotor.getSelectedSensorVelocity();
+    return 0.0; // tiltMotor.getSelectedSensorVelocity();
   }
 
   @Override
