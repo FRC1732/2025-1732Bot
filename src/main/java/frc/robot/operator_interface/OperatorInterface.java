@@ -56,6 +56,10 @@ public interface OperatorInterface {
     return new Trigger(() -> false);
   }
 
+  public default Trigger hybridIntakeCoralButton() {
+    return new Trigger(() -> false);
+  }
+
   public default Trigger scoreCoralButton() {
     return new Trigger(() -> false);
   }

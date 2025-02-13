@@ -3,8 +3,9 @@
   "robotLength": 0.845,
   "holonomicMode": true,
   "pathFolders": [
-    "Scoring Paths",
-    "Reefscape"
+    "Pathfinding Paths",
+    "Reefscape",
+    "Scoring Paths"
   ],
   "autoFolders": [
     "Reefscape"

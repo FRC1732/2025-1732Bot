@@ -35,6 +35,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 // import frc.lib.team3061.leds.LEDs;
@@ -128,6 +129,8 @@ public class RobotContainer {
 
   PathConstraints pathConstraints = new PathConstraints(4.855, 5.8, 9.42, 14.8876585);
   PathPlannerPath pathF1;
+  PathPlannerPath pathLeftHP;
+  PathPlannerPath pathRightHP;
 
   private Field2d field2d;
 
@@ -138,6 +141,8 @@ public class RobotContainer {
   public RobotContainer() {
     try {
       pathF1 = PathPlannerPath.fromPathFile("F1");
+      pathLeftHP = PathPlannerPath.fromPathFile("LeftHP");
+      pathRightHP = PathPlannerPath.fromPathFile("RightHP");
     } catch (Exception e) {
       System.out.println(e.getMessage());
     }
@@ -235,7 +240,10 @@ public class RobotContainer {
     autoChooser.addOption("Start Point", startPoint);
 
     Command fourPiece = new PathPlannerAuto("4 piece");
-    autoChooser.addOption("4 piece", fourPiece);
+    autoChooser.addOption("4 piece left", fourPiece);
+
+    Command fourPieceRight = new PathPlannerAuto("4 piece", true);
+    autoChooser.addOption("4 piece right", fourPieceRight);
 
     // Command startPoint =
     //     Commands.runOnce(
@@ -417,25 +425,37 @@ public class RobotContainer {
     oi.scoreCoralButton()
         .whileTrue(
             AutoBuilder.pathfindThenFollowPath(pathF1, pathConstraints)
-                .andThen(joint.runOnce(() -> joint.setJointPose(JointPosition.LEVEL_2)))
-                .andThen(new ClawBackwards(claw)));
+                .andThen(joint.runOnce(() -> joint.setJointPose(JointPosition.LEVEL_2)).asProxy())
+                .andThen(new ClawBackwards(claw).asProxy()));
 
     oi.intakeCoralButton()
         .whileTrue(
             Commands.deadline(
                 Commands.sequence(
+                    joint.runOnce(() -> joint.setJointPose(JointPosition.CORAL_STATION)).asProxy(),
+                    new IntakeCoral(claw, statusRgb)),
+                new ConditionalCommand(
+                    AutoBuilder.pathfindThenFollowPath(pathLeftHP, pathConstraints),
+                    AutoBuilder.pathfindThenFollowPath(pathRightHP, pathConstraints),
+                    this::isLeftSide)));
+    oi.intakeCoralButton().onFalse(joint.runOnce(() -> joint.setJointPose(JointPosition.LEVEL_2)));
+
+    oi.hybridIntakeCoralButton()
+        .whileTrue(
+            Commands.deadline(
+                Commands.sequence(
                     joint.runOnce(() -> joint.setJointPose(JointPosition.CORAL_STATION)),
-                    new IntakeCoral(claw, statusRgb),
-                    joint.runOnce(() -> joint.setJointPose(JointPosition.LEVEL_2))),
+                    new IntakeCoral(claw, statusRgb)),
                 drivetrain.run(
                     () ->
                         driveFacingAngle(
                             -oi.getTranslateX() * MaxSpeed,
                             -oi.getTranslateY() * MaxSpeed,
-                            drivetrain.getPose().getRotation().getDegrees() < 0
+                            isLeftSide()
                                 ? Rotation2d.fromDegrees(-55)
                                 : Rotation2d.fromDegrees(55)))));
-    oi.intakeCoralButton().onFalse(joint.runOnce(() -> joint.setJointPose(JointPosition.LEVEL_2)));
+    oi.hybridIntakeCoralButton()
+        .onFalse(joint.runOnce(() -> joint.setJointPose(JointPosition.LEVEL_2)));
   }
 
   private void configureVisionCommands() {
@@ -514,6 +534,10 @@ public class RobotContainer {
     // during a match, this would be the first opportunity to check the alliance color based on FMS
     // data.
     this.checkAllianceColor();
+  }
+
+  private boolean isLeftSide() {
+    return drivetrain.getPose().getY() > 4.0; // half the field width in meters
   }
 
   public void updateVisionPose() {

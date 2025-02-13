@@ -16,12 +16,12 @@
     },
     {
       "anchor": {
-        "x": 1.6751027001632124,
-        "y": 7.419964800938313
+        "x": 1.616447368425002,
+        "y": 7.411842105262467
       },
       "prevControl": {
-        "x": 2.4631578947368418,
-        "y": 6.430427631578947
+        "x": 2.4045025629986316,
+        "y": 6.422304935903101
       },
       "nextControl": null,
       "isLocked": false,
@@ -42,7 +42,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -53.0
+    "rotation": -55.0
   },
   "reversed": false,
   "folder": "Reefscape",

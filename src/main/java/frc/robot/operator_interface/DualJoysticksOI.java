@@ -83,7 +83,12 @@ public class DualJoysticksOI implements OperatorInterface {
 
   @Override
   public Trigger intakeAlgaeButton() {
-    return rotateJoystickButtons[2];
+    return rotateJoystickButtons[3];
+  }
+
+  @Override
+  public Trigger hybridIntakeCoralButton() {
+    return rotateJoystickButtons[4];
   }
 
   @Override
