@@ -11,7 +11,7 @@ public class JointConstants {
   public static final boolean DEBUGGING = false;
   public static final boolean TESTING = true;
 
-  public static final int JOINT_MOTOR_CAN_ID = 56;
+  public static final int JOINT_MOTOR_CAN_ID = 13; // not used
 
   public static final Double JOINT_FORWARD_SPEED = 0.2;
   public static final Double JOINT_REVERSE_SPEED = -0.2;
