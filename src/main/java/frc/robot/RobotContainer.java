@@ -89,6 +89,8 @@ public class RobotContainer {
   private double MaxSlowAngularRate = 0.25 * MaxAngularRate; // 25% of max angular rate
   private boolean isSlowMode = false;
   private BooleanSupplier slowModeSupplier = () -> isSlowMode;
+  private boolean isFullAuto = true;
+  private BooleanSupplier fullAutoSupplier = () -> isFullAuto;
   private ShuffleboardTab tab;
   private final Telemetry telemetryLogger = new Telemetry(MaxSpeed);
 
@@ -129,8 +131,36 @@ public class RobotContainer {
 
   PathConstraints pathConstraints = new PathConstraints(4.855, 5.8, 9.42, 14.8876585);
   PathPlannerPath pathF1;
+  PathPlannerPath pathF2;
+  PathPlannerPath pathFL1;
+  PathPlannerPath pathFL2;
+  PathPlannerPath pathFR1;
+  PathPlannerPath pathFR2;
+  PathPlannerPath pathBL1;
+  PathPlannerPath pathBL2;
+  PathPlannerPath pathBR1;
+  PathPlannerPath pathBR2;
+  PathPlannerPath pathB1;
+  PathPlannerPath pathB2;
   PathPlannerPath pathLeftHP;
   PathPlannerPath pathRightHP;
+
+  private ScoringPathOption scoringPathOption;
+
+  public enum ScoringPathOption {
+    PATH_F1,
+    PATH_F2,
+    PATH_FL1,
+    PATH_FL2,
+    PATH_FR1,
+    PATH_FR2,
+    PATH_BL1,
+    PATH_BL2,
+    PATH_BR1,
+    PATH_BR2,
+    PATH_B1,
+    PATH_B2
+  }
 
   private Field2d field2d;
 
@@ -141,6 +171,17 @@ public class RobotContainer {
   public RobotContainer() {
     try {
       pathF1 = PathPlannerPath.fromPathFile("F1");
+      pathF2 = PathPlannerPath.fromPathFile("F2");
+      pathFL1 = PathPlannerPath.fromPathFile("FL1");
+      pathFL2 = PathPlannerPath.fromPathFile("FL2");
+      pathFR1 = PathPlannerPath.fromPathFile("FR1");
+      pathFR2 = PathPlannerPath.fromPathFile("FR2");
+      pathBL1 = PathPlannerPath.fromPathFile("BL1");
+      pathBL2 = PathPlannerPath.fromPathFile("BL2");
+      pathBR1 = PathPlannerPath.fromPathFile("BR1");
+      pathBR2 = PathPlannerPath.fromPathFile("BR2");
+      pathB1 = PathPlannerPath.fromPathFile("B1");
+      pathB2 = PathPlannerPath.fromPathFile("B2");
       pathLeftHP = PathPlannerPath.fromPathFile("LeftHP");
       pathRightHP = PathPlannerPath.fromPathFile("RightHP");
     } catch (Exception e) {
@@ -421,10 +462,14 @@ public class RobotContainer {
   }
 
   private void configureSubsystemCommands() {
+    // full-auto toggle
+    oi.operatorFullAutoPlacementSwitch().onTrue(Commands.runOnce(() -> isFullAuto = true));
+    oi.operatorFullAutoPlacementSwitch().onFalse(Commands.runOnce(() -> isFullAuto = false));
+
     // oi.scoreCoralButton().whileTrue(new ClawBackwards(claw));
     oi.scoreCoralButton()
         .whileTrue(
-            AutoBuilder.pathfindThenFollowPath(pathF1, pathConstraints)
+            getScoringPathCommand()
                 .andThen(joint.runOnce(() -> joint.setJointPose(JointPosition.LEVEL_2)).asProxy())
                 .andThen(new ClawBackwards(claw).asProxy()));
 
@@ -456,6 +501,19 @@ public class RobotContainer {
                                 : Rotation2d.fromDegrees(55)))));
     oi.hybridIntakeCoralButton()
         .onFalse(joint.runOnce(() -> joint.setJointPose(JointPosition.LEVEL_2)));
+
+    oi.operatorF1().onTrue(Commands.runOnce(() -> scoringPathOption = ScoringPathOption.PATH_F1));
+    oi.operatorF2().onTrue(Commands.runOnce(() -> scoringPathOption = ScoringPathOption.PATH_F2));
+    oi.operatorFL1().onTrue(Commands.runOnce(() -> scoringPathOption = ScoringPathOption.PATH_FL1));
+    oi.operatorFL2().onTrue(Commands.runOnce(() -> scoringPathOption = ScoringPathOption.PATH_FL2));
+    oi.operatorFR1().onTrue(Commands.runOnce(() -> scoringPathOption = ScoringPathOption.PATH_FR1));
+    oi.operatorFR2().onTrue(Commands.runOnce(() -> scoringPathOption = ScoringPathOption.PATH_FR2));
+    oi.operatorBL1().onTrue(Commands.runOnce(() -> scoringPathOption = ScoringPathOption.PATH_BL1));
+    oi.operatorBL2().onTrue(Commands.runOnce(() -> scoringPathOption = ScoringPathOption.PATH_BL2));
+    oi.operatorBR1().onTrue(Commands.runOnce(() -> scoringPathOption = ScoringPathOption.PATH_BR1));
+    oi.operatorBR2().onTrue(Commands.runOnce(() -> scoringPathOption = ScoringPathOption.PATH_BR2));
+    oi.operatorB1().onTrue(Commands.runOnce(() -> scoringPathOption = ScoringPathOption.PATH_B1));
+    oi.operatorB2().onTrue(Commands.runOnce(() -> scoringPathOption = ScoringPathOption.PATH_B2));
   }
 
   private void configureVisionCommands() {
@@ -538,6 +596,48 @@ public class RobotContainer {
 
   private boolean isLeftSide() {
     return drivetrain.getPose().getY() > 4.0; // half the field width in meters
+  }
+
+  private Command getScoringPathCommand() {
+    return new ConditionalCommand(
+        AutoBuilder.pathfindThenFollowPath(pathF1, pathConstraints),
+        new ConditionalCommand(
+            AutoBuilder.pathfindThenFollowPath(pathF2, pathConstraints),
+            new ConditionalCommand(
+                AutoBuilder.pathfindThenFollowPath(pathFL1, pathConstraints),
+                new ConditionalCommand(
+                    AutoBuilder.pathfindThenFollowPath(pathFL2, pathConstraints),
+                    new ConditionalCommand(
+                        AutoBuilder.pathfindThenFollowPath(pathFR1, pathConstraints),
+                        new ConditionalCommand(
+                            AutoBuilder.pathfindThenFollowPath(pathFR2, pathConstraints),
+                            new ConditionalCommand(
+                                AutoBuilder.pathfindThenFollowPath(pathBL1, pathConstraints),
+                                new ConditionalCommand(
+                                    AutoBuilder.pathfindThenFollowPath(pathBL2, pathConstraints),
+                                    new ConditionalCommand(
+                                        AutoBuilder.pathfindThenFollowPath(
+                                            pathBR1, pathConstraints),
+                                        new ConditionalCommand(
+                                            AutoBuilder.pathfindThenFollowPath(
+                                                pathBR2, pathConstraints),
+                                            new ConditionalCommand(
+                                                AutoBuilder.pathfindThenFollowPath(
+                                                    pathB1, pathConstraints),
+                                                AutoBuilder.pathfindThenFollowPath(
+                                                    pathB2, pathConstraints),
+                                                () ->
+                                                    scoringPathOption == ScoringPathOption.PATH_B1),
+                                            () -> scoringPathOption == ScoringPathOption.PATH_BR2),
+                                        () -> scoringPathOption == ScoringPathOption.PATH_BR1),
+                                    () -> scoringPathOption == ScoringPathOption.PATH_BL2),
+                                () -> scoringPathOption == ScoringPathOption.PATH_BL1),
+                            () -> scoringPathOption == ScoringPathOption.PATH_FR2),
+                        () -> scoringPathOption == ScoringPathOption.PATH_FR1),
+                    () -> scoringPathOption == ScoringPathOption.PATH_FL2),
+                () -> scoringPathOption == ScoringPathOption.PATH_FL1),
+            () -> scoringPathOption == ScoringPathOption.PATH_F2),
+        () -> scoringPathOption == ScoringPathOption.PATH_F1);
   }
 
   public void updateVisionPose() {
