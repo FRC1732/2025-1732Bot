@@ -27,8 +27,6 @@ import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.Joystick;
-import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
@@ -454,16 +452,16 @@ public class RobotContainer {
     oi.scoreCoralButton()
         .whileTrue(
             AutoBuilder.pathfindThenFollowPath(pathF1, pathConstraints)
-                .andThen(joint.runOnce(() -> joint.setJointPose(JointPosition.LEVEL_2)))
+                //.andThen(joint.runOnce(() -> joint.setJointPose(JointPosition.LEVEL_2)))
                 .andThen(new ClawBackwards(claw)));
 
     oi.intakeCoralButton()
         .whileTrue(
             Commands.deadline(
                 Commands.sequence(
-                    joint.runOnce(() -> joint.setJointPose(JointPosition.CORAL_STATION)),
+                    //joint.runOnce(() -> joint.setJointPose(JointPosition.CORAL_STATION)),
                     new IntakeCoral(claw, statusRgb),
-                    joint.runOnce(() -> joint.setJointPose(JointPosition.LEVEL_2))),
+                    //joint.runOnce(() -> joint.setJointPose(JointPosition.LEVEL_2))),
                 drivetrain.run(
                     () ->
                         driveFacingAngle(

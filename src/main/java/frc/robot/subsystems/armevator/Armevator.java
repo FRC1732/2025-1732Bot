@@ -266,17 +266,27 @@ public class Armevator extends SubsystemBase {
     SmartDashboard.putData(ArmevatorConstants.SUBSYSTEM_NAME + "/Elevator PID", elevatorPID);
     SmartDashboard.putData(ArmevatorConstants.SUBSYSTEM_NAME + "/Arm PID", armPID);
 
-    SmartDashboard.putNumber(ArmevatorConstants.SUBSYSTEM_NAME + "/Elevator Position", elevatorRelativeEncoder.getPosition());
-    SmartDashboard.putNumber(ArmevatorConstants.SUBSYSTEM_NAME + "/Elevator Velocity", elevatorRelativeEncoder.getVelocity());
-    SmartDashboard.putNumber(ArmevatorConstants.SUBSYSTEM_NAME + "/Elevator Goal", elevatorPID.getGoal().position);
+    SmartDashboard.putNumber(
+        ArmevatorConstants.SUBSYSTEM_NAME + "/Elevator Position",
+        elevatorRelativeEncoder.getPosition());
+    SmartDashboard.putNumber(
+        ArmevatorConstants.SUBSYSTEM_NAME + "/Elevator Velocity",
+        elevatorRelativeEncoder.getVelocity());
+    SmartDashboard.putNumber(
+        ArmevatorConstants.SUBSYSTEM_NAME + "/Elevator Goal", elevatorPID.getGoal().position);
 
-    SmartDashboard.putNumber(ArmevatorConstants.SUBSYSTEM_NAME + "/Arm Position", armRelativeEncoder.getPosition());
-    SmartDashboard.putNumber(ArmevatorConstants.SUBSYSTEM_NAME + "/Arm Velocity", armRelativeEncoder.getVelocity());
+    SmartDashboard.putNumber(
+        ArmevatorConstants.SUBSYSTEM_NAME + "/Arm Position", armRelativeEncoder.getPosition());
+    SmartDashboard.putNumber(
+        ArmevatorConstants.SUBSYSTEM_NAME + "/Arm Velocity", armRelativeEncoder.getVelocity());
 
-    SmartDashboard.putNumber(ArmevatorConstants.SUBSYSTEM_NAME + "/Arm Goal", armPID.getGoal().position);
+    SmartDashboard.putNumber(
+        ArmevatorConstants.SUBSYSTEM_NAME + "/Arm Goal", armPID.getGoal().position);
 
-    SmartDashboard.putBoolean(ArmevatorConstants.SUBSYSTEM_NAME + "/Elevator Limit Switch", elevatorLimitSwitch.get());
-    SmartDashboard.putNumber(ArmevatorConstants.SUBSYSTEM_NAME + "/Arm Absolute Encoder", getAbsolutePosition());
+    SmartDashboard.putBoolean(
+        ArmevatorConstants.SUBSYSTEM_NAME + "/Elevator Limit Switch", elevatorLimitSwitch.get());
+    SmartDashboard.putNumber(
+        ArmevatorConstants.SUBSYSTEM_NAME + "/Arm Absolute Encoder", getAbsolutePosition());
 
     // Does recordOutput also make these available from network tables?
   }

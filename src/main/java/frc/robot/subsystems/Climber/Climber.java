@@ -6,29 +6,29 @@ package frc.robot.subsystems.climber;
 
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
-
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.subsystems.climber.ClimberConstants;
 
 public class Climber extends SubsystemBase {
   /** Creates a new Climber. */
   private SparkMax climberMotorPivot;
+
   private SparkMax climberMotorWindmill;
 
   private ShuffleboardTab tab;
 
   public Climber() {
     climberMotorPivot = new SparkMax(ClimberConstants.CLIMBER_PIVOT_CAN_ID, MotorType.kBrushless);
-    climberMotorWindmill = new SparkMax(ClimberConstants.CLIMBER_WINDMILL_CAN_ID, MotorType.kBrushless);
+    climberMotorWindmill =
+        new SparkMax(ClimberConstants.CLIMBER_WINDMILL_CAN_ID, MotorType.kBrushless);
 
     climberMotorPivot.stopMotor();
     climberMotorWindmill.stopMotor();
     setupShuffleboard();
   }
 
-    public void runClimberPivot() {
+  public void runClimberPivot() {
     climberMotorPivot.set(ClimberConstants.CLIMBER_SPEED_1);
   }
 
@@ -63,7 +63,7 @@ public class Climber extends SubsystemBase {
   public double getClimberPivot() {
     return climberMotorPivot.get();
   }
-  
+
   public double getClimberWindmill() {
     return climberMotorWindmill.get();
   }

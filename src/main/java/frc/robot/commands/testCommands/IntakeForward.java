@@ -11,6 +11,7 @@ import frc.robot.subsystems.intake.Intake;
 public class IntakeForward extends Command {
   /** Creates a new IntakeForward. */
   private Intake intake;
+
   public IntakeForward(Intake intake) {
     this.intake = intake;
     addRequirements(intake);

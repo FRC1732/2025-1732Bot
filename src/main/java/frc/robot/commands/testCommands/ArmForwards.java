@@ -10,11 +10,11 @@ import frc.robot.subsystems.armevator.Armevator;
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
 public class ArmForwards extends Command {
   /** Creates a new ClawForwards. */
-
   Armevator armevator;
+
   public ArmForwards(Armevator armevator) {
     this.armevator = armevator;
-    addRequirements(armevator); 
+    addRequirements(armevator);
     // Use addRequirements() here to declare subsystem dependencies.
   }
 

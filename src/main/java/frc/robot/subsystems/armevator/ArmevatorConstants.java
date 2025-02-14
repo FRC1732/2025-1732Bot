@@ -20,7 +20,7 @@ public class ArmevatorConstants {
   public static final double ELEVATOR_KD = 0;
   public static final double ELEVATOR_MAX_VELOCITY = 0;
   public static final double ELEVATOR_MAX_ACCELERATION = 0;
-  public static final double ELEVATOR_PERIOD_SEC = 0;
+  public static final double ELEVATOR_PERIOD_SEC = 0.02;
 
   public static final double ELEVATOR_HEIGHT_KS = 0;
   public static final double ELEVATOR_HEIGHT_KG = 0;

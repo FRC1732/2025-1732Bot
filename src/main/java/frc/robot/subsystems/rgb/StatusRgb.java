@@ -4,11 +4,9 @@
 
 package frc.robot.subsystems.rgb;
 
-import edu.wpi.first.networktables.IntegerPublisher;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StringPublisher;
-import edu.wpi.first.networktables.StringTopic;
 import edu.wpi.first.wpilibj.DigitalOutput;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
@@ -61,12 +59,12 @@ public class StatusRgb extends SubsystemBase {
     String build = "";
 
     build += "L" + scoringLevel.getLevel();
-    
+
     int position = scoringPosition.getPosition();
-    build += "P" + (position >= 10 ? "" : "0" ) +  position;
+    build += "P" + (position >= 10 ? "" : "0") + position;
 
     publisher.set(build);
-  } 
+  }
 
   public void setMode(int modeToSet) {
     if (modeToSet % 2 == 1) {
