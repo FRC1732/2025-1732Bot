@@ -22,7 +22,7 @@ public class Claw extends SubsystemBase {
   private ShuffleboardTab tab;
 
   public Claw() {
-    clawMotor = new SparkMax(ClawConstants.Claw_MOTOR_CAN_ID, SparkMax.MotorType.kBrushless);
+    clawMotor = new SparkMax(ClawConstants.CLAW_MOTOR_CAN_ID, SparkMax.MotorType.kBrushless);
     Timer.delay(0.050);
     // clawMotor.setInverted(ClawConstants.Claw_MOTOR_INVERTED);
     encoder = clawMotor.getEncoder();
@@ -35,15 +35,15 @@ public class Claw extends SubsystemBase {
   }
 
   public void runClaw() {
-    clawMotor.set(ClawConstants.Claw_MOTOR_SPEED);
+    clawMotor.set(ClawConstants.CLAW_MOTOR_SPEED);
   }
 
   public void brakeClaw() {
-    clawMotor.set(ClawConstants.Claw_BRAKE_SPEED);
+    clawMotor.set(ClawConstants.CLAW_BRAKE_SPEED);
   }
 
   public void reverseClaw() {
-    clawMotor.set(ClawConstants.Claw_MOTOR_SPEED * -1);
+    clawMotor.set(ClawConstants.CLAW_MOTOR_SPEED * -1);
   }
 
   public void stopClaw() {
