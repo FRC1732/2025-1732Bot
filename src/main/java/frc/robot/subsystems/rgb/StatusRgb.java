@@ -4,6 +4,11 @@
 
 package frc.robot.subsystems.rgb;
 
+import edu.wpi.first.networktables.IntegerPublisher;
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.StringPublisher;
+import edu.wpi.first.networktables.StringTopic;
 import edu.wpi.first.wpilibj.DigitalOutput;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
@@ -21,6 +26,13 @@ public class StatusRgb extends SubsystemBase {
   private Timer timer;
   private double targetElapsedTimeSeconds;
 
+  private ScoringLevel scoringLevel;
+  private ScoringPosition scoringPosition;
+
+  private NetworkTableInstance table = NetworkTableInstance.getDefault();
+  private NetworkTable nt4Table = table.getTable("rgbOperator");
+  private StringPublisher publisher = nt4Table.getStringTopic("rgb").publish();
+
   private Joint joint;
 
   private SpecialMode specialMode = SpecialMode.NONE;
@@ -36,6 +48,25 @@ public class StatusRgb extends SubsystemBase {
     specialMode = SpecialMode.CORAL_CAPTURED;
     System.out.println("Started coral special");
   }
+
+  public void setScoringLevel(ScoringLevel scoringLevel) {
+    this.scoringLevel = scoringLevel;
+  }
+
+  public void setScoringPosition(ScoringPosition scoringPosition) {
+    this.scoringPosition = scoringPosition;
+  }
+
+  private void updateButtonState() {
+    String build = "";
+
+    build += "L" + scoringLevel.getLevel();
+    
+    int position = scoringPosition.getPosition();
+    build += "P" + (position >= 10 ? "" : "0" ) +  position;
+
+    publisher.set(build);
+  } 
 
   public void setMode(int modeToSet) {
     if (modeToSet % 2 == 1) {

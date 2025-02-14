@@ -27,6 +27,8 @@ import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
@@ -36,11 +38,19 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 // import frc.lib.team3061.leds.LEDs;
 import frc.robot.commands.DriveToPose;
 import frc.robot.commands.clawcommands.ClawBackwards;
 import frc.robot.commands.clawcommands.IntakeCoral;
+import frc.robot.commands.testCommands.ArmBackwards;
+import frc.robot.commands.testCommands.ArmForwards;
+import frc.robot.commands.testCommands.ElevatorDown;
+import frc.robot.commands.testCommands.ElevatorUp;
+import frc.robot.commands.testCommands.IntakeBackwards;
+import frc.robot.commands.testCommands.IntakeForward;
 import frc.robot.field.Field2d;
 import frc.robot.field.FieldObject;
 import frc.robot.field.Region2d;
@@ -50,7 +60,9 @@ import frc.robot.limelightVision.LimelightHelpers;
 import frc.robot.operator_interface.OISelector;
 import frc.robot.operator_interface.OperatorInterface;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
+import frc.robot.subsystems.armevator.Armevator;
 import frc.robot.subsystems.claw.Claw;
+import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.joint.Joint;
 import frc.robot.subsystems.joint.JointPosition;
 import frc.robot.subsystems.rgb.StatusRgb;
@@ -73,6 +85,8 @@ public class RobotContainer {
   private StatusRgb statusRgb;
   private VisionApriltagSubsystem visionApriltagSubsystem;
   private QuestNav questNav = new QuestNav(5);
+  private Armevator armevator;
+  private Intake intake;
 
   private Alliance lastAlliance = Field2d.getInstance().getAlliance();
 
@@ -163,6 +177,8 @@ public class RobotContainer {
     joint = new Joint();
     claw = new Claw();
     statusRgb = new StatusRgb(joint);
+    armevator = new Armevator();
+    intake = new Intake();
 
     visionApriltagSubsystem =
         new VisionApriltagSubsystem(() -> drivetrain.getPigeon2().getRotation2d().getDegrees());
@@ -413,6 +429,27 @@ public class RobotContainer {
   }
 
   private void configureSubsystemCommands() {
+    // TODO remove once testing is finished
+
+    CommandJoystick controller = new CommandJoystick(0);
+
+    Trigger aTrigger = controller.button(1);
+    Trigger bTrigger = controller.button(2);
+    Trigger xTrigger = controller.button(3);
+    Trigger yTrigger = controller.button(4);
+    Trigger rightTrigger = controller.button(5);
+    Trigger leftTrigger = controller.button(6);
+
+    aTrigger.whileTrue(new ElevatorUp(armevator));
+    bTrigger.whileTrue(new ElevatorDown(armevator));
+    xTrigger.whileTrue(new IntakeForward(intake));
+    yTrigger.whileTrue(new IntakeBackwards(intake));
+
+    rightTrigger.whileTrue(new ArmForwards(armevator));
+    leftTrigger.whileTrue(new ArmBackwards(armevator));
+
+    //
+
     // oi.scoreCoralButton().whileTrue(new ClawBackwards(claw));
     oi.scoreCoralButton()
         .whileTrue(
