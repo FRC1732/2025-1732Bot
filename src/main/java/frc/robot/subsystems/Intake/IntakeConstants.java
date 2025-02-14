@@ -1,4 +1,4 @@
-package frc.robot.subsystems.Intake;
+package frc.robot.subsystems.intake;
 
 public class IntakeConstants {
   public static final String SUBSYSTEM_NAME = "Intake";
