@@ -110,7 +110,7 @@ public class Armevator extends SubsystemBase {
 
     armConfig.idleMode(IdleMode.kBrake);
 
-    elevatorLeftMotor.configure(
+    armMotor.configure(
         armConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
 
     // motor extras
