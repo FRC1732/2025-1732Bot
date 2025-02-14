@@ -61,7 +61,7 @@ public class QuestNav {
   }
 
   public QuestNav() {
-    this(5);
+    this(2);
   }
 
   public void updateAverageRobotPose() {

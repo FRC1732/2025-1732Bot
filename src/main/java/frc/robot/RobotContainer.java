@@ -466,10 +466,12 @@ public class RobotContainer {
     oi.operatorFullAutoPlacementSwitch().onTrue(Commands.runOnce(() -> isFullAuto = true));
     oi.operatorFullAutoPlacementSwitch().onFalse(Commands.runOnce(() -> isFullAuto = false));
 
-    // oi.scoreCoralButton().whileTrue(new ClawBackwards(claw));
+    oi.ejectAllButton().whileTrue(new ClawBackwards(claw));
+    
     oi.scoreCoralButton()
         .whileTrue(
             getScoringPathCommand()
+                .asProxy()
                 .andThen(joint.runOnce(() -> joint.setJointPose(JointPosition.LEVEL_2)).asProxy())
                 .andThen(new ClawBackwards(claw).asProxy()));
 
@@ -643,8 +645,8 @@ public class RobotContainer {
   public void updateVisionPose() {
     if (questNav.isConnected()) {
       questNav.updateAverageRobotPose();
-      drivetrain.addVisionMeasurement(
-          questNav.getRobotPose(), VecBuilder.fill(0.0, 0.0, 9999999.0));
+      //   drivetrain.addVisionMeasurement(
+      //       questNav.getRobotPose(), VecBuilder.fill(0.0, 0.0, 9999999.0));
       drivetrain.addVisionMeasurement(
           questNav.getAverageRobotPose(), VecBuilder.fill(0.0, 0.0, 0.0));
       return;
