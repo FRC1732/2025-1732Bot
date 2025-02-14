@@ -82,11 +82,11 @@ public class Intake extends SubsystemBase {
   }
 
   public double getTiltPosition() {
-    return 0.0; // tiltMotor.getSelectedSensorPosition();
+    return tiltMotor.getPosition().getValueAsDouble();
   }
 
   public double getTiltVelocity() {
-    return 0.0; // tiltMotor.getSelectedSensorVelocity();
+    return tiltMotor.getVelocity().getValueAsDouble();
   }
 
   @Override
