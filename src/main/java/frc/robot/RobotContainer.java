@@ -452,16 +452,16 @@ public class RobotContainer {
     oi.scoreCoralButton()
         .whileTrue(
             AutoBuilder.pathfindThenFollowPath(pathF1, pathConstraints)
-                //.andThen(joint.runOnce(() -> joint.setJointPose(JointPosition.LEVEL_2)))
+                .andThen(joint.runOnce(() -> joint.setJointPose(JointPosition.LEVEL_2)))
                 .andThen(new ClawBackwards(claw)));
 
     oi.intakeCoralButton()
         .whileTrue(
             Commands.deadline(
                 Commands.sequence(
-                    //joint.runOnce(() -> joint.setJointPose(JointPosition.CORAL_STATION)),
+                    joint.runOnce(() -> joint.setJointPose(JointPosition.CORAL_STATION)),
                     new IntakeCoral(claw, statusRgb),
-                    //joint.runOnce(() -> joint.setJointPose(JointPosition.LEVEL_2))),
+                    joint.runOnce(() -> joint.setJointPose(JointPosition.LEVEL_2))),
                 drivetrain.run(
                     () ->
                         driveFacingAngle(
