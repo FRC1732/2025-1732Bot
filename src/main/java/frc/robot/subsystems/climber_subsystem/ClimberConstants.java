@@ -1,4 +1,4 @@
-package frc.robot.subsystems.climber;
+package frc.robot.subsystems.climber_subsystem;
 
 public class ClimberConstants {
   private static final String CONSTRUCTOR_EXCEPTION = "constant class";

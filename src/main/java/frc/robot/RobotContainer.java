@@ -60,7 +60,7 @@ import frc.robot.operator_interface.OperatorInterface;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.armevator.Armevator;
 import frc.robot.subsystems.claw.Claw;
-import frc.robot.subsystems.intake.Intake;
+import frc.robot.subsystems.intake_subsystem.Intake;
 import frc.robot.subsystems.joint.Joint;
 import frc.robot.subsystems.joint.JointPosition;
 import frc.robot.subsystems.rgb.StatusRgb;
