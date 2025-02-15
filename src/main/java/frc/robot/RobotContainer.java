@@ -32,12 +32,7 @@ import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.ConditionalCommand;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.WaitCommand;
+import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 // import frc.lib.team3061.leds.LEDs;
 import frc.robot.commands.clawcommands.ClawBackwards;
@@ -55,6 +50,9 @@ import frc.robot.subsystems.claw.Claw;
 import frc.robot.subsystems.joint.Joint;
 import frc.robot.subsystems.joint.JointPosition;
 import frc.robot.subsystems.rgb.StatusRgb;
+
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.BooleanSupplier;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
@@ -67,7 +65,8 @@ import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;
  * subsystems, commands, and button mappings) should be declared here.
  */
 public class RobotContainer {
-  private OperatorInterface oi = new OperatorInterface() {};
+  private OperatorInterface oi = new OperatorInterface() {
+  };
 
   private Joint joint;
   private Claw claw;
@@ -78,13 +77,13 @@ public class RobotContainer {
   private Alliance lastAlliance = Field2d.getInstance().getAlliance();
 
   public final CommandSwerveDrivetrain drivetrain =
-      TunerConstants.createDrivetrain((pose) -> questNav.resetPose(pose));
+          TunerConstants.createDrivetrain((pose) -> questNav.resetPose(pose));
 
   private double MaxSpeed =
-      TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
+          TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
   private double MaxAngularRate =
-      RotationsPerSecond.of(1.5)
-          .in(RadiansPerSecond); // 1.5 rotations per second max angular velocity
+          RotationsPerSecond.of(1.5)
+                  .in(RadiansPerSecond); // 1.5 rotations per second max angular velocity
   private double MaxSlowSpeed = 0.25 * MaxSpeed; // 25% of max speed
   private double MaxSlowAngularRate = 0.25 * MaxAngularRate; // 25% of max angular rate
   private boolean isSlowMode = false;
@@ -95,39 +94,39 @@ public class RobotContainer {
   private final Telemetry telemetryLogger = new Telemetry(MaxSpeed);
 
   private final SwerveRequest.FieldCentric driveRequest =
-      new SwerveRequest.FieldCentric()
-          .withDeadband(MaxSpeed * 0.01)
-          .withRotationalDeadband(MaxAngularRate * 0.01) // Add a 10% deadband to raw input
-          .withDriveRequestType(
-              DriveRequestType.OpenLoopVoltage); // Use open-loop control for drive motors
+          new SwerveRequest.FieldCentric()
+                  .withDeadband(MaxSpeed * 0.01)
+                  .withRotationalDeadband(MaxAngularRate * 0.01) // Add a 10% deadband to raw input
+                  .withDriveRequestType(
+                          DriveRequestType.OpenLoopVoltage); // Use open-loop control for drive motors
   private final SwerveRequest.SwerveDriveBrake brakeRequest = new SwerveRequest.SwerveDriveBrake();
   private final SwerveRequest.ApplyRobotSpeeds driveWithSpeedsRequest =
-      new SwerveRequest.ApplyRobotSpeeds();
+          new SwerveRequest.ApplyRobotSpeeds();
 
   private final SwerveRequest.FieldCentricFacingAngle driveFacingAngleRequest =
-      new SwerveRequest.FieldCentricFacingAngle()
-          .withDeadband(MaxSpeed * 0.01)
-          .withSteerRequestType(SteerRequestType.MotionMagicExpo);
+          new SwerveRequest.FieldCentricFacingAngle()
+                  .withDeadband(MaxSpeed * 0.01)
+                  .withSteerRequestType(SteerRequestType.MotionMagicExpo);
 
   // use AdvantageKit's LoggedDashboardChooser instead of SendableChooser to ensure accurate logging
   private final LoggedDashboardChooser<Command> autoChooser =
-      new LoggedDashboardChooser<>("Auto Routine");
+          new LoggedDashboardChooser<>("Auto Routine");
 
   private final LoggedNetworkNumber endgameAlert1 =
-      new LoggedNetworkNumber("/Tuning/Endgame Alert #1", 20.0);
+          new LoggedNetworkNumber("/Tuning/Endgame Alert #1", 20.0);
   private final LoggedNetworkNumber endgameAlert2 =
-      new LoggedNetworkNumber("/Tuning/Endgame Alert #2", 10.0);
+          new LoggedNetworkNumber("/Tuning/Endgame Alert #2", 10.0);
   private Alert pathFileMissingAlert =
-      new Alert("Could not find the specified path file.", AlertType.kError);
+          new Alert("Could not find the specified path file.", AlertType.kError);
   private static final String LAYOUT_FILE_MISSING =
-      "Could not find the specified AprilTags layout file";
+          "Could not find the specified AprilTags layout file";
   private Alert layoutFileMissingAlert = new Alert(LAYOUT_FILE_MISSING, AlertType.kError);
   private Alert tuningAlert = new Alert("Tuning mode enabled", AlertType.kInfo);
 
   StructPublisher<Pose2d> posePublisher =
-      NetworkTableInstance.getDefault().getStructTopic("robotPose", Pose2d.struct).publish();
+          NetworkTableInstance.getDefault().getStructTopic("robotPose", Pose2d.struct).publish();
   StructPublisher<Pose2d> questPosePublisher =
-      NetworkTableInstance.getDefault().getStructTopic("questPose", Pose2d.struct).publish();
+          NetworkTableInstance.getDefault().getStructTopic("questPose", Pose2d.struct).publish();
 
   PathConstraints pathConstraints = new PathConstraints(4.855, 5.8, 9.42, 14.8876585);
   PathPlannerPath pathF1;
@@ -162,6 +161,8 @@ public class RobotContainer {
     PATH_B2
   }
 
+  Map<ScoringPathOption, Command> scoringPathMap = new HashMap<>(11);
+
   private Field2d field2d;
 
   /**
@@ -188,6 +189,8 @@ public class RobotContainer {
       System.out.println(e.getMessage());
     }
 
+    setupScoringPathMap();
+
     defineSubsystems();
 
     // disable all telemetry in the LiveWindow to reduce the processing during each iteration
@@ -211,7 +214,7 @@ public class RobotContainer {
     statusRgb = new StatusRgb(joint);
 
     visionApriltagSubsystem =
-        new VisionApriltagSubsystem(() -> drivetrain.getPigeon2().getRotation2d().getDegrees());
+            new VisionApriltagSubsystem(() -> drivetrain.getPigeon2().getRotation2d().getDegrees());
   }
 
   /**
@@ -220,7 +223,7 @@ public class RobotContainer {
    */
   private void constructField() {
     field2d = Field2d.getInstance();
-    field2d.setRegions(new Region2d[] {});
+    field2d.setRegions(new Region2d[]{});
 
     SmartDashboard.putData("Field", field2d);
   }
@@ -243,7 +246,9 @@ public class RobotContainer {
     configureButtonBindings();
   }
 
-  /** Use this method to define your button->command mappings. */
+  /**
+   * Use this method to define your button->command mappings.
+   */
   private void configureButtonBindings() {
 
     configureDrivetrainCommands();
@@ -253,19 +258,21 @@ public class RobotContainer {
     configureVisionCommands();
 
     new PrintOperatorPanelTests(
-        oi); // this is for verifying operator panel buttons. not for competition
+            oi); // this is for verifying operator panel buttons. not for competition
   }
 
-  /** Use this method to define your commands for autonomous mode. */
+  /**
+   * Use this method to define your commands for autonomous mode.
+   */
   private void configureAutoCommands() {
     NamedCommands.registerCommand(
-        "intakeCoral",
-        Commands.sequence(
-            joint.runOnce(() -> joint.setJointPose(JointPosition.CORAL_STATION)),
-            new IntakeCoral(claw, statusRgb)));
+            "intakeCoral",
+            Commands.sequence(
+                    joint.runOnce(() -> joint.setJointPose(JointPosition.CORAL_STATION)),
+                    new IntakeCoral(claw, statusRgb)));
     NamedCommands.registerCommand("ejectCoral", new ClawBackwards(claw));
     NamedCommands.registerCommand(
-        "setPoseL4", joint.runOnce(() -> joint.setJointPose(JointPosition.LEVEL_4)));
+            "setPoseL4", joint.runOnce(() -> joint.setJointPose(JointPosition.LEVEL_4)));
 
     // Event Markers
     new EventTrigger("Marker").onTrue(Commands.print("reached event marker"));
@@ -307,90 +314,90 @@ public class RobotContainer {
      *
      */
     autoChooser.addOption(
-        "Drive Velocity Tuning",
-        Commands.sequence(
-            Commands.deadline(
-                Commands.waitSeconds(1.0),
-                drivetrain.run(
-                    () ->
-                        drivetrain.setControl(
-                            driveWithSpeedsRequest
-                                .withDriveRequestType(SwerveModule.DriveRequestType.Velocity)
-                                .withSteerRequestType(SwerveModule.SteerRequestType.MotionMagicExpo)
-                                .withSpeeds(new ChassisSpeeds(2.0, 0, 0))))),
-            Commands.deadline(
-                Commands.waitSeconds(1.0),
-                drivetrain.run(
-                    () ->
-                        drivetrain.setControl(
-                            driveWithSpeedsRequest
-                                .withDriveRequestType(SwerveModule.DriveRequestType.Velocity)
-                                .withSteerRequestType(SwerveModule.SteerRequestType.MotionMagicExpo)
-                                .withSpeeds(new ChassisSpeeds(-0.5, 0, 0))))),
-            Commands.deadline(
-                Commands.waitSeconds(1.0),
-                drivetrain.run(
-                    () ->
-                        drivetrain.setControl(
-                            driveWithSpeedsRequest
-                                .withDriveRequestType(SwerveModule.DriveRequestType.Velocity)
-                                .withSteerRequestType(SwerveModule.SteerRequestType.MotionMagicExpo)
-                                .withSpeeds(new ChassisSpeeds(1.0, 0, 0))))),
-            Commands.deadline(
-                Commands.waitSeconds(0.5),
-                drivetrain.run(
-                    () ->
-                        drivetrain.setControl(
-                            driveWithSpeedsRequest
-                                .withDriveRequestType(SwerveModule.DriveRequestType.Velocity)
-                                .withSteerRequestType(SwerveModule.SteerRequestType.MotionMagicExpo)
-                                .withSpeeds(new ChassisSpeeds(3.0, 0, 0))))),
-            Commands.deadline(
-                Commands.waitSeconds(1.0),
-                drivetrain.run(
-                    () ->
-                        drivetrain.setControl(
-                            driveWithSpeedsRequest
-                                .withDriveRequestType(SwerveModule.DriveRequestType.Velocity)
-                                .withSteerRequestType(SwerveModule.SteerRequestType.MotionMagicExpo)
-                                .withSpeeds(new ChassisSpeeds(1.0, 0, 0))))),
-            Commands.deadline(
-                Commands.waitSeconds(1.0),
-                drivetrain.run(
-                    () ->
-                        drivetrain.setControl(
-                            driveWithSpeedsRequest
-                                .withDriveRequestType(SwerveModule.DriveRequestType.Velocity)
-                                .withSteerRequestType(SwerveModule.SteerRequestType.MotionMagicExpo)
-                                .withSpeeds(new ChassisSpeeds(-1.0, 0, 0))))),
-            Commands.deadline(
-                Commands.waitSeconds(1.0),
-                drivetrain.run(
-                    () ->
-                        drivetrain.setControl(
-                            driveWithSpeedsRequest
-                                .withDriveRequestType(SwerveModule.DriveRequestType.Velocity)
-                                .withSteerRequestType(SwerveModule.SteerRequestType.MotionMagicExpo)
-                                .withSpeeds(new ChassisSpeeds(-3.0, 0, 0))))),
-            Commands.deadline(
-                Commands.waitSeconds(1.0),
-                drivetrain.run(
-                    () ->
-                        drivetrain.setControl(
-                            driveWithSpeedsRequest
-                                .withDriveRequestType(SwerveModule.DriveRequestType.Velocity)
-                                .withSteerRequestType(SwerveModule.SteerRequestType.MotionMagicExpo)
-                                .withSpeeds(new ChassisSpeeds(-1.0, 0, 0)))))));
+            "Drive Velocity Tuning",
+            Commands.sequence(
+                    Commands.deadline(
+                            Commands.waitSeconds(1.0),
+                            drivetrain.run(
+                                    () ->
+                                            drivetrain.setControl(
+                                                    driveWithSpeedsRequest
+                                                            .withDriveRequestType(SwerveModule.DriveRequestType.Velocity)
+                                                            .withSteerRequestType(SwerveModule.SteerRequestType.MotionMagicExpo)
+                                                            .withSpeeds(new ChassisSpeeds(2.0, 0, 0))))),
+                    Commands.deadline(
+                            Commands.waitSeconds(1.0),
+                            drivetrain.run(
+                                    () ->
+                                            drivetrain.setControl(
+                                                    driveWithSpeedsRequest
+                                                            .withDriveRequestType(SwerveModule.DriveRequestType.Velocity)
+                                                            .withSteerRequestType(SwerveModule.SteerRequestType.MotionMagicExpo)
+                                                            .withSpeeds(new ChassisSpeeds(-0.5, 0, 0))))),
+                    Commands.deadline(
+                            Commands.waitSeconds(1.0),
+                            drivetrain.run(
+                                    () ->
+                                            drivetrain.setControl(
+                                                    driveWithSpeedsRequest
+                                                            .withDriveRequestType(SwerveModule.DriveRequestType.Velocity)
+                                                            .withSteerRequestType(SwerveModule.SteerRequestType.MotionMagicExpo)
+                                                            .withSpeeds(new ChassisSpeeds(1.0, 0, 0))))),
+                    Commands.deadline(
+                            Commands.waitSeconds(0.5),
+                            drivetrain.run(
+                                    () ->
+                                            drivetrain.setControl(
+                                                    driveWithSpeedsRequest
+                                                            .withDriveRequestType(SwerveModule.DriveRequestType.Velocity)
+                                                            .withSteerRequestType(SwerveModule.SteerRequestType.MotionMagicExpo)
+                                                            .withSpeeds(new ChassisSpeeds(3.0, 0, 0))))),
+                    Commands.deadline(
+                            Commands.waitSeconds(1.0),
+                            drivetrain.run(
+                                    () ->
+                                            drivetrain.setControl(
+                                                    driveWithSpeedsRequest
+                                                            .withDriveRequestType(SwerveModule.DriveRequestType.Velocity)
+                                                            .withSteerRequestType(SwerveModule.SteerRequestType.MotionMagicExpo)
+                                                            .withSpeeds(new ChassisSpeeds(1.0, 0, 0))))),
+                    Commands.deadline(
+                            Commands.waitSeconds(1.0),
+                            drivetrain.run(
+                                    () ->
+                                            drivetrain.setControl(
+                                                    driveWithSpeedsRequest
+                                                            .withDriveRequestType(SwerveModule.DriveRequestType.Velocity)
+                                                            .withSteerRequestType(SwerveModule.SteerRequestType.MotionMagicExpo)
+                                                            .withSpeeds(new ChassisSpeeds(-1.0, 0, 0))))),
+                    Commands.deadline(
+                            Commands.waitSeconds(1.0),
+                            drivetrain.run(
+                                    () ->
+                                            drivetrain.setControl(
+                                                    driveWithSpeedsRequest
+                                                            .withDriveRequestType(SwerveModule.DriveRequestType.Velocity)
+                                                            .withSteerRequestType(SwerveModule.SteerRequestType.MotionMagicExpo)
+                                                            .withSpeeds(new ChassisSpeeds(-3.0, 0, 0))))),
+                    Commands.deadline(
+                            Commands.waitSeconds(1.0),
+                            drivetrain.run(
+                                    () ->
+                                            drivetrain.setControl(
+                                                    driveWithSpeedsRequest
+                                                            .withDriveRequestType(SwerveModule.DriveRequestType.Velocity)
+                                                            .withSteerRequestType(SwerveModule.SteerRequestType.MotionMagicExpo)
+                                                            .withSpeeds(new ChassisSpeeds(-1.0, 0, 0)))))));
 
     Shuffleboard.getTab("MAIN").add(autoChooser.getSendableChooser());
   }
 
   private void driveFacingAngle(double xVelocity, double yVelocity, Rotation2d targetDirection) {
     drivetrain.setControl(
-        driveFacingAngleRequest
-            .withVelocityX(xVelocity)
-            .withVelocityY(yVelocity)
-            .withTargetDirection(targetDirection));
+            driveFacingAngleRequest
+                    .withVelocityX(xVelocity)
+                    .withVelocityY(yVelocity)
+                    .withTargetDirection(targetDirection));
   }
 
   private void configureDrivetrainCommands() {
@@ -406,25 +413,25 @@ public class RobotContainer {
      * (0,0).____|____| y, x-> 0->
      */
     drivetrain.setDefaultCommand(
-        // Drivetrain will execute this command periodically
-        drivetrain.applyRequest(
-            () ->
-                driveRequest
-                    .withVelocityX(
-                        -oi.getTranslateX()
-                            * (slowModeSupplier.getAsBoolean()
-                                ? MaxSlowSpeed
-                                : MaxSpeed)) // Drive forward with negative Y (forward)
-                    .withVelocityY(
-                        -oi.getTranslateY()
-                            * (slowModeSupplier.getAsBoolean()
-                                ? MaxSlowSpeed
-                                : MaxSpeed)) // Drive left with negative X (left)
-                    .withRotationalRate(
-                        -oi.getRotate()
-                            * (slowModeSupplier.getAsBoolean()
-                                ? MaxSlowAngularRate
-                                : MaxAngularRate)) // Drive counterclockwise with negative X (left)
+            // Drivetrain will execute this command periodically
+            drivetrain.applyRequest(
+                    () ->
+                            driveRequest
+                                    .withVelocityX(
+                                            -oi.getTranslateX()
+                                                    * (slowModeSupplier.getAsBoolean()
+                                                    ? MaxSlowSpeed
+                                                    : MaxSpeed)) // Drive forward with negative Y (forward)
+                                    .withVelocityY(
+                                            -oi.getTranslateY()
+                                                    * (slowModeSupplier.getAsBoolean()
+                                                    ? MaxSlowSpeed
+                                                    : MaxSpeed)) // Drive left with negative X (left)
+                                    .withRotationalRate(
+                                            -oi.getRotate()
+                                                    * (slowModeSupplier.getAsBoolean()
+                                                    ? MaxSlowAngularRate
+                                                    : MaxAngularRate)) // Drive counterclockwise with negative X (left)
             ));
 
     driveFacingAngleRequest.HeadingController.setPID(7, 0, 0);
@@ -466,45 +473,44 @@ public class RobotContainer {
     oi.ejectAllButton().whileTrue(new ClawBackwards(claw));
 
     oi.scoreCoralButton()
-        .whileTrue(
-            getScoringPathCommand()
-                .asProxy()
-                .andThen(joint.runOnce(() -> joint.setJointPose(JointPosition.LEVEL_2)).asProxy())
-                .andThen(new ClawBackwards(claw).asProxy()));
+            .whileTrue(getScoringPathCommand()
+                            .asProxy()
+                            .andThen(joint.runOnce(() -> joint.setJointPose(JointPosition.LEVEL_2)).asProxy())
+                            .andThen(new ClawBackwards(claw).asProxy()));
 
     oi.intakeCoralButton()
-        .whileTrue(
-            Commands.deadline(
-                Commands.sequence(
-                    joint.runOnce(() -> joint.setJointPose(JointPosition.CORAL_STATION)).asProxy(),
-                    new IntakeCoral(claw, statusRgb)),
-                new ConditionalCommand(
-                    AutoBuilder.pathfindThenFollowPath(pathLeftHP, pathConstraints),
-                    AutoBuilder.pathfindThenFollowPath(pathRightHP, pathConstraints),
-                    this::shouldIntakeLeftSide)));
+            .whileTrue(
+                    Commands.deadline(
+                            Commands.sequence(
+                                    joint.runOnce(() -> joint.setJointPose(JointPosition.CORAL_STATION)).asProxy(),
+                                    new IntakeCoral(claw, statusRgb)),
+                            new ConditionalCommand(
+                                    AutoBuilder.pathfindThenFollowPath(pathLeftHP, pathConstraints),
+                                    AutoBuilder.pathfindThenFollowPath(pathRightHP, pathConstraints),
+                                    this::shouldIntakeLeftSide)));
     oi.intakeCoralButton()
-        .onFalse(
-            new WaitCommand(1.0)
-                .andThen(joint.runOnce(() -> joint.setJointPose(JointPosition.LEVEL_2))));
+            .onFalse(
+                    new WaitCommand(1.0)
+                            .andThen(joint.runOnce(() -> joint.setJointPose(JointPosition.LEVEL_2))));
 
     oi.hybridIntakeCoralButton()
-        .whileTrue(
-            Commands.deadline(
-                Commands.sequence(
-                    joint.runOnce(() -> joint.setJointPose(JointPosition.CORAL_STATION)),
-                    new IntakeCoral(claw, statusRgb)),
-                drivetrain.run(
-                    () ->
-                        driveFacingAngle(
-                            -oi.getTranslateX() * MaxSpeed,
-                            -oi.getTranslateY() * MaxSpeed,
-                            shouldIntakeLeftSide()
-                                ? Rotation2d.fromDegrees(-55)
-                                : Rotation2d.fromDegrees(55)))));
+            .whileTrue(
+                    Commands.deadline(
+                            Commands.sequence(
+                                    joint.runOnce(() -> joint.setJointPose(JointPosition.CORAL_STATION)),
+                                    new IntakeCoral(claw, statusRgb)),
+                            drivetrain.run(
+                                    () ->
+                                            driveFacingAngle(
+                                                    -oi.getTranslateX() * MaxSpeed,
+                                                    -oi.getTranslateY() * MaxSpeed,
+                                                    shouldIntakeLeftSide()
+                                                            ? Rotation2d.fromDegrees(-55)
+                                                            : Rotation2d.fromDegrees(55)))));
     oi.hybridIntakeCoralButton()
-        .onFalse(
-            new WaitCommand(1.0)
-                .andThen(joint.runOnce(() -> joint.setJointPose(JointPosition.LEVEL_2))));
+            .onFalse(
+                    new WaitCommand(1.0)
+                            .andThen(joint.runOnce(() -> joint.setJointPose(JointPosition.LEVEL_2))));
 
     oi.operatorF1().onTrue(Commands.runOnce(() -> scoringPathOption = ScoringPathOption.PATH_F1));
     oi.operatorF2().onTrue(Commands.runOnce(() -> scoringPathOption = ScoringPathOption.PATH_F2));
@@ -575,7 +581,7 @@ public class RobotContainer {
   private Pose2d extractLimelightPose() {
     LimelightHelpers.PoseEstimate limelightMeasurement = visionApriltagSubsystem.getPoseEstimate();
     if (limelightMeasurement.tagCount >= 2
-        || (limelightMeasurement.tagCount == 1 && limelightMeasurement.avgTagDist < 1.25)) {
+            || (limelightMeasurement.tagCount == 1 && limelightMeasurement.avgTagDist < 1.25)) {
 
       return limelightMeasurement.pose;
     }
@@ -609,45 +615,26 @@ public class RobotContainer {
   }
 
   private Command getScoringPathCommand() {
-    return new ConditionalCommand(
-        AutoBuilder.pathfindThenFollowPath(pathF1, pathConstraints),
-        new ConditionalCommand(
-            AutoBuilder.pathfindThenFollowPath(pathF2, pathConstraints),
-            new ConditionalCommand(
-                AutoBuilder.pathfindThenFollowPath(pathFL1, pathConstraints),
-                new ConditionalCommand(
-                    AutoBuilder.pathfindThenFollowPath(pathFL2, pathConstraints),
-                    new ConditionalCommand(
-                        AutoBuilder.pathfindThenFollowPath(pathFR1, pathConstraints),
-                        new ConditionalCommand(
-                            AutoBuilder.pathfindThenFollowPath(pathFR2, pathConstraints),
-                            new ConditionalCommand(
-                                AutoBuilder.pathfindThenFollowPath(pathBL1, pathConstraints),
-                                new ConditionalCommand(
-                                    AutoBuilder.pathfindThenFollowPath(pathBL2, pathConstraints),
-                                    new ConditionalCommand(
-                                        AutoBuilder.pathfindThenFollowPath(
-                                            pathBR1, pathConstraints),
-                                        new ConditionalCommand(
-                                            AutoBuilder.pathfindThenFollowPath(
-                                                pathBR2, pathConstraints),
-                                            new ConditionalCommand(
-                                                AutoBuilder.pathfindThenFollowPath(
-                                                    pathB1, pathConstraints),
-                                                AutoBuilder.pathfindThenFollowPath(
-                                                    pathB2, pathConstraints),
-                                                () ->
-                                                    scoringPathOption == ScoringPathOption.PATH_B1),
-                                            () -> scoringPathOption == ScoringPathOption.PATH_BR2),
-                                        () -> scoringPathOption == ScoringPathOption.PATH_BR1),
-                                    () -> scoringPathOption == ScoringPathOption.PATH_BL2),
-                                () -> scoringPathOption == ScoringPathOption.PATH_BL1),
-                            () -> scoringPathOption == ScoringPathOption.PATH_FR2),
-                        () -> scoringPathOption == ScoringPathOption.PATH_FR1),
-                    () -> scoringPathOption == ScoringPathOption.PATH_FL2),
-                () -> scoringPathOption == ScoringPathOption.PATH_FL1),
-            () -> scoringPathOption == ScoringPathOption.PATH_F2),
-        () -> scoringPathOption == ScoringPathOption.PATH_F1);
+    return new SelectCommand<>(
+            scoringPathMap,
+            () -> scoringPathOption
+    );
+  }
+
+  //run on init
+  private void setupScoringPathMap() {
+    scoringPathMap.put(ScoringPathOption.PATH_F1, AutoBuilder.pathfindThenFollowPath(pathF1, pathConstraints));
+    scoringPathMap.put(ScoringPathOption.PATH_F2, AutoBuilder.pathfindThenFollowPath(pathF2, pathConstraints));
+    scoringPathMap.put(ScoringPathOption.PATH_FL1, AutoBuilder.pathfindThenFollowPath(pathFL1, pathConstraints));
+    scoringPathMap.put(ScoringPathOption.PATH_FL2, AutoBuilder.pathfindThenFollowPath(pathFL2, pathConstraints));
+    scoringPathMap.put(ScoringPathOption.PATH_FR1, AutoBuilder.pathfindThenFollowPath(pathFR1, pathConstraints));
+    scoringPathMap.put(ScoringPathOption.PATH_FR2, AutoBuilder.pathfindThenFollowPath(pathFR2, pathConstraints));
+    scoringPathMap.put(ScoringPathOption.PATH_BL1, AutoBuilder.pathfindThenFollowPath(pathBL1, pathConstraints));
+    scoringPathMap.put(ScoringPathOption.PATH_BL2, AutoBuilder.pathfindThenFollowPath(pathBL2, pathConstraints));
+    scoringPathMap.put(ScoringPathOption.PATH_BR1, AutoBuilder.pathfindThenFollowPath(pathBR1, pathConstraints));
+    scoringPathMap.put(ScoringPathOption.PATH_BR2, AutoBuilder.pathfindThenFollowPath(pathBR2, pathConstraints));
+    scoringPathMap.put(ScoringPathOption.PATH_B1, AutoBuilder.pathfindThenFollowPath(pathB1, pathConstraints));
+    scoringPathMap.put(ScoringPathOption.PATH_B2, AutoBuilder.pathfindThenFollowPath(pathB2, pathConstraints));
   }
 
   public void updateVisionPose() {
@@ -656,7 +643,7 @@ public class RobotContainer {
       //   drivetrain.addVisionMeasurement(
       //       questNav.getRobotPose(), VecBuilder.fill(0.0, 0.0, 9999999.0));
       drivetrain.addVisionMeasurement(
-          questNav.getAverageRobotPose(), VecBuilder.fill(0.5, 0.5, 0.5));
+              questNav.getAverageRobotPose(), VecBuilder.fill(0.5, 0.5, 0.5));
       return;
     }
 
