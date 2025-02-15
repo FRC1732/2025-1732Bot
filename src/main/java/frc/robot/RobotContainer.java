@@ -37,6 +37,7 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.SelectCommand;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 // import frc.lib.team3061.leds.LEDs;
@@ -55,6 +56,8 @@ import frc.robot.subsystems.claw.Claw;
 import frc.robot.subsystems.joint.Joint;
 import frc.robot.subsystems.joint.JointPosition;
 import frc.robot.subsystems.rgb.StatusRgb;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.BooleanSupplier;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
@@ -164,6 +167,8 @@ public class RobotContainer {
     PATH_B2
   }
 
+  Map<ScoringPathOption, Command> scoringPathMap = new HashMap<>(12);
+
   private Field2d field2d;
 
   /**
@@ -189,6 +194,8 @@ public class RobotContainer {
     } catch (Exception e) {
       System.out.println(e.getMessage());
     }
+
+    setupScoringPathMap();
 
     defineSubsystems();
 
@@ -613,45 +620,35 @@ public class RobotContainer {
   }
 
   private Command getScoringPathCommand() {
-    return new ConditionalCommand(
-        AutoBuilder.pathfindThenFollowPath(pathF1, pathConstraints),
-        new ConditionalCommand(
-            AutoBuilder.pathfindThenFollowPath(pathF2, pathConstraints),
-            new ConditionalCommand(
-                AutoBuilder.pathfindThenFollowPath(pathFL1, pathConstraints),
-                new ConditionalCommand(
-                    AutoBuilder.pathfindThenFollowPath(pathFL2, pathConstraints),
-                    new ConditionalCommand(
-                        AutoBuilder.pathfindThenFollowPath(pathFR1, pathConstraints),
-                        new ConditionalCommand(
-                            AutoBuilder.pathfindThenFollowPath(pathFR2, pathConstraints),
-                            new ConditionalCommand(
-                                AutoBuilder.pathfindThenFollowPath(pathBL1, pathConstraints),
-                                new ConditionalCommand(
-                                    AutoBuilder.pathfindThenFollowPath(pathBL2, pathConstraints),
-                                    new ConditionalCommand(
-                                        AutoBuilder.pathfindThenFollowPath(
-                                            pathBR1, pathConstraints),
-                                        new ConditionalCommand(
-                                            AutoBuilder.pathfindThenFollowPath(
-                                                pathBR2, pathConstraints),
-                                            new ConditionalCommand(
-                                                AutoBuilder.pathfindThenFollowPath(
-                                                    pathB1, pathConstraints),
-                                                AutoBuilder.pathfindThenFollowPath(
-                                                    pathB2, pathConstraints),
-                                                () ->
-                                                    scoringPathOption == ScoringPathOption.PATH_B1),
-                                            () -> scoringPathOption == ScoringPathOption.PATH_BR2),
-                                        () -> scoringPathOption == ScoringPathOption.PATH_BR1),
-                                    () -> scoringPathOption == ScoringPathOption.PATH_BL2),
-                                () -> scoringPathOption == ScoringPathOption.PATH_BL1),
-                            () -> scoringPathOption == ScoringPathOption.PATH_FR2),
-                        () -> scoringPathOption == ScoringPathOption.PATH_FR1),
-                    () -> scoringPathOption == ScoringPathOption.PATH_FL2),
-                () -> scoringPathOption == ScoringPathOption.PATH_FL1),
-            () -> scoringPathOption == ScoringPathOption.PATH_F2),
-        () -> scoringPathOption == ScoringPathOption.PATH_F1);
+    return new SelectCommand<>(scoringPathMap, () -> scoringPathOption);
+  }
+
+  // run on init
+  private void setupScoringPathMap() {
+    scoringPathMap.put(
+        ScoringPathOption.PATH_F1, AutoBuilder.pathfindThenFollowPath(pathF1, pathConstraints));
+    scoringPathMap.put(
+        ScoringPathOption.PATH_F2, AutoBuilder.pathfindThenFollowPath(pathF2, pathConstraints));
+    scoringPathMap.put(
+        ScoringPathOption.PATH_FL1, AutoBuilder.pathfindThenFollowPath(pathFL1, pathConstraints));
+    scoringPathMap.put(
+        ScoringPathOption.PATH_FL2, AutoBuilder.pathfindThenFollowPath(pathFL2, pathConstraints));
+    scoringPathMap.put(
+        ScoringPathOption.PATH_FR1, AutoBuilder.pathfindThenFollowPath(pathFR1, pathConstraints));
+    scoringPathMap.put(
+        ScoringPathOption.PATH_FR2, AutoBuilder.pathfindThenFollowPath(pathFR2, pathConstraints));
+    scoringPathMap.put(
+        ScoringPathOption.PATH_BL1, AutoBuilder.pathfindThenFollowPath(pathBL1, pathConstraints));
+    scoringPathMap.put(
+        ScoringPathOption.PATH_BL2, AutoBuilder.pathfindThenFollowPath(pathBL2, pathConstraints));
+    scoringPathMap.put(
+        ScoringPathOption.PATH_BR1, AutoBuilder.pathfindThenFollowPath(pathBR1, pathConstraints));
+    scoringPathMap.put(
+        ScoringPathOption.PATH_BR2, AutoBuilder.pathfindThenFollowPath(pathBR2, pathConstraints));
+    scoringPathMap.put(
+        ScoringPathOption.PATH_B1, AutoBuilder.pathfindThenFollowPath(pathB1, pathConstraints));
+    scoringPathMap.put(
+        ScoringPathOption.PATH_B2, AutoBuilder.pathfindThenFollowPath(pathB2, pathConstraints));
   }
 
   public void updateVisionPose() {
