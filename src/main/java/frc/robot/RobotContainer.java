@@ -37,9 +37,9 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 // import frc.lib.team3061.leds.LEDs;
-import frc.robot.commands.DriveToPose;
 import frc.robot.commands.clawcommands.ClawBackwards;
 import frc.robot.commands.clawcommands.IntakeCoral;
 import frc.robot.field.Field2d;
@@ -455,9 +455,6 @@ public class RobotContainer {
     oi.getSysIdQuasistaticForward().whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
     oi.getSysIdQuasistaticReverse().whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
 
-    oi.operatorB1()
-        .onTrue(new DriveToPose(drivetrain, () -> new Pose2d(0.0, 0.0, new Rotation2d(0.0))));
-
     // drivetrain.registerTelemetry(telemetryLogger::telemeterize);
   }
 
@@ -467,7 +464,7 @@ public class RobotContainer {
     oi.operatorFullAutoPlacementSwitch().onFalse(Commands.runOnce(() -> isFullAuto = false));
 
     oi.ejectAllButton().whileTrue(new ClawBackwards(claw));
-    
+
     oi.scoreCoralButton()
         .whileTrue(
             getScoringPathCommand()
@@ -484,8 +481,11 @@ public class RobotContainer {
                 new ConditionalCommand(
                     AutoBuilder.pathfindThenFollowPath(pathLeftHP, pathConstraints),
                     AutoBuilder.pathfindThenFollowPath(pathRightHP, pathConstraints),
-                    this::isLeftSide)));
-    oi.intakeCoralButton().onFalse(joint.runOnce(() -> joint.setJointPose(JointPosition.LEVEL_2)));
+                    this::shouldIntakeLeftSide)));
+    oi.intakeCoralButton()
+        .onFalse(
+            new WaitCommand(1.0)
+                .andThen(joint.runOnce(() -> joint.setJointPose(JointPosition.LEVEL_2))));
 
     oi.hybridIntakeCoralButton()
         .whileTrue(
@@ -498,11 +498,13 @@ public class RobotContainer {
                         driveFacingAngle(
                             -oi.getTranslateX() * MaxSpeed,
                             -oi.getTranslateY() * MaxSpeed,
-                            isLeftSide()
+                            shouldIntakeLeftSide()
                                 ? Rotation2d.fromDegrees(-55)
                                 : Rotation2d.fromDegrees(55)))));
     oi.hybridIntakeCoralButton()
-        .onFalse(joint.runOnce(() -> joint.setJointPose(JointPosition.LEVEL_2)));
+        .onFalse(
+            new WaitCommand(1.0)
+                .andThen(joint.runOnce(() -> joint.setJointPose(JointPosition.LEVEL_2))));
 
     oi.operatorF1().onTrue(Commands.runOnce(() -> scoringPathOption = ScoringPathOption.PATH_F1));
     oi.operatorF2().onTrue(Commands.runOnce(() -> scoringPathOption = ScoringPathOption.PATH_F2));
@@ -596,7 +598,13 @@ public class RobotContainer {
     this.checkAllianceColor();
   }
 
-  private boolean isLeftSide() {
+  private boolean shouldIntakeLeftSide() {
+    if (oi.getTranslateY() > 0.02) {
+      return true;
+    }
+    if (oi.getTranslateY() < 0.02) {
+      return false;
+    }
     return drivetrain.getPose().getY() > 4.0; // half the field width in meters
   }
 
@@ -648,7 +656,7 @@ public class RobotContainer {
       //   drivetrain.addVisionMeasurement(
       //       questNav.getRobotPose(), VecBuilder.fill(0.0, 0.0, 9999999.0));
       drivetrain.addVisionMeasurement(
-          questNav.getAverageRobotPose(), VecBuilder.fill(0.0, 0.0, 0.0));
+          questNav.getAverageRobotPose(), VecBuilder.fill(0.5, 0.5, 0.5));
       return;
     }
 
