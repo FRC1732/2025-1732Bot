@@ -251,7 +251,7 @@ public class TunerConstants {
         questPoseReset,
         DrivetrainConstants,
         0,
-        VecBuilder.fill(0.1, 0.1, 0.1),
+        VecBuilder.fill(0.6, 0.6, 0.6),
         VecBuilder.fill(0.05, 0.05, 0.05),
         FrontLeft,
         FrontRight,

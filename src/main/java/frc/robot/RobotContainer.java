@@ -124,6 +124,8 @@ public class RobotContainer {
   private Alert layoutFileMissingAlert = new Alert(LAYOUT_FILE_MISSING, AlertType.kError);
   private Alert tuningAlert = new Alert("Tuning mode enabled", AlertType.kInfo);
 
+  private boolean preferLeftSide = false;
+
   StructPublisher<Pose2d> posePublisher =
       NetworkTableInstance.getDefault().getStructTopic("robotPose", Pose2d.struct).publish();
   StructPublisher<Pose2d> questPosePublisher =
@@ -265,7 +267,7 @@ public class RobotContainer {
             new IntakeCoral(claw, statusRgb)));
     NamedCommands.registerCommand("ejectCoral", new ClawBackwards(claw));
     NamedCommands.registerCommand(
-        "setPoseL4", joint.runOnce(() -> joint.setJointPose(JointPosition.LEVEL_4)));
+        "setPoseL4", joint.runOnce(() -> joint.setJointPose(JointPosition.LEVEL_2)));
 
     // Event Markers
     new EventTrigger("Marker").onTrue(Commands.print("reached event marker"));
@@ -484,7 +486,7 @@ public class RobotContainer {
                     this::shouldIntakeLeftSide)));
     oi.intakeCoralButton()
         .onFalse(
-            new WaitCommand(1.0)
+            new WaitCommand(0.5)
                 .andThen(joint.runOnce(() -> joint.setJointPose(JointPosition.LEVEL_2))));
 
     oi.hybridIntakeCoralButton()
@@ -493,17 +495,19 @@ public class RobotContainer {
                 Commands.sequence(
                     joint.runOnce(() -> joint.setJointPose(JointPosition.CORAL_STATION)),
                     new IntakeCoral(claw, statusRgb)),
-                drivetrain.run(
-                    () ->
-                        driveFacingAngle(
-                            -oi.getTranslateX() * MaxSpeed,
-                            -oi.getTranslateY() * MaxSpeed,
-                            shouldIntakeLeftSide()
-                                ? Rotation2d.fromDegrees(-55)
-                                : Rotation2d.fromDegrees(55)))));
+                Commands.sequence(
+                    Commands.runOnce(() -> preferLeftSide = shouldIntakeLeftSide()),
+                    drivetrain.run(
+                        () ->
+                            driveFacingAngle(
+                                -oi.getTranslateX() * MaxSpeed,
+                                -oi.getTranslateY() * MaxSpeed,
+                                preferLeftSide
+                                    ? Rotation2d.fromDegrees(-55)
+                                    : Rotation2d.fromDegrees(55))))));
     oi.hybridIntakeCoralButton()
         .onFalse(
-            new WaitCommand(1.0)
+            new WaitCommand(0.5)
                 .andThen(joint.runOnce(() -> joint.setJointPose(JointPosition.LEVEL_2))));
 
     oi.operatorF1().onTrue(Commands.runOnce(() -> scoringPathOption = ScoringPathOption.PATH_F1));
@@ -599,10 +603,10 @@ public class RobotContainer {
   }
 
   private boolean shouldIntakeLeftSide() {
-    if (oi.getTranslateY() > 0.02) {
+    if (oi.getTranslateY() < -0.05) {
       return true;
     }
-    if (oi.getTranslateY() < 0.02) {
+    if (oi.getTranslateY() > 0.05) {
       return false;
     }
     return drivetrain.getPose().getY() > 4.0; // half the field width in meters
@@ -656,7 +660,7 @@ public class RobotContainer {
       //   drivetrain.addVisionMeasurement(
       //       questNav.getRobotPose(), VecBuilder.fill(0.0, 0.0, 9999999.0));
       drivetrain.addVisionMeasurement(
-          questNav.getAverageRobotPose(), VecBuilder.fill(0.5, 0.5, 0.5));
+          questNav.getAverageRobotPose(), VecBuilder.fill(0.0, 0.0, 0.0));
       return;
     }
 
