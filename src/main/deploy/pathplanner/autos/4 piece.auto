@@ -5,45 +5,233 @@
     "data": {
       "commands": [
         {
-          "type": "path",
+          "type": "deadline",
           "data": {
-            "pathName": "Start-R1"
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "Start-R1"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "setPoseL4"
+                }
+              }
+            ]
           }
         },
         {
-          "type": "path",
+          "type": "deadline",
           "data": {
-            "pathName": "R1-HP"
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "R1-HP"
+                }
+              },
+              {
+                "type": "sequential",
+                "data": {
+                  "commands": [
+                    {
+                      "type": "deadline",
+                      "data": {
+                        "commands": [
+                          {
+                            "type": "wait",
+                            "data": {
+                              "waitTime": 0.5
+                            }
+                          },
+                          {
+                            "type": "named",
+                            "data": {
+                              "name": "ejectCoral"
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "intakeCoral"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
           }
         },
         {
-          "type": "path",
+          "type": "deadline",
           "data": {
-            "pathName": "HP-R2"
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "HP-R2"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "setPoseL4"
+                }
+              }
+            ]
           }
         },
         {
-          "type": "path",
+          "type": "deadline",
           "data": {
-            "pathName": "R2-HP"
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "R2-HP"
+                }
+              },
+              {
+                "type": "sequential",
+                "data": {
+                  "commands": [
+                    {
+                      "type": "deadline",
+                      "data": {
+                        "commands": [
+                          {
+                            "type": "wait",
+                            "data": {
+                              "waitTime": 0.5
+                            }
+                          },
+                          {
+                            "type": "named",
+                            "data": {
+                              "name": "ejectCoral"
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "intakeCoral"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
           }
         },
         {
-          "type": "path",
+          "type": "deadline",
           "data": {
-            "pathName": "HP-R3"
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "HP-R3"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "setPoseL4"
+                }
+              }
+            ]
           }
         },
         {
-          "type": "path",
+          "type": "deadline",
           "data": {
-            "pathName": "R3-HP"
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "R3-HP"
+                }
+              },
+              {
+                "type": "sequential",
+                "data": {
+                  "commands": [
+                    {
+                      "type": "deadline",
+                      "data": {
+                        "commands": [
+                          {
+                            "type": "wait",
+                            "data": {
+                              "waitTime": 0.5
+                            }
+                          },
+                          {
+                            "type": "named",
+                            "data": {
+                              "name": "ejectCoral"
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "intakeCoral"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
           }
         },
         {
-          "type": "path",
+          "type": "deadline",
           "data": {
-            "pathName": "HP-R4"
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "HP-R4"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "setPoseL4"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "deadline",
+          "data": {
+            "commands": [
+              {
+                "type": "wait",
+                "data": {
+                  "waitTime": 0.5
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "ejectCoral"
+                }
+              }
+            ]
           }
         }
       ]

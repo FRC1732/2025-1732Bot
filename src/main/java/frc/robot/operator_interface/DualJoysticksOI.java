@@ -29,74 +29,91 @@ public class DualJoysticksOI implements OperatorInterface {
     }
   }
 
+  // Robot Movement
+
   @Override
   public double getTranslateX() {
-    return -translateJoystick.getY();
+    double input = translateJoystick.getY();
+
+    return Math.copySign(Math.pow(input, 2), input);
   }
 
   @Override
   public double getTranslateY() {
-    return -translateJoystick.getX();
+    double input = translateJoystick.getX();
+
+    return Math.copySign(Math.pow(input, 2), input);
   }
 
   @Override
   public double getRotate() {
-    return -rotateJoystick.getX();
+    double input = rotateJoystick.getX();
+
+    return Math.copySign(Math.pow(input, 3), input);
   }
 
-  @Override
-  public Trigger getFieldRelativeButton() {
-    return translateJoystickButtons[3];
-  }
+  // Translation Joystick Buttons
 
   @Override
-  public Trigger getResetGyroButton() {
-    return rotateJoystickButtons[8];
-  }
-
-  @Override
-  public Trigger getLock180Button() {
-    return new Trigger(() -> false);
-  }
-
-  @Override
-  public Trigger getXStanceButton() {
-    return rotateJoystickButtons[4];
-  }
-
-  @Override
-  public Trigger getVisionIsEnabledSwitch() {
-    // vision is always enabled with dual joysticks as there is no switch to disable
-    return new Trigger(() -> true);
-  }
-
-  @Override
-  public Trigger getResetPoseToVisionButton() {
+  public Trigger intakeCoralButton() {
     return translateJoystickButtons[1];
   }
 
   @Override
-  public Trigger getArmTriggerForward() {
-    return rotateJoystickButtons[3];
+  public Trigger clearAlgaeButton() {
+    return translateJoystickButtons[2];
   }
 
   @Override
-  public Trigger getArmTriggerBackwards() {
+  public Trigger aimAtNetButton() {
+    return translateJoystickButtons[3];
+  }
+
+  // Rotate Joystick Buttons
+
+  @Override
+  public Trigger scoreCoralButton() {
+    return rotateJoystickButtons[1];
+  }
+
+  @Override
+  public Trigger ejectAllButton() {
     return rotateJoystickButtons[2];
   }
 
   @Override
-  public Trigger getClawTriggerForwards() {
-    return translateJoystickButtons[4];
+  public Trigger intakeAlgaeButton() {
+    return rotateJoystickButtons[3];
   }
 
   @Override
-  public Trigger getClawTriggerBackwards() {
-    return translateJoystickButtons[5];
+  public Trigger hybridIntakeCoralButton() {
+    return rotateJoystickButtons[4];
   }
 
   @Override
-  public Trigger getIntakeCoral() {
-    return translateJoystickButtons[6];
+  public Trigger resetGyroButton() {
+    return rotateJoystickButtons[8];
+  }
+
+  // SysId Buttons @todo disable these after using sysid
+  @Override
+  public Trigger getSysIdDynamicForward() {
+    return rotateJoystickButtons[6];
+  }
+
+  @Override
+  public Trigger getSysIdDynamicReverse() {
+    return rotateJoystickButtons[7];
+  }
+
+  @Override
+  public Trigger getSysIdQuasistaticForward() {
+    return rotateJoystickButtons[11];
+  }
+
+  @Override
+  public Trigger getSysIdQuasistaticReverse() {
+    return rotateJoystickButtons[10];
   }
 }

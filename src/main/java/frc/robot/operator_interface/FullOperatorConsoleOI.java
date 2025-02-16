@@ -5,120 +5,165 @@
 package frc.robot.operator_interface;
 
 import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
-import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
-/**
- * Class for controlling the robot with two joysticks, 1 Xbox controller, and 1 operator button
- * panel.
- */
-public class FullOperatorConsoleOI implements OperatorInterface {
-  private final CommandJoystick translateJoystick;
-  private final Trigger[] translateJoystickButtons;
+/** Class for controlling the robot with two joysticks, and 2 operator button panels. */
+public class FullOperatorConsoleOI extends DualJoysticksOI {
+  private final CommandJoystick operatorPanelOne;
+  private final CommandJoystick operatorPanelTwo;
 
-  private final CommandJoystick rotateJoystick;
-  private final Trigger[] rotateJoystickButtons;
-
-  private final CommandXboxController operatorController;
-
-  private final CommandJoystick operatorPanel;
-  private final Trigger[] operatorPanelButtons;
+  private final Trigger[] operatorPanelButtonsOne;
+  private final Trigger[] operatorPanelButtonsTwo;
 
   public FullOperatorConsoleOI(
-      int translatePort, int rotatePort, int operatorControllerPort, int operatorPanelPort) {
-    translateJoystick = new CommandJoystick(translatePort);
-    rotateJoystick = new CommandJoystick(rotatePort);
-    operatorController = new CommandXboxController(operatorControllerPort);
-    operatorPanel = new CommandJoystick(operatorPanelPort);
+      int translatePort, int rotatePort, int operatorPanelPortOne, int operatorPanelPortTwo) {
+    super(translatePort, rotatePort);
+    operatorPanelOne = new CommandJoystick(operatorPanelPortOne);
+    operatorPanelTwo = new CommandJoystick(operatorPanelPortTwo);
 
-    // buttons use 1-based indexing such that the index matches the button number; leave index 0 set
-    // to null
-    this.translateJoystickButtons = new Trigger[13];
-    this.rotateJoystickButtons = new Trigger[13];
-    this.operatorPanelButtons = new Trigger[13];
-
-    for (int i = 1; i < translateJoystickButtons.length; i++) {
-      translateJoystickButtons[i] = translateJoystick.button(i);
-      rotateJoystickButtons[i] = rotateJoystick.button(i);
+    this.operatorPanelButtonsOne = new Trigger[13];
+    for (int i = 1; i < operatorPanelButtonsOne.length; i++) {
+      operatorPanelButtonsOne[i] = operatorPanelOne.button(i);
     }
-    for (int i = 1; i < operatorPanelButtons.length; i++) {
-      operatorPanelButtons[i] = operatorPanel.button(i);
+
+    this.operatorPanelButtonsTwo = new Trigger[13];
+    for (int i = 1; i < operatorPanelButtonsTwo.length; i++) {
+      operatorPanelButtonsTwo[i] = operatorPanelTwo.button(i);
     }
   }
 
-  // Translate Joystick
   @Override
-  public double getTranslateX() {
-    return -translateJoystick.getY();
+  public Trigger operatorEjectAll() {
+    return operatorPanelButtonsTwo[9];
   }
 
   @Override
-  public double getTranslateY() {
-    return -translateJoystick.getX();
+  public Trigger operatorResetGyroButton() {
+    return operatorPanelButtonsOne[12];
   }
 
   @Override
-  public Trigger getLock180Button() {
-    return translateJoystickButtons[2];
+  public Trigger operatorExtendClimber() {
+    return operatorPanelButtonsTwo[7];
   }
 
   @Override
-  public Trigger getResetGyroButton() {
-    return translateJoystickButtons[4];
+  public Trigger operatorRetractClimber() {
+    return operatorPanelButtonsTwo[3];
   }
 
   @Override
-  public Trigger getFieldRelativeButton() {
-    return translateJoystickButtons[9];
-  }
-
-  // Rotate Joystick
-
-  @Override
-  public double getRotate() {
-    return -rotateJoystick.getX();
+  public Trigger operatorSlowMode() {
+    return operatorPanelButtonsTwo[5];
   }
 
   @Override
-  public Trigger getXStanceButton() {
-    return rotateJoystickButtons[4];
+  public Trigger operatorL1() {
+    return new Trigger(() -> operatorPanelTwo.getX() > 0.5);
   }
 
   @Override
-  public Trigger getResetPoseToVisionButton() {
-    return rotateJoystickButtons[5];
-  }
-
-  // Operator Controller
-  @Override
-  public Trigger getInterruptAll() {
-    return operatorController.start();
+  public Trigger operatorL2() {
+    return new Trigger(() -> operatorPanelTwo.getX() < -0.5);
   }
 
   @Override
-  public Trigger getSysIdDynamicForward() {
-    return operatorController.back().and(operatorController.y());
+  public Trigger operatorL3() {
+    return new Trigger(() -> operatorPanelTwo.getY() < -0.5);
   }
 
   @Override
-  public Trigger getSysIdDynamicReverse() {
-    return operatorController.back().and(operatorController.x());
+  public Trigger operatorL4() {
+    return new Trigger(() -> operatorPanelTwo.getY() > 0.5);
   }
 
   @Override
-  public Trigger getSysIdQuasistaticForward() {
-    return operatorController.start().and(operatorController.y());
+  public Trigger operatorF1() {
+    return operatorPanelButtonsOne[10];
   }
 
   @Override
-  public Trigger getSysIdQuasistaticReverse() {
-    return operatorController.start().and(operatorController.x());
+  public Trigger operatorF2() {
+    return operatorPanelButtonsTwo[12];
   }
 
-  // Operator Panel
+  @Override
+  public Trigger operatorFR1() {
+    return operatorPanelButtonsTwo[2];
+  }
 
   @Override
-  public Trigger getVisionIsEnabledSwitch() {
-    return operatorPanelButtons[10];
+  public Trigger operatorFR2() {
+    return operatorPanelButtonsTwo[8];
+  }
+
+  @Override
+  public Trigger operatorFL1() {
+    return operatorPanelButtonsOne[1];
+  }
+
+  @Override
+  public Trigger operatorFL2() {
+    return operatorPanelButtonsOne[2];
+  }
+
+  @Override
+  public Trigger operatorBR1() {
+    return operatorPanelButtonsTwo[1];
+  }
+
+  @Override
+  public Trigger operatorBR2() {
+    return operatorPanelButtonsTwo[4];
+  }
+
+  @Override
+  public Trigger operatorBL1() {
+    return operatorPanelButtonsOne[6];
+  }
+
+  @Override
+  public Trigger operatorBL2() {
+    return operatorPanelButtonsOne[7];
+  }
+
+  @Override
+  public Trigger operatorB1() {
+    return operatorPanelButtonsTwo[10];
+  }
+
+  @Override
+  public Trigger operatorB2() {
+    return operatorPanelButtonsTwo[6];
+  }
+
+  @Override
+  public Trigger operatorCoralSideSwitch() {
+    return operatorPanelButtonsOne[4];
+  }
+
+  @Override
+  public Trigger operatorAlgaeClearingHeightSwitch() {
+    return operatorPanelButtonsOne[3];
+  }
+
+  @Override
+  public Trigger operatorClearAlgaeButton() {
+    return operatorPanelButtonsOne[8];
+  }
+
+  @Override
+  public Trigger operatorAlgaeTargetSwitch() {
+    return operatorPanelButtonsTwo[11];
+  }
+
+  @Override
+  public Trigger operatorFullAutoPlacementSwitch() {
+    return operatorPanelButtonsOne[11];
+  }
+
+  @Override
+  public Trigger operatorVisionIsEnabledSwitch() {
+    return operatorPanelButtonsOne[9];
   }
 }

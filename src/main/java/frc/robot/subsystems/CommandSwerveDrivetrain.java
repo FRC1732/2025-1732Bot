@@ -5,9 +5,9 @@ import static edu.wpi.first.units.Units.*;
 import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.swerve.SwerveDrivetrainConstants;
+import com.ctre.phoenix6.swerve.SwerveModule;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
 import com.ctre.phoenix6.swerve.SwerveRequest;
-import com.ctre.phoenix6.swerve.SwerveRequest.ApplyFieldSpeeds;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
@@ -15,17 +15,19 @@ import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 /**
@@ -37,12 +39,16 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
   private Notifier m_simNotifier = null;
   private double m_lastSimTime;
 
+  private Consumer<Pose2d> m_questPoseResetConsumer;
+
   /* Blue alliance sees forward as 0 degrees (toward red alliance wall) */
   private static final Rotation2d kBlueAlliancePerspectiveRotation = Rotation2d.kZero;
   /* Red alliance sees forward as 180 degrees (toward blue alliance wall) */
   private static final Rotation2d kRedAlliancePerspectiveRotation = Rotation2d.k180deg;
   /* Keep track if we've ever applied the operator perspective before or not */
   private boolean m_hasAppliedOperatorPerspective = false;
+
+  ShuffleboardTab tab;
 
   /** Swerve request to apply during robot-centric path following */
   private final SwerveRequest.ApplyRobotSpeeds m_pathApplyRobotSpeeds =
@@ -106,7 +112,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
               this));
 
   /* The SysId routine to test */
-  private SysIdRoutine m_sysIdRoutineToApply = m_sysIdRoutineTranslation;
+  private SysIdRoutine m_sysIdRoutineToApply = m_sysIdRoutineSteer;
 
   /**
    * Constructs a CTRE SwerveDrivetrain using the specified constants.
@@ -118,8 +124,12 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
    * @param modules Constants for each specific module
    */
   public CommandSwerveDrivetrain(
-      SwerveDrivetrainConstants drivetrainConstants, SwerveModuleConstants<?, ?, ?>... modules) {
+      Consumer<Pose2d> questPoseReset,
+      SwerveDrivetrainConstants drivetrainConstants,
+      SwerveModuleConstants<?, ?, ?>... modules) {
     super(drivetrainConstants, modules);
+    m_questPoseResetConsumer = questPoseReset;
+
     if (Utils.isSimulation()) {
       startSimThread();
     }
@@ -164,6 +174,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
    * @param modules Constants for each specific module
    */
   public CommandSwerveDrivetrain(
+      Consumer<Pose2d> questPoseReset,
       SwerveDrivetrainConstants drivetrainConstants,
       double odometryUpdateFrequency,
       Matrix<N3, N1> odometryStandardDeviation,
@@ -175,6 +186,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         odometryStandardDeviation,
         visionStandardDeviation,
         modules);
+    m_questPoseResetConsumer = questPoseReset;
     if (Utils.isSimulation()) {
       startSimThread();
     }
@@ -182,24 +194,27 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
   }
 
   private void configureAutoBuilder() {
+    setupShuffleboard();
     try {
       var config = RobotConfig.fromGUISettings();
       AutoBuilder.configure(
           () -> getState().Pose, // Supplier of current robot pose
-          this::resetPose, // Consumer for seeding pose against auto
+          this::resetQuestPose, // Consumer for seeding pose against auto
           () -> getState().Speeds, // Supplier of current robot speeds
           // Consumer of ChassisSpeeds and feedforwards to drive the robot
           (speeds, feedforwards) ->
               setControl(
                   m_pathApplyRobotSpeeds
+                      .withDriveRequestType(SwerveModule.DriveRequestType.Velocity)
+                      .withSteerRequestType(SwerveModule.SteerRequestType.MotionMagicExpo)
                       .withSpeeds(speeds)
                       .withWheelForceFeedforwardsX(feedforwards.robotRelativeForcesXNewtons())
                       .withWheelForceFeedforwardsY(feedforwards.robotRelativeForcesYNewtons())),
           new PPHolonomicDriveController(
               // PID constants for translation
-              new PIDConstants(10, 0, 0),
+              new PIDConstants(10, 0, 0), // last year was 0.2402346041055719
               // PID constants for rotation
-              new PIDConstants(7, 0, 0)),
+              new PIDConstants(7, 0, 0)), // last year was 14.414076
           config,
           // Assume the path needs to be flipped for Red vs Blue, this is normally the case
           () -> DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red,
@@ -209,6 +224,11 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
       DriverStation.reportError(
           "Failed to load PathPlanner config and configure AutoBuilder", ex.getStackTrace());
     }
+  }
+
+  private void resetQuestPose(Pose2d pose) {
+    m_questPoseResetConsumer.accept(pose);
+    resetPose(pose);
   }
 
   /**
@@ -282,15 +302,88 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     m_simNotifier.startPeriodic(kSimLoopPeriod);
   }
 
-  public void stop() {
-    ApplyFieldSpeeds swerveRequest = new SwerveRequest.ApplyFieldSpeeds();
-
-    swerveRequest.withSpeeds(new ChassisSpeeds());
-
-    applyRequest(() -> swerveRequest);
-  }
-
   public Pose2d getPose() {
     return getState().Pose;
+  }
+
+  /**
+   * Adds a vision measurement to the Kalman Filter. This will correct the odometry pose estimate
+   * while still accounting for measurement noise.
+   *
+   * @param visionRobotPoseMeters The pose of the robot as measured by the vision camera.
+   * @param timestampSeconds The timestamp of the vision measurement in seconds.
+   */
+  @Override
+  public void addVisionMeasurement(Pose2d visionRobotPoseMeters, double timestampSeconds) {
+    super.addVisionMeasurement(visionRobotPoseMeters, Utils.fpgaToCurrentTime(timestampSeconds));
+  }
+
+  /**
+   * Adds a vision measurement to the Kalman Filter. This will correct the odometry pose estimate
+   * while still accounting for measurement noise.
+   *
+   * <p>Note that the vision measurement standard deviations passed into this method will continue
+   * to apply to future measurements until a subsequent call to {@link
+   * #setVisionMeasurementStdDevs(Matrix)} or this method.
+   *
+   * @param visionRobotPoseMeters The pose of the robot as measured by the vision camera.
+   * @param timestampSeconds The timestamp of the vision measurement in seconds.
+   * @param visionMeasurementStdDevs Standard deviations of the vision pose measurement in the form
+   *     [x, y, theta]ᵀ, with units in meters and radians.
+   */
+  @Override
+  public void addVisionMeasurement(
+      Pose2d visionRobotPoseMeters,
+      double timestampSeconds,
+      Matrix<N3, N1> visionMeasurementStdDevs) {
+    super.addVisionMeasurement(
+        visionRobotPoseMeters, Utils.fpgaToCurrentTime(timestampSeconds), visionMeasurementStdDevs);
+  }
+
+  /**
+   * Adds a vision measurement to the Kalman Filter. This will correct the odometry pose estimate
+   * while still accounting for measurement noise.
+   *
+   * <p>Note that this method will assume the timestamp of the vision measurement is the current
+   * FPGA.
+   *
+   * <p>Note that the vision measurement standard deviations passed into this method will continue
+   * to apply to future measurements until a subsequent call to {@link
+   * #setVisionMeasurementStdDevs(Matrix)} or this method.
+   *
+   * @param visionRobotPoseMeters The pose of the robot as measured by the vision camera.
+   * @param visionMeasurementStdDevs Standard deviations of the vision pose measurement in the form
+   *     [x, y, theta]ᵀ, with units in meters and radians.
+   */
+  public void addVisionMeasurement(
+      Pose2d visionRobotPoseMeters, Matrix<N3, N1> visionMeasurementStdDevs) {
+    addVisionMeasurement(
+        visionRobotPoseMeters, Utils.getCurrentTimeSeconds() - 0.02, visionMeasurementStdDevs);
+  }
+
+  private void setupShuffleboard() {
+    tab = Shuffleboard.getTab("Drivetrain");
+    tab.addDouble("Robot_Velocity_x", () -> getState().Speeds.vxMetersPerSecond);
+    tab.addDouble("Robot_Velocity_y", () -> getState().Speeds.vyMetersPerSecond);
+    tab.addDouble(
+        "FR_Velocity",
+        () -> getModule(0).getDriveMotor().getVelocity().getValueAsDouble() * 0.0541);
+    tab.addDouble("FR_Turn", () -> getModule(0).getSteerMotor().getVelocity().getValueAsDouble());
+    tab.addDouble(
+        "FL_Velocity",
+        () -> getModule(1).getDriveMotor().getVelocity().getValueAsDouble() * 0.0541);
+    tab.addDouble("FL_Turn", () -> getModule(1).getSteerMotor().getVelocity().getValueAsDouble());
+    tab.addDouble(
+        "BR_Velocity",
+        () -> getModule(2).getDriveMotor().getVelocity().getValueAsDouble() * 0.0541);
+    tab.addDouble("BR_Turn", () -> getModule(2).getSteerMotor().getVelocity().getValueAsDouble());
+    tab.addDouble(
+        "BL_Velocity",
+        () -> getModule(3).getDriveMotor().getVelocity().getValueAsDouble() * 0.0541);
+    tab.addDouble("BL_Turn", () -> getModule(3).getSteerMotor().getVelocity().getValueAsDouble());
+
+    tab.addDouble("Pose_Rotation", () -> getPose().getRotation().getDegrees());
+    tab.addDouble("PoseX", () -> getPose().getX());
+    tab.addDouble("PoseY", () -> getPose().getY());
   }
 }

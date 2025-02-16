@@ -56,15 +56,15 @@ public class CompRobotConfig extends RobotConfig {
   private static final double AUTO_TURN_D_CONTROLLER = 0.0;
 
   // Drive to Pose constants
-  private static final double DRIVE_TO_POSE_DRIVE_KP = 2.5;
-  private static final double DRIVE_TO_POSE_DRIVE_KD = 0.0;
-  private static final double DRIVE_TO_POSE_THETA_KP = 4.5;
-  private static final double DRIVE_TO_POSE_THETA_KI = 0;
-  private static final double DRIVE_TO_POSE_THETA_KD = 0.0;
-  private static final Distance DRIVE_TO_POSE_DRIVE_TOLERANCE = Meters.of(0.06);
-  private static final Angle DRIVE_TO_POSE_THETA_TOLERANCE = Radians.of(0.02);
-  private static final LinearVelocity DRIVE_TO_POSE_MAX_VELOCITY = MetersPerSecond.of(1.25);
-  private static final LinearAcceleration DRIVE_TO_POSE_MAX_ACCELERATION =
+  public static final double DRIVE_TO_POSE_DRIVE_KP = 2.5;
+  public static final double DRIVE_TO_POSE_DRIVE_KD = 0.0;
+  public static final double DRIVE_TO_POSE_THETA_KP = 4.5;
+  public static final double DRIVE_TO_POSE_THETA_KI = 0;
+  public static final double DRIVE_TO_POSE_THETA_KD = 0.0;
+  public static final Distance DRIVE_TO_POSE_DRIVE_TOLERANCE = Meters.of(0.06);
+  public static final Angle DRIVE_TO_POSE_THETA_TOLERANCE = Radians.of(0.02);
+  public static final LinearVelocity DRIVE_TO_POSE_MAX_VELOCITY = MetersPerSecond.of(1.25);
+  public static final LinearAcceleration DRIVE_TO_POSE_MAX_ACCELERATION =
       MetersPerSecondPerSecond.of(2.5);
 
   private static final LinearVelocity SQUARING_SPEED = MetersPerSecond.of(1.0);
