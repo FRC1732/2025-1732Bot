@@ -9,6 +9,7 @@ import com.ctre.phoenix6.signals.*;
 import com.ctre.phoenix6.swerve.*;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants.*;
 import edu.wpi.first.math.Matrix;
+import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
@@ -247,7 +248,15 @@ public class TunerConstants {
    */
   public static CommandSwerveDrivetrain createDrivetrain(Consumer<Pose2d> questPoseReset) {
     return new CommandSwerveDrivetrain(
-        questPoseReset, DrivetrainConstants, FrontLeft, FrontRight, BackLeft, BackRight);
+        questPoseReset,
+        DrivetrainConstants,
+        0,
+        VecBuilder.fill(0.6, 0.6, 0.6),
+        VecBuilder.fill(0.05, 0.05, 0.05),
+        FrontLeft,
+        FrontRight,
+        BackLeft,
+        BackRight);
   }
 
   /** Swerve Drive class utilizing CTR Electronics' Phoenix 6 API with the selected device types. */

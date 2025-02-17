@@ -15,7 +15,7 @@ import edu.wpi.first.networktables.IntegerSubscriber;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.RobotController;
-import java.util.ArrayList;
+import frc.robot.util.RollingAveragePose2d;
 
 /**
  * Interface with the QuestNav on VR headset for pose estimation. See
@@ -45,19 +45,31 @@ public class QuestNav {
   // Pose of the robot when the pose was reset
   private Pose2d resetPoseRobot = new Pose2d();
 
-  private ArrayList<Pose2d> rollingAverage;
-
   private final Transform2d robotToQuest =
       new Transform2d(inchesToMeters(0.5), inchesToMeters(9.207), Rotation2d.fromDegrees(90));
 
+  private final RollingAveragePose2d rollingAvg;
+
   /* Constructor */
-  public QuestNav(int rollingAveragelength) {
+  public QuestNav(int windowSize) {
     // Zero the absolute 3D position of the robot (similar to long-pressing the quest logo)
     if (questMiso.get() != 99) {
       questMosi.set(1);
     }
 
-    this.rollingAverage = new ArrayList();
+    rollingAvg = new RollingAveragePose2d(windowSize);
+  }
+
+  public QuestNav() {
+    this(2);
+  }
+
+  public void updateAverageRobotPose() {
+    rollingAvg.addPose(getRobotPose());
+  }
+
+  public Pose2d getAverageRobotPose() {
+    return rollingAvg.getAveragePose();
   }
 
   /**
@@ -85,34 +97,6 @@ public class QuestNav {
         .transformBy(poseRelativeToReset);
   }
 
-  public Pose2d getRobotPoseWithRollingAverage() {
-    if (rollingAverage.size() == 0) {
-      return new Pose2d(0, 0, Rotation2d.fromDegrees(0));
-    }
-    double totalx = 0;
-    double totaly = 0;
-    for (int i = 0; i < rollingAverage.size(); i++) {
-      totalx += rollingAverage.get(i).getX();
-      totaly += rollingAverage.get(i).getY();
-    }
-
-    return new Pose2d(
-        totalx / rollingAverage.size(),
-        totaly / rollingAverage.size(),
-        getRobotPose().getRotation());
-  }
-
-  public void updateRollingAverage() {
-    ArrayList<Pose2d> newRollingAverage = new ArrayList();
-
-    newRollingAverage.add(0, getRobotPose());
-    for (int i = 1; i < newRollingAverage.size(); i++) {
-      newRollingAverage.add(i, rollingAverage.get(i - 1));
-    }
-
-    rollingAverage = newRollingAverage;
-  }
-
   /*
    * Gets the battery percent of the Quest.
    *
@@ -128,7 +112,12 @@ public class QuestNav {
    * @return true if the Quest is connected
    */
   public boolean isConnected() {
-    return ((RobotController.getFPGATime() - questBatteryPercent.getLastChange()) / 1000) < 250;
+    // System.out.println("FPGATime: " + RobotController.getFPGATime());
+    // System.out.println("Last Change: " + questBatteryPercent.getLastChange());
+    // System.out.println(
+    //     "Diff: " + (RobotController.getFPGATime() - questBatteryPercent.getLastChange()) /
+    // 1000.0);
+    return ((RobotController.getFPGATime() - questBatteryPercent.getLastChange()) / 1000.0) < 30.0;
   }
 
   /**
@@ -157,11 +146,9 @@ public class QuestNav {
    * @param newPose new robot pose
    */
   public void resetPose(Pose2d newPose) {
+    rollingAvg.reset();
     resetPoseOculus = getUncorrectedOculusPose();
     resetPoseRobot = newPose;
-    // for (int i = 0; i < rollingAverage.length; i++) {
-    //   rollingAverage[i] = null;
-    // }
   }
 
   /**

@@ -174,6 +174,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
    * @param modules Constants for each specific module
    */
   public CommandSwerveDrivetrain(
+      Consumer<Pose2d> questPoseReset,
       SwerveDrivetrainConstants drivetrainConstants,
       double odometryUpdateFrequency,
       Matrix<N3, N1> odometryStandardDeviation,
@@ -185,6 +186,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         odometryStandardDeviation,
         visionStandardDeviation,
         modules);
+    m_questPoseResetConsumer = questPoseReset;
     if (Utils.isSimulation()) {
       startSimThread();
     }
