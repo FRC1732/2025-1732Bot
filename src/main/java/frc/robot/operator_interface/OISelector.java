@@ -62,6 +62,7 @@ public class OISelector {
     Integer secondPort = null;
     Integer xBoxPort = null;
     Integer thirdPort = null;
+    Integer fourthPort = null;
     for (int port = 0; port < DriverStation.kJoystickPorts; port++) {
       if (DriverStation.getJoystickName(port).toLowerCase().contains("xbox")) {
         if (xBoxPort == null) {
@@ -72,16 +73,18 @@ public class OISelector {
           firstPort = port;
         } else if (secondPort == null) {
           secondPort = port;
-        } else { // thirdPort == null
+        } else if (thirdPort == null) {
           thirdPort = port;
+        } else {
+          fourthPort = port;
         }
       }
     }
 
-    if (firstPort != null && secondPort != null && xBoxPort != null && thirdPort != null) {
+    if (firstPort != null && secondPort != null && thirdPort != null && fourthPort != null) {
       noOperatorInterfaceWarning.set(false);
       nonCompetitionOperatorInterfaceWarning.set(false);
-      return new FullOperatorConsoleOI(firstPort, secondPort, xBoxPort, thirdPort);
+      return new FullOperatorConsoleOI(firstPort, secondPort, thirdPort, fourthPort);
     } else if (firstPort != null && secondPort != null) {
       noOperatorInterfaceWarning.set(false);
       nonCompetitionOperatorInterfaceWarning.set(true);

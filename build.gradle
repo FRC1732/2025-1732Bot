@@ -188,14 +188,14 @@ createVersionFile.dependsOn(eventDeploy)
 project.compileJava.dependsOn(spotlessApply)
 spotless {
     java {
+        googleJavaFormat('1.25.2')
         target fileTree(".") {
             include "**/*.java"
             exclude "**/build/**", "**/build-*/**"
         }
-        toggleOffOn()
-        googleJavaFormat()
-        removeUnusedImports()
         trimTrailingWhitespace()
+        toggleOffOn()
+        removeUnusedImports()
         endWithNewline()
     }
     groovyGradle {
