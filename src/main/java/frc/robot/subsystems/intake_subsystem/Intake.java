@@ -5,10 +5,9 @@
 package frc.robot.subsystems.intake_subsystem;
 
 import com.ctre.phoenix6.hardware.TalonFX;
-import edu.wpi.first.math.MathUtil;
+import com.revrobotics.RelativeEncoder;
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
-import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.subsystems.armevator.ArmevatorConstants;
@@ -22,6 +21,8 @@ public class Intake extends SubsystemBase {
 
   private ProfiledPIDController intakePID;
   private ArmFeedforward intakeFeedforward;
+
+  private RelativeEncoder tiltEncoder;
 
   private TalonFX rollerMotor;
   private TalonFX tiltMotor;
@@ -53,20 +54,21 @@ public class Intake extends SubsystemBase {
             ArmevatorConstants.ARM_HEIGHT_KV,
             ArmevatorConstants.ARM_HEIGHT_KA);
 
-    intakePID =
-        new ProfiledPIDController(
-            ArmevatorConstants.ARM_KP,
-            ArmevatorConstants.ARM_KI,
-            ArmevatorConstants.ARM_KD,
-            new TrapezoidProfile.Constraints(
-                ArmevatorConstants.ARM_MAX_VELOCITY, ArmevatorConstants.ARM_MAX_ACCELERATION),
-            ArmevatorConstants.ARM_PERIOD_SEC);
+    // intakePID =
+    //     new ProfiledPIDController(
+    //         ArmevatorConstants.ARM_KP,
+    //         ArmevatorConstants.ARM_KI,
+    //         ArmevatorConstants.ARM_KD,
+    //         new TrapezoidProfile.Constraints(
+    //             ArmevatorConstants.ARM_MAX_VELOCITY, ArmevatorConstants.ARM_MAX_ACCELERATION),
+    //         ArmevatorConstants.ARM_PERIOD_SEC);
 
     setupNT();
   }
 
   public boolean isAtGoal() {
-    return intakePID.atGoal();
+    // return intakePID.atGoal();
+    return true;
   }
 
   public void runIntake() {
@@ -75,6 +77,18 @@ public class Intake extends SubsystemBase {
 
   public void ejectIntake() {
     rollerMotor.set(IntakeConstants.ROLLER_EJECT_SPEED);
+  }
+
+  public void tiltForward() {
+    tiltMotor.set(0.1);
+  }
+
+  public void tiltBackwards() {
+    tiltMotor.set(-0.1);
+  }
+
+  public void stopTilt() {
+    tiltMotor.set(0);
   }
 
   public void stopIntake() {
@@ -91,33 +105,33 @@ public class Intake extends SubsystemBase {
 
   @Override
   public void periodic() {
-    tiltMotor.set(
-        MathUtil.clamp(intakePID.calculate(getTiltPosition()), -0.5, 0.5)
-            + intakeFeedforward.calculate(
-                Math.toRadians(getTiltPosition() + IntakeConstants.TILT_COG_OFFSET),
-                getTiltVelocity()));
+    // tiltMotor.set(
+    //     MathUtil.clamp(intakePID.calculate(getTiltPosition()), -0.5, 0.5)
+    //         + intakeFeedforward.calculate(
+    //             Math.toRadians(getTiltPosition() + IntakeConstants.TILT_COG_OFFSET),
+    //             getTiltVelocity()));
 
     doLogging();
   }
 
   public void setPose(ArmevatorPose pose) {
-    intakePID.setGoal(poseAlgaeAngleMap.get(pose));
-    algaeAngleSetpoint = poseAlgaeAngleMap.get(pose);
+    // intakePID.setGoal(poseAlgaeAngleMap.get(pose));
+    // algaeAngleSetpoint = poseAlgaeAngleMap.get(pose);
   }
 
   private void doLogging() {
     Logger.recordOutput(IntakeConstants.SUBSYSTEM_NAME + "/Tilt Position", getTiltPosition());
     Logger.recordOutput(IntakeConstants.SUBSYSTEM_NAME + "/Tilt Velocity", getTiltVelocity());
-    Logger.recordOutput(
-        IntakeConstants.SUBSYSTEM_NAME + "/Tilt Goal", intakePID.getGoal().position);
+    // Logger.recordOutput(
+    //     IntakeConstants.SUBSYSTEM_NAME + "/Tilt Goal", intakePID.getGoal().position);
   }
 
   private void setupNT() {
-    SmartDashboard.putData(IntakeConstants.SUBSYSTEM_NAME + "/Tilt PID", intakePID);
+    // SmartDashboard.putData(IntakeConstants.SUBSYSTEM_NAME + "/Tilt PID", intakePID);
 
     SmartDashboard.putNumber(IntakeConstants.SUBSYSTEM_NAME + "/Tilt Position", getTiltPosition());
     SmartDashboard.putNumber(IntakeConstants.SUBSYSTEM_NAME + "/Tilt Velocity", getTiltVelocity());
-    SmartDashboard.putNumber(
-        IntakeConstants.SUBSYSTEM_NAME + "/Tilt Goal", intakePID.getGoal().position);
+    // SmartDashboard.putNumber(
+    //     IntakeConstants.SUBSYSTEM_NAME + "/Tilt Goal", intakePID.getGoal().position);
   }
 }

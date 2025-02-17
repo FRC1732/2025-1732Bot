@@ -41,5 +41,5 @@ public class ArmevatorConstants {
 
   public static final double ARM_GOAL_TOLERANCE_DEGREES = 2;
   public static final double ARM_MAX_ABOLUTE_RELATIVE_ERROR_DEG = 10;
-  public static final double ARM_COG_OFFSET = 0;
+  public static final double ARM_COG_OFFSET = 97 / 360;
 }

@@ -43,12 +43,12 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.commands.DriveToPose;
 import frc.robot.commands.clawcommands.ClawBackwards;
 import frc.robot.commands.clawcommands.IntakeCoral;
-import frc.robot.commands.testCommands.ArmBackwards;
-import frc.robot.commands.testCommands.ArmForwards;
-import frc.robot.commands.testCommands.ElevatorDown;
-import frc.robot.commands.testCommands.ElevatorUp;
-import frc.robot.commands.testCommands.IntakeBackwards;
-import frc.robot.commands.testCommands.IntakeForward;
+import frc.robot.commands.testCommands.PivotBackward;
+import frc.robot.commands.testCommands.PivotForward;
+import frc.robot.commands.testCommands.TiltBackwards;
+import frc.robot.commands.testCommands.TiltForward;
+import frc.robot.commands.testCommands.WindmillBackward;
+import frc.robot.commands.testCommands.WindmillForward;
 import frc.robot.field.Field2d;
 import frc.robot.field.FieldObject;
 import frc.robot.field.Region2d;
@@ -60,6 +60,7 @@ import frc.robot.operator_interface.OperatorInterface;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.armevator.Armevator;
 import frc.robot.subsystems.claw.Claw;
+import frc.robot.subsystems.climber_subsystem.Climber;
 import frc.robot.subsystems.intake_subsystem.Intake;
 import frc.robot.subsystems.joint.Joint;
 import frc.robot.subsystems.joint.JointPosition;
@@ -85,6 +86,7 @@ public class RobotContainer {
   private QuestNav questNav = new QuestNav(5);
   private Armevator armevator;
   private Intake intake;
+  private Climber climber;
 
   private Alliance lastAlliance = Field2d.getInstance().getAlliance();
 
@@ -177,6 +179,7 @@ public class RobotContainer {
     statusRgb = new StatusRgb(joint);
     armevator = new Armevator();
     intake = new Intake();
+    climber = new Climber();
 
     visionApriltagSubsystem =
         new VisionApriltagSubsystem(() -> drivetrain.getPigeon2().getRotation2d().getDegrees());
@@ -438,14 +441,39 @@ public class RobotContainer {
     Trigger rightTrigger = controller.button(5);
     Trigger leftTrigger = controller.button(6);
 
-    aTrigger.whileTrue(new ElevatorUp(armevator));
-    bTrigger.whileTrue(new ElevatorDown(armevator));
-    xTrigger.whileTrue(new IntakeForward(intake));
-    yTrigger.whileTrue(new IntakeBackwards(intake));
+    Trigger clawIntake = controller.button(7);
+    Trigger clawEject = controller.button(8);
 
-    rightTrigger.whileTrue(new ArmForwards(armevator));
-    leftTrigger.whileTrue(new ArmBackwards(armevator));
+    Trigger tiltForward = controller.button(9);
+    Trigger tiltBackward = controller.button(10);
 
+    Trigger windmillForward = new Trigger(() -> (controller.getRawAxis(0) > 0.5));
+    Trigger windmillBackward = new Trigger(() -> (controller.getRawAxis(1) > 0.5));
+
+    Trigger pivotForward = new Trigger(() -> (controller.getRawAxis(2) > 0.5));
+    Trigger pivotBackward = new Trigger(() -> (controller.getRawAxis(3) > 0.5));
+
+    // aTrigger.whileTrue(new ElevatorUp(armevator));
+    // bTrigger.whileTrue(new ElevatorDown(armevator));
+    // xTrigger.whileTrue(new IntakeForward(intake));
+    // yTrigger.whileTrue(new IntakeBackwards(intake));
+
+    // rightTrigger.whileTrue(new ArmForwards(armevator));
+    // leftTrigger.whileTrue(new ArmBackwards(armevator));
+
+    // clawIntake.whileTrue(new IntakeCoral(claw, statusRgb));
+    // clawEject.whileTrue(new ClawBackwards(claw));
+
+    tiltForward.whileTrue(new TiltForward(intake));
+    tiltBackward.whileTrue(new TiltBackwards(intake));
+
+    aTrigger.whileTrue(new WindmillForward(climber));
+    bTrigger.whileTrue(new WindmillBackward(climber));
+    xTrigger.whileTrue(new PivotForward(climber));
+    yTrigger.whileTrue(new PivotBackward(climber));
+
+    // aTrigger.whileTrue(new PrintCommand("A trigger"));
+    // bTrigger.whileTrue(new PrintCommand("B trigger"));
     //
 
     // oi.scoreCoralButton().whileTrue(new ClawBackwards(claw));

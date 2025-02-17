@@ -22,6 +22,6 @@ public class IntakeConstants {
   public static final double TILT_MAX_ABOLUTE_RELATIVE_ERROR_DEG = 10;
   public static final double TILT_COG_OFFSET = 0;
 
-  public static final double ROLLER_INTAKE_SPEED = 0.2;
-  public static final double ROLLER_EJECT_SPEED = -0.2;
+  public static final double ROLLER_INTAKE_SPEED = -0.45;
+  public static final double ROLLER_EJECT_SPEED = 0.45;
 }

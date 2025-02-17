@@ -29,11 +29,11 @@ public class Climber extends SubsystemBase {
   }
 
   public void runClimberPivot() {
-    climberMotorPivot.set(ClimberConstants.CLIMBER_SPEED_1);
+    climberMotorPivot.set(ClimberConstants.PIVOT_SPEED);
   }
 
   public void runClimberWindmill() {
-    climberMotorWindmill.set(ClimberConstants.CLIMBER_SPEED_2);
+    climberMotorWindmill.set(ClimberConstants.WINDMILL_SPEED);
   }
 
   public void brakeClimberPivot() {
@@ -45,11 +45,11 @@ public class Climber extends SubsystemBase {
   }
 
   public void reverseClimberPivot() {
-    climberMotorPivot.set(ClimberConstants.CLIMBER_SPEED_1 * -1);
+    climberMotorPivot.set(ClimberConstants.PIVOT_SPEED * -0.5);
   }
 
   public void reverseClimberWindmill() {
-    climberMotorWindmill.set(ClimberConstants.CLIMBER_SPEED_2 * -1);
+    climberMotorWindmill.set(ClimberConstants.WINDMILL_SPEED * -1);
   }
 
   public void stopClimberPivot() {

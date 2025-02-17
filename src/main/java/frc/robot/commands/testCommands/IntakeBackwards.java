@@ -7,7 +7,6 @@ package frc.robot.commands.testCommands;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.intake_subsystem.Intake;
 
-
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
 public class IntakeBackwards extends Command {
   /** Creates a new IntakeBackwards. */
@@ -21,7 +20,9 @@ public class IntakeBackwards extends Command {
 
   // Called when the command is initially scheduled.
   @Override
-  public void initialize() {}
+  public void initialize() {
+    intake.ejectIntake();
+  }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
