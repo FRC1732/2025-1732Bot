@@ -214,6 +214,10 @@ public class Armevator extends SubsystemBase {
       limitSwitchCounter = 0;
     }
 
+    if(elevatorLimitSwitch.get()){
+      stopElevator();
+    }
+    
     // turn off elevator when limit switch is pressed, leave it off if goal isn't
     // changed
     // if (elevatorPID.getGoal().position != 0) {
