@@ -10,8 +10,8 @@ import frc.robot.subsystems.climber_subsystem.Climber;
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
 public class Extend extends Command {
   /** Creates a new Extend. */
-
   private Climber climber;
+
   private boolean shifedToWindmill;
 
   public Extend(Climber climber) {
@@ -25,15 +25,15 @@ public class Extend extends Command {
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    climber.runClimberPivot();
+    climber.runClimber();
   }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    if (climber.isPivotFullyExtended() && !shifedToWindmill) { 
-      climber.runClimberWindmill();
-      climber.stopClimberPivot();
+    if (climber.isClimberFullyExtended() && !shifedToWindmill) {
+      climber.runWindmill();
+      climber.stopClimber();
       shifedToWindmill = true;
     }
   }
@@ -41,8 +41,8 @@ public class Extend extends Command {
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-    climber.stopClimberPivot();
-    climber.stopClimberWindmill();
+    climber.stopClimber();
+    climber.stopWindmill();
   }
 
   // Returns true when the command should end.

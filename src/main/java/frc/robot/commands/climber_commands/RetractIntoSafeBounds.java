@@ -12,11 +12,12 @@ import frc.robot.subsystems.climber_subsystem.Climber;
 public class RetractIntoSafeBounds extends Command {
   /** Creates a new RetractIntoSafeBounds. */
   private Climber climber;
+
   private boolean runBackwards;
 
   private Timer timer;
   private double retractTime;
-  
+
   public RetractIntoSafeBounds(Climber climber, boolean backwards, double time) {
     this.climber = climber;
     addRequirements(climber);
@@ -32,9 +33,9 @@ public class RetractIntoSafeBounds extends Command {
   @Override
   public void initialize() {
     if (runBackwards) {
-      climber.reverseClimberPivot();
+      climber.reverseClimber();
     } else {
-      climber.runClimberPivot();
+      climber.runClimber();
     }
 
     climber.setRunningReturnCommand(true);
@@ -49,7 +50,7 @@ public class RetractIntoSafeBounds extends Command {
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-    climber.stopClimberPivot();
+    climber.stopClimber();
     climber.setRunningReturnCommand(false);
   }
 

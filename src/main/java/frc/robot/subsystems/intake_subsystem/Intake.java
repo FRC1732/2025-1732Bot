@@ -49,10 +49,10 @@ public class Intake extends SubsystemBase {
 
     intakeFeedforward =
         new ArmFeedforward(
-            ArmevatorConstants.ARM_HEIGHT_KS,
-            ArmevatorConstants.ARM_HEIGHT_KG,
-            ArmevatorConstants.ARM_HEIGHT_KV,
-            ArmevatorConstants.ARM_HEIGHT_KA);
+            ArmevatorConstants.ARM_KS,
+            ArmevatorConstants.ARM_KG,
+            ArmevatorConstants.ARM_KV,
+            ArmevatorConstants.ARM_KA);
 
     // intakePID =
     //     new ProfiledPIDController(

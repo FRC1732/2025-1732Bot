@@ -21,7 +21,7 @@ public class WindmillForward extends Command {
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    climber.runClimberWindmill();
+    climber.runWindmill();
   }
 
   // Called every time the scheduler runs while the command is scheduled.
@@ -31,7 +31,7 @@ public class WindmillForward extends Command {
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-    climber.stopClimberWindmill();
+    climber.stopWindmill();
   }
 
   // Returns true when the command should end.

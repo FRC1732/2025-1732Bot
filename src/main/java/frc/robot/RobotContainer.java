@@ -45,18 +45,8 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 // import frc.lib.team3061.leds.LEDs;
 import frc.robot.commands.clawcommands.ClawBackwards;
 import frc.robot.commands.clawcommands.IntakeCoral;
-import frc.robot.commands.testCommands.ArmBackwards;
-import frc.robot.commands.testCommands.ArmForwards;
-import frc.robot.commands.testCommands.ElevatorDown;
-import frc.robot.commands.testCommands.ElevatorUp;
-import frc.robot.commands.testCommands.IntakeBackwards;
-import frc.robot.commands.testCommands.IntakeForward;
-import frc.robot.commands.testCommands.PivotBackward;
-import frc.robot.commands.testCommands.PivotForward;
 import frc.robot.commands.testCommands.TiltBackwards;
 import frc.robot.commands.testCommands.TiltForward;
-import frc.robot.commands.testCommands.WindmillBackward;
-import frc.robot.commands.testCommands.WindmillForward;
 import frc.robot.field.Field2d;
 import frc.robot.field.FieldObject;
 import frc.robot.field.Region2d;
@@ -67,11 +57,10 @@ import frc.robot.operator_interface.OISelector;
 import frc.robot.operator_interface.OperatorInterface;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.armevator.Armevator;
+import frc.robot.subsystems.armevator.ArmevatorPose;
 import frc.robot.subsystems.claw.Claw;
 import frc.robot.subsystems.climber_subsystem.Climber;
 import frc.robot.subsystems.intake_subsystem.Intake;
-import frc.robot.subsystems.joint.Joint;
-import frc.robot.subsystems.joint.JointPosition;
 import frc.robot.subsystems.rgb.StatusRgb;
 import java.util.HashMap;
 import java.util.Map;
@@ -89,7 +78,6 @@ import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;
 public class RobotContainer {
   private OperatorInterface oi = new OperatorInterface() {};
 
-  private Joint joint;
   private Claw claw;
   private StatusRgb statusRgb;
   private VisionApriltagSubsystem visionApriltagSubsystem;
@@ -235,7 +223,6 @@ public class RobotContainer {
   }
 
   private void defineSubsystems() {
-    joint = new Joint();
     claw = new Claw();
     armevator = new Armevator();
     statusRgb = new StatusRgb(armevator);
@@ -293,11 +280,11 @@ public class RobotContainer {
     NamedCommands.registerCommand(
         "intakeCoral",
         Commands.sequence(
-            joint.runOnce(() -> joint.setJointPose(JointPosition.CORAL_STATION)),
+            armevator.runOnce(() -> armevator.setPose(ArmevatorPose.CORAL_HP_LOAD)),
             new IntakeCoral(claw, statusRgb)));
     NamedCommands.registerCommand("ejectCoral", new ClawBackwards(claw));
     NamedCommands.registerCommand(
-        "setPoseL4", joint.runOnce(() -> joint.setJointPose(JointPosition.LEVEL_2)));
+        "setPoseL4", armevator.runOnce(() -> armevator.setPose(ArmevatorPose.CORAL_L2_SCORE)));
 
     // Event Markers
     new EventTrigger("Marker").onTrue(Commands.print("reached event marker"));
@@ -514,13 +501,13 @@ public class RobotContainer {
     Trigger pivotForward = new Trigger(() -> (controller.getRawAxis(2) > 0.5));
     Trigger pivotBackward = new Trigger(() -> (controller.getRawAxis(3) > 0.5));
 
-    aTrigger.whileTrue(new ElevatorUp(armevator));
-    bTrigger.whileTrue(new ElevatorDown(armevator));
-    xTrigger.whileTrue(new IntakeForward(intake));
-    yTrigger.whileTrue(new IntakeBackwards(intake));
+    // aTrigger.whileTrue(new ElevatorUp(armevator));
+    // bTrigger.whileTrue(new ElevatorDown(armevator));
+    // xTrigger.whileTrue(new IntakeForward(intake));
+    // yTrigger.whileTrue(new IntakeBackwards(intake));
 
-    rightTrigger.whileTrue(new ArmForwards(armevator));
-    leftTrigger.whileTrue(new ArmBackwards(armevator));
+    // rightTrigger.whileTrue(new ArmForwards(armevator));
+    // leftTrigger.whileTrue(new ArmBackwards(armevator));
 
     clawIntake.whileTrue(new IntakeCoral(claw, statusRgb));
     clawEject.whileTrue(new ClawBackwards(claw));
@@ -547,14 +534,19 @@ public class RobotContainer {
         .whileTrue(
             getScoringPathCommand()
                 .asProxy()
-                .andThen(joint.runOnce(() -> joint.setJointPose(JointPosition.LEVEL_2)).asProxy())
+                .andThen(
+                    armevator
+                        .runOnce(() -> armevator.setPose(ArmevatorPose.CORAL_L2_SCORE))
+                        .asProxy())
                 .andThen(new ClawBackwards(claw).asProxy()));
 
     oi.intakeCoralButton()
         .whileTrue(
             Commands.deadline(
                 Commands.sequence(
-                    joint.runOnce(() -> joint.setJointPose(JointPosition.CORAL_STATION)).asProxy(),
+                    armevator
+                        .runOnce(() -> armevator.setPose(ArmevatorPose.CORAL_HP_LOAD))
+                        .asProxy(),
                     new IntakeCoral(claw, statusRgb)),
                 new ConditionalCommand(
                     AutoBuilder.pathfindThenFollowPath(pathLeftHP, pathConstraints),
@@ -563,13 +555,13 @@ public class RobotContainer {
     oi.intakeCoralButton()
         .onFalse(
             new WaitCommand(0.5)
-                .andThen(joint.runOnce(() -> joint.setJointPose(JointPosition.LEVEL_2))));
+                .andThen(armevator.runOnce(() -> armevator.setPose(ArmevatorPose.CORAL_L2_SCORE))));
 
     oi.hybridIntakeCoralButton()
         .whileTrue(
             Commands.deadline(
                 Commands.sequence(
-                    joint.runOnce(() -> joint.setJointPose(JointPosition.CORAL_STATION)),
+                    armevator.runOnce(() -> armevator.setPose(ArmevatorPose.CORAL_HP_LOAD)),
                     new IntakeCoral(claw, statusRgb)),
                 Commands.sequence(
                     Commands.runOnce(() -> preferLeftSide = shouldIntakeLeftSide()),
@@ -584,7 +576,7 @@ public class RobotContainer {
     oi.hybridIntakeCoralButton()
         .onFalse(
             new WaitCommand(0.5)
-                .andThen(joint.runOnce(() -> joint.setJointPose(JointPosition.LEVEL_2))));
+                .andThen(armevator.runOnce(() -> armevator.setPose(ArmevatorPose.CORAL_L2_SCORE))));
 
     oi.operatorF1().onTrue(Commands.runOnce(() -> scoringPathOption = ScoringPathOption.PATH_F1));
     oi.operatorF2().onTrue(Commands.runOnce(() -> scoringPathOption = ScoringPathOption.PATH_F2));
@@ -663,7 +655,7 @@ public class RobotContainer {
   }
 
   public void disablePeriodic() {
-    joint.resetToAbsoluteEncoder();
+    armevator.resetToAbsoluteEncoder();
     this.checkAllianceColor();
   }
 

@@ -21,7 +21,7 @@ public class PivotBackward extends Command {
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    climber.reverseClimberPivot();
+    climber.reverseClimber();
   }
 
   // Called every time the scheduler runs while the command is scheduled.
@@ -31,7 +31,7 @@ public class PivotBackward extends Command {
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-    climber.stopClimberPivot();
+    climber.stopClimber();
   }
 
   // Returns true when the command should end.
