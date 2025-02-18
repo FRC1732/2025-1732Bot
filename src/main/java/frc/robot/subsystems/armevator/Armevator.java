@@ -25,13 +25,14 @@ import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import java.util.HashMap;
+import java.util.Map;
 import org.littletonrobotics.junction.Logger;
 
 public class Armevator extends SubsystemBase {
   /** Creates a new Armevator. */
-  private HashMap<ArmevatorPose, Double> armMap;
+  private Map<ArmevatorPose, Double> armMap;
 
-  private HashMap<ArmevatorPose, Double> elevatorMap;
+  private Map<ArmevatorPose, Double> elevatorMap;
 
   // private double armAngleSetpoint;
   // private double carriageHeightSetpoint;
@@ -232,7 +233,8 @@ public class Armevator extends SubsystemBase {
       limitSwitchCounter = 0;
     }
 
-    // turn off elevator when limit switch is pressed, leave it off if goal isn't changed
+    // turn off elevator when limit switch is pressed, leave it off if goal isn't
+    // changed
     if (elevatorPID.getGoal().position != 0) {
       elevatorPIDOverride = false;
     } else if (limitSwitchCounter > 10) {

@@ -62,6 +62,7 @@ public class Climber extends SubsystemBase {
 
     climberMotor.stopMotor();
     windmillMotor.stopMotor();
+
     setupShuffleboard();
 
     runningReturnCommand = false;
@@ -129,11 +130,10 @@ public class Climber extends SubsystemBase {
   }
 
   public void setupShuffleboard() {
-    tab = Shuffleboard.getTab("Climber");
-    tab.addDouble(ClimberConstants.SUBSYSTEM_NAME + "/climber position", this::getClimberPosition);
+    tab = Shuffleboard.getTab(ClimberConstants.SUBSYSTEM_NAME);
+    tab.addDouble("climber position", this::getClimberPosition);
     // tab.addDouble("climber speed", this::getClimberPivot);
-    tab.addDouble(
-        ClimberConstants.SUBSYSTEM_NAME + "/windmill position", this::getWindmillPosition);
+    tab.addDouble("windmill position", this::getWindmillPosition);
     // tab.addDouble("windmill speed", this::getClimberWindmill);
   }
 

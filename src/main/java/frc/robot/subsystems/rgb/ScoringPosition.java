@@ -1,6 +1,7 @@
 package frc.robot.subsystems.rgb;
 
 public enum ScoringPosition {
+  NONE(0),
   B1(1),
   B2(2),
   BR2(3),

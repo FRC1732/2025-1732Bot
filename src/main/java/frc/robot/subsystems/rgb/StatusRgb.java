@@ -40,8 +40,8 @@ public class StatusRgb extends SubsystemBase {
     this.armevator = armevator;
 
     // Set default values
-    scoringLevel = ScoringLevel.L1;
-    scoringPosition = ScoringPosition.B1;
+    scoringLevel = ScoringLevel.NONE;
+    scoringPosition = ScoringPosition.NONE;
     updateButtonState();
   }
 
