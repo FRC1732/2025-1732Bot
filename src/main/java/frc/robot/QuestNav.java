@@ -46,7 +46,7 @@ public class QuestNav {
   private Pose2d resetPoseRobot = new Pose2d();
 
   private final Transform2d robotToQuest =
-      new Transform2d(inchesToMeters(0.5), inchesToMeters(9.207), Rotation2d.fromDegrees(90));
+      new Transform2d(inchesToMeters(-10.6271), inchesToMeters(0.0), Rotation2d.fromDegrees(180));
 
   private final RollingAveragePose2d rollingAvg;
 

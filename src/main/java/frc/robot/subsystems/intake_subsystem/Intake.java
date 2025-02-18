@@ -4,10 +4,17 @@
 
 package frc.robot.subsystems.intake_subsystem;
 
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.InvertedValue;
+import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.revrobotics.RelativeEncoder;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.subsystems.armevator.ArmevatorConstants;
@@ -16,7 +23,7 @@ import java.util.HashMap;
 import org.littletonrobotics.junction.Logger;
 
 public class Intake extends SubsystemBase {
-  private HashMap<ArmevatorPose, Double> poseAlgaeAngleMap;
+  private HashMap<ArmevatorPose, Double> intakeMap;
   private double algaeAngleSetpoint;
 
   private ProfiledPIDController intakePID;
@@ -25,50 +32,73 @@ public class Intake extends SubsystemBase {
   private RelativeEncoder tiltEncoder;
 
   private TalonFX rollerMotor;
-  private TalonFX tiltMotor;
+  private TalonFX intakeMotor;
+
+  private ArmevatorPose pose;
 
   public Intake() {
     rollerMotor = new TalonFX(IntakeConstants.ROLLER_MOTOR_ID);
-    tiltMotor = new TalonFX(IntakeConstants.TILT_MOTOR_ID);
+    intakeMotor = new TalonFX(IntakeConstants.TILT_MOTOR_ID);
 
-    poseAlgaeAngleMap = new HashMap<>();
-    poseAlgaeAngleMap.put(ArmevatorPose.STARTING, 0.0);
-    poseAlgaeAngleMap.put(ArmevatorPose.CLIMB, 35.0);
-    poseAlgaeAngleMap.put(ArmevatorPose.CORAL_HP_LOAD, 5.0);
-    poseAlgaeAngleMap.put(ArmevatorPose.CORAL_L4_SCORE, 5.0);
-    poseAlgaeAngleMap.put(ArmevatorPose.CORAL_L3_SCORE, 5.0);
-    poseAlgaeAngleMap.put(ArmevatorPose.CORAL_L2_SCORE, 5.0);
-    poseAlgaeAngleMap.put(ArmevatorPose.CORAL_L1_SCORE, 5.0);
-    poseAlgaeAngleMap.put(ArmevatorPose.ALGAE_INTAKE, 55.0);
-    poseAlgaeAngleMap.put(ArmevatorPose.ALGAE_HANDOFF, 10.0);
-    poseAlgaeAngleMap.put(ArmevatorPose.ALGAE_NET_SCORE, 5.0);
-    poseAlgaeAngleMap.put(ArmevatorPose.ALGAE_L3_PLUCK, 5.0);
-    poseAlgaeAngleMap.put(ArmevatorPose.ALGAE_L3_DROP, 15.0);
-    poseAlgaeAngleMap.put(ArmevatorPose.ALGAE_L2_PLUCK, 5.0);
-    poseAlgaeAngleMap.put(ArmevatorPose.ALGAE_L2_DROP, 10.0);
+    intakeMap = new HashMap<>();
+    intakeMap.put(ArmevatorPose.STARTING, 0.0);
+    intakeMap.put(ArmevatorPose.CLIMB, 35.0);
+    intakeMap.put(ArmevatorPose.CORAL_HP_LOAD, 5.0);
+    intakeMap.put(ArmevatorPose.CORAL_L4_SCORE, 5.0);
+    intakeMap.put(ArmevatorPose.CORAL_L3_SCORE, 5.0);
+    intakeMap.put(ArmevatorPose.CORAL_L2_SCORE, 5.0);
+    intakeMap.put(ArmevatorPose.CORAL_L1_SCORE, 5.0);
+    intakeMap.put(ArmevatorPose.ALGAE_INTAKE, 55.0);
+    intakeMap.put(ArmevatorPose.ALGAE_HANDOFF, 10.0);
+    intakeMap.put(ArmevatorPose.ALGAE_NET_SCORE, 5.0);
+    intakeMap.put(ArmevatorPose.ALGAE_L3_PLUCK, 5.0);
+    intakeMap.put(ArmevatorPose.ALGAE_L3_DROP, 15.0);
+    intakeMap.put(ArmevatorPose.ALGAE_L2_PLUCK, 5.0);
+    intakeMap.put(ArmevatorPose.ALGAE_L2_DROP, 10.0);
+
+    TalonFXConfiguration intakeConfig = new TalonFXConfiguration();
+    intakeConfig.MotorOutput.withInverted(InvertedValue.CounterClockwise_Positive);
+    intakeConfig.MotorOutput.withNeutralMode(NeutralModeValue.Brake);
+    intakeConfig.Voltage.withPeakForwardVoltage(12.0);
+    intakeConfig.Voltage.withPeakReverseVoltage(-12.0);
+    intakeConfig.SoftwareLimitSwitch.withForwardSoftLimitEnable(true);
+    intakeConfig.SoftwareLimitSwitch.withReverseSoftLimitEnable(true);
+    intakeConfig.SoftwareLimitSwitch.withForwardSoftLimitThreshold(
+        IntakeConstants.MAX_ANGLE_DEGREES / IntakeConstants.INTAKE_DEGREES_PER_ROTATION);
+    intakeConfig.SoftwareLimitSwitch.withReverseSoftLimitThreshold(
+        IntakeConstants.MIN_ANGLE_DEGREES / IntakeConstants.INTAKE_DEGREES_PER_ROTATION);
+    intakeConfig.CurrentLimits.withStatorCurrentLimit(40.0);
+
+    intakeMotor.getConfigurator().apply(intakeConfig);
 
     intakeFeedforward =
         new ArmFeedforward(
-            ArmevatorConstants.ARM_KS,
-            ArmevatorConstants.ARM_KG,
-            ArmevatorConstants.ARM_KV,
-            ArmevatorConstants.ARM_KA);
+            IntakeConstants.INTAKE_KS,
+            IntakeConstants.INTAKE_KG,
+            IntakeConstants.INTAKE_KV,
+            IntakeConstants.INTAKE_KA);
 
-    // intakePID =
-    //     new ProfiledPIDController(
-    //         ArmevatorConstants.ARM_KP,
-    //         ArmevatorConstants.ARM_KI,
-    //         ArmevatorConstants.ARM_KD,
-    //         new TrapezoidProfile.Constraints(
-    //             ArmevatorConstants.ARM_MAX_VELOCITY, ArmevatorConstants.ARM_MAX_ACCELERATION),
-    //         ArmevatorConstants.ARM_PERIOD_SEC);
+    intakePID =
+        new ProfiledPIDController(
+            IntakeConstants.INTAKE_KP,
+            IntakeConstants.INTAKE_KI,
+            IntakeConstants.INTAKE_KD,
+            new TrapezoidProfile.Constraints(
+                IntakeConstants.INTAKE_MAX_VELOCITY, IntakeConstants.INTAKE_MAX_ACCELERATION),
+            IntakeConstants.PID_PERIOD_SEC);
+    intakePID.setTolerance(ArmevatorConstants.ANGLE_GOAL_TOLERANCE_DEGREES);
+    intakePID.reset(intakeMap.get(ArmevatorPose.STARTING));
+    intakePID.setGoal(intakeMap.get(ArmevatorPose.STARTING));
+
+    intakeMotor.setPosition(intakeMap.get(ArmevatorPose.STARTING));
+
+    intakeMotor.stopMotor();
 
     setupNT();
   }
 
   public boolean isAtGoal() {
-    // return intakePID.atGoal();
-    return true;
+    return intakePID.atGoal();
   }
 
   public void runIntake() {
@@ -80,15 +110,15 @@ public class Intake extends SubsystemBase {
   }
 
   public void tiltForward() {
-    tiltMotor.set(0.1);
+    intakeMotor.set(0.1);
   }
 
   public void tiltBackwards() {
-    tiltMotor.set(-0.1);
+    intakeMotor.set(-0.1);
   }
 
   public void stopTilt() {
-    tiltMotor.set(0);
+    intakeMotor.set(0);
   }
 
   public void stopIntake() {
@@ -96,27 +126,44 @@ public class Intake extends SubsystemBase {
   }
 
   public double getTiltPosition() {
-    return tiltMotor.getPosition().getValueAsDouble();
+    return intakeMotor.getPosition().getValueAsDouble();
   }
 
   public double getTiltVelocity() {
-    return tiltMotor.getVelocity().getValueAsDouble();
+    return intakeMotor.getVelocity().getValueAsDouble();
   }
 
   @Override
   public void periodic() {
-    // tiltMotor.set(
-    //     MathUtil.clamp(intakePID.calculate(getTiltPosition()), -0.5, 0.5)
-    //         + intakeFeedforward.calculate(
-    //             Math.toRadians(getTiltPosition() + IntakeConstants.TILT_COG_OFFSET),
-    //             getTiltVelocity()));
+    if (DriverStation.isDisabled()) {
+      intakePID.reset(getAngle());
+    }
+
+    intakeMotor.set(
+        MathUtil.clamp(intakePID.calculate(getAngle()), -0.5, 0.5)
+            + intakeFeedforward.calculate(
+                MathUtil.angleModulus(Math.toRadians(getAngle() + 90.0)), getVelocity()));
 
     doLogging();
   }
 
+  public double getAngle() {
+    return new Rotation2d(intakeMotor.getPosition().getValue()).getDegrees()
+        * IntakeConstants.INTAKE_DEGREES_PER_ROTATION;
+  }
+
+  public double getVelocity() {
+    return intakeMotor.getVelocity().getValueAsDouble()
+        * IntakeConstants.INTAKE_RPM_TO_DEGREES_PER_SECOND;
+  }
+
   public void setPose(ArmevatorPose pose) {
-    // intakePID.setGoal(poseAlgaeAngleMap.get(pose));
-    // algaeAngleSetpoint = poseAlgaeAngleMap.get(pose);
+    this.pose = pose;
+    intakePID.setGoal(intakeMap.get(pose));
+  }
+
+  public ArmevatorPose getPose() {
+    return pose;
   }
 
   private void doLogging() {

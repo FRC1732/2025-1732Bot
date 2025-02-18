@@ -3,25 +3,30 @@ package frc.robot.subsystems.intake_subsystem;
 public class IntakeConstants {
   public static final String SUBSYSTEM_NAME = "Intake";
 
-  public static final int ROLLER_MOTOR_ID = 50; // TODO: verify left/right motor IDs as roller/tilt
+  public static final int ROLLER_MOTOR_ID = 50;
   public static final int TILT_MOTOR_ID = 51;
 
-  public static final double TILT_KP = 0; // TODO find values for these
-  public static final double TILT_KI = 0;
-  public static final double TILT_KD = 0;
-  public static final double TILT_MAX_VELOCITY = 0;
-  public static final double TILT_MAX_ACCELERATION = 0;
-  public static final double TILT_PERIOD_SEC = 0;
+  public static final double PID_PERIOD_SEC = 0.02;
 
-  public static final double TILT_KS = 0;
-  public static final double TILT_KG = 0;
-  public static final double TILT_KV = 0;
-  public static final double TILT_KA = 0;
+  public static final double MIN_ANGLE_DEGREES = -5.0;
+  public static final double MAX_ANGLE_DEGREES = 57.0;
+  public static final double ANGLE_GOAL_TOLERANCE_DEGREES = 2.0;
 
-  public static final double TILT_GOAL_TOLERANCE_DEGREES = 2;
-  public static final double TILT_MAX_ABOLUTE_RELATIVE_ERROR_DEG = 10;
-  public static final double TILT_COG_OFFSET = 0;
+  public static final double INTAKE_MAX_VELOCITY = 50; // deg/s
+  public static final double INTAKE_MAX_ACCELERATION = 100; // deg/s^2
+  public static final double INTAKE_KP = 0;
+  public static final double INTAKE_KI = 0;
+  public static final double INTAKE_KD = 0;
+  public static final double INTAKE_KG = 0.1 / 12; // V
+  public static final double INTAKE_KV = 0; // V*s/deg
+  public static final double INTAKE_KA = 0; // V*s^2/deg
+  public static final double INTAKE_KS = 0;
 
-  public static final double ROLLER_INTAKE_SPEED = -0.45;
-  public static final double ROLLER_EJECT_SPEED = 0.45;
+  public static final double INTAKE_DEGREES_PER_ROTATION =
+      22.5; // degrees per motor revolution (360 / reduction = 360 / 16)
+  public static final double INTAKE_RPM_TO_DEGREES_PER_SECOND =
+      0.375; // RPM to deg/sec (360 / reduction / 60 = 360 / 16 / 60)
+
+  public static final double ROLLER_INTAKE_SPEED = -0.25;
+  public static final double ROLLER_EJECT_SPEED = 0.25;
 }
