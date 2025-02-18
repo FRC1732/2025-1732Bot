@@ -1,5 +1,7 @@
 package frc.robot.subsystems.climber_subsystem;
 
+import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
+
 public class ClimberConstants {
   private static final String CONSTRUCTOR_EXCEPTION = "constant class";
 
@@ -19,4 +21,14 @@ public class ClimberConstants {
   public static final Double CLIMBER_BRAKE_SPEED = 0.0;
 
   public static final boolean CLIMBER_LOGGING = true;
+  public static final double PIVOT_TOLERANCE = 0.05;
+
+  public static final double MAX_PIVOT_EXTEND = 0.0;
+  public static final double MAX_PIVOT_RETRACT = 0.0;
+
+  public static final double CLIMB_SETPOINT = 0; // TODO get value for this
+  public static final double FULLY_EXTENDED_SETPOINT = 0; // TODO get value for this
+  public static final double WINDMILL_TOLERANCE = 0.05;
+  public static final double WINDMILL_FULLY_ENGAGED_SETPOINT = 0.0; // TODO get value for this
+  public static final double RETREAT_TO_SAFE_BOUNDS_TIME = 0.2;
 }

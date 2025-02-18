@@ -45,6 +45,12 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 // import frc.lib.team3061.leds.LEDs;
 import frc.robot.commands.clawcommands.ClawBackwards;
 import frc.robot.commands.clawcommands.IntakeCoral;
+import frc.robot.commands.testCommands.ArmBackwards;
+import frc.robot.commands.testCommands.ArmForwards;
+import frc.robot.commands.testCommands.ElevatorDown;
+import frc.robot.commands.testCommands.ElevatorUp;
+import frc.robot.commands.testCommands.IntakeBackwards;
+import frc.robot.commands.testCommands.IntakeForward;
 import frc.robot.commands.testCommands.PivotBackward;
 import frc.robot.commands.testCommands.PivotForward;
 import frc.robot.commands.testCommands.TiltBackwards;
@@ -508,24 +514,24 @@ public class RobotContainer {
     Trigger pivotForward = new Trigger(() -> (controller.getRawAxis(2) > 0.5));
     Trigger pivotBackward = new Trigger(() -> (controller.getRawAxis(3) > 0.5));
 
-    // aTrigger.whileTrue(new ElevatorUp(armevator));
-    // bTrigger.whileTrue(new ElevatorDown(armevator));
-    // xTrigger.whileTrue(new IntakeForward(intake));
-    // yTrigger.whileTrue(new IntakeBackwards(intake));
+    aTrigger.whileTrue(new ElevatorUp(armevator));
+    bTrigger.whileTrue(new ElevatorDown(armevator));
+    xTrigger.whileTrue(new IntakeForward(intake));
+    yTrigger.whileTrue(new IntakeBackwards(intake));
 
-    // rightTrigger.whileTrue(new ArmForwards(armevator));
-    // leftTrigger.whileTrue(new ArmBackwards(armevator));
+    rightTrigger.whileTrue(new ArmForwards(armevator));
+    leftTrigger.whileTrue(new ArmBackwards(armevator));
 
-    // clawIntake.whileTrue(new IntakeCoral(claw, statusRgb));
-    // clawEject.whileTrue(new ClawBackwards(claw));
+    clawIntake.whileTrue(new IntakeCoral(claw, statusRgb));
+    clawEject.whileTrue(new ClawBackwards(claw));
 
     tiltForward.whileTrue(new TiltForward(intake));
     tiltBackward.whileTrue(new TiltBackwards(intake));
 
-    aTrigger.whileTrue(new WindmillForward(climber));
-    bTrigger.whileTrue(new WindmillBackward(climber));
-    xTrigger.whileTrue(new PivotForward(climber));
-    yTrigger.whileTrue(new PivotBackward(climber));
+    // aTrigger.whileTrue(new WindmillForward(climber));
+    // bTrigger.whileTrue(new WindmillBackward(climber));
+    // xTrigger.whileTrue(new PivotForward(climber));
+    // yTrigger.whileTrue(new PivotBackward(climber));
 
     // aTrigger.whileTrue(new PrintCommand("A trigger"));
     // bTrigger.whileTrue(new PrintCommand("B trigger"));
