@@ -15,8 +15,10 @@ import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.ElevatorFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.DigitalInput;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import java.util.HashMap;
 import org.littletonrobotics.junction.Logger;
@@ -125,15 +127,15 @@ public class Armevator extends SubsystemBase {
             ArmevatorConstants.ELEVATOR_HEIGHT_KV,
             ArmevatorConstants.ELEVATOR_HEIGHT_KA);
 
-    // elevatorPID =
-    // new ProfiledPIDController(
-    // ArmevatorConstants.ELEVATOR_KP,
-    // ArmevatorConstants.ELEVATOR_KI,
-    // ArmevatorConstants.ELEVATOR_KD,
-    // new TrapezoidProfile.Constraints(
-    // ArmevatorConstants.ELEVATOR_MAX_VELOCITY,
-    // ArmevatorConstants.ELEVATOR_MAX_ACCELERATION),
-    // ArmevatorConstants.ELEVATOR_PERIOD_SEC);
+    elevatorPID =
+        new ProfiledPIDController(
+            ArmevatorConstants.ELEVATOR_KP,
+            ArmevatorConstants.ELEVATOR_KI,
+            ArmevatorConstants.ELEVATOR_KD,
+            new TrapezoidProfile.Constraints(
+                ArmevatorConstants.ELEVATOR_MAX_VELOCITY,
+                ArmevatorConstants.ELEVATOR_MAX_ACCELERATION),
+            ArmevatorConstants.ELEVATOR_PERIOD_SEC);
 
     armFeedforward =
         new ArmFeedforward(
@@ -142,16 +144,16 @@ public class Armevator extends SubsystemBase {
             ArmevatorConstants.ARM_HEIGHT_KV,
             ArmevatorConstants.ARM_HEIGHT_KA);
 
-    // armPID =
-    // new ProfiledPIDController(
-    // ArmevatorConstants.ARM_KP,
-    // ArmevatorConstants.ARM_KI,
-    // ArmevatorConstants.ARM_KD,
-    // new TrapezoidProfile.Constraints(
-    // ArmevatorConstants.ARM_MAX_VELOCITY,
-    // ArmevatorConstants.ARM_MAX_ACCELERATION),
-    // ArmevatorConstants.ARM_PERIOD_SEC);
+    armPID =
+        new ProfiledPIDController(
+            ArmevatorConstants.ARM_KP,
+            ArmevatorConstants.ARM_KI,
+            ArmevatorConstants.ARM_KD,
+            new TrapezoidProfile.Constraints(
+                ArmevatorConstants.ARM_MAX_VELOCITY, ArmevatorConstants.ARM_MAX_ACCELERATION),
+            ArmevatorConstants.ARM_PERIOD_SEC);
 
+    setupNT();
   }
 
   public void setPose(ArmevatorPose pose) {
@@ -239,7 +241,6 @@ public class Armevator extends SubsystemBase {
     // armRelativeEncoder.getVelocity()));
 
     doLogging();
-    setupNT();
   }
 
   private double getAbsolutePosition() {
@@ -275,36 +276,22 @@ public class Armevator extends SubsystemBase {
   }
 
   private void setupNT() {
-    // SmartDashboard.putData(ArmevatorConstants.SUBSYSTEM_NAME + "/Elevator PID",
-    // elevatorPID);
-    // SmartDashboard.putData(ArmevatorConstants.SUBSYSTEM_NAME + "/Arm PID",
-    // armPID);
+    ShuffleboardTab tab = Shuffleboard.getTab(ArmevatorConstants.SUBSYSTEM_NAME);
 
-    SmartDashboard.putNumber(
-        ArmevatorConstants.SUBSYSTEM_NAME + "/Elevator Position",
-        elevatorRelativeEncoder.getPosition());
-    SmartDashboard.putNumber(
-        ArmevatorConstants.SUBSYSTEM_NAME + "/Elevator Velocity",
-        elevatorRelativeEncoder.getVelocity());
-    // SmartDashboard.putNumber(
-    // ArmevatorConstants.SUBSYSTEM_NAME + "/Elevator Goal",
-    // elevatorPID.getGoal().position);
+    tab.add("Elevator PID", elevatorPID);
+    tab.add("Arm PID", armPID);
 
-    SmartDashboard.putNumber(
-        ArmevatorConstants.SUBSYSTEM_NAME + "/Arm Position", armRelativeEncoder.getPosition());
-    SmartDashboard.putNumber(
-        ArmevatorConstants.SUBSYSTEM_NAME + "/Arm Velocity", armRelativeEncoder.getVelocity());
+    tab.addDouble("Elevator Position", () -> elevatorRelativeEncoder.getPosition());
+    tab.addDouble("Elevator Velocity", () -> elevatorRelativeEncoder.getVelocity());
+    tab.addDouble("Elevator Goal", () -> elevatorPID.getGoal().position);
 
-    // SmartDashboard.putNumber(
-    // ArmevatorConstants.SUBSYSTEM_NAME + "/Arm Goal", armPID.getGoal().position);
+    tab.addDouble("Arm Position", () -> armRelativeEncoder.getPosition());
+    tab.addDouble("Arm Velocity", () -> armRelativeEncoder.getVelocity());
 
-    SmartDashboard.putBoolean(
-        ArmevatorConstants.SUBSYSTEM_NAME + "/Elevator Limit Switch", elevatorLimitSwitch.get());
-    SmartDashboard.putNumber(
-        ArmevatorConstants.SUBSYSTEM_NAME + "/Arm Absolute Encoder", getAbsolutePosition());
-    SmartDashboard.putNumber(
-        ArmevatorConstants.SUBSYSTEM_NAME + "/Arm Absolute Degrees", getAbsoluteDegrees());
+    tab.addDouble("Arm Goal", () -> armPID.getGoal().position);
 
-    // Does recordOutput also make these available from network tables?
+    tab.addBoolean("Elevator Limit Switch", () -> elevatorLimitSwitch.get());
+    tab.addDouble("Arm Absolute Encoder", () -> getAbsolutePosition());
+    tab.addDouble("Arm Absolute Degrees", () -> getAbsoluteDegrees());
   }
 }
