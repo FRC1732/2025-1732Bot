@@ -231,8 +231,8 @@ public class RobotContainer {
   private void defineSubsystems() {
     joint = new Joint();
     claw = new Claw();
-    statusRgb = new StatusRgb(joint);
     armevator = new Armevator();
+    statusRgb = new StatusRgb(armevator);
     intake = new Intake();
     climber = new Climber();
 

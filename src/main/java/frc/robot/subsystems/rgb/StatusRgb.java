@@ -11,8 +11,8 @@ import edu.wpi.first.wpilibj.DigitalOutput;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.subsystems.joint.Joint;
-import frc.robot.subsystems.joint.JointConstants;
+import frc.robot.subsystems.armevator.Armevator;
+import frc.robot.subsystems.armevator.ArmevatorPose;
 
 public class StatusRgb extends SubsystemBase {
   private DigitalOutput out0 = new DigitalOutput(0);
@@ -31,13 +31,18 @@ public class StatusRgb extends SubsystemBase {
   private NetworkTable nt4Table = table.getTable("rgbOperator");
   private StringPublisher publisher = nt4Table.getStringTopic("rgb").publish();
 
-  private Joint joint;
+  private Armevator armevator;
 
   private SpecialMode specialMode = SpecialMode.NONE;
 
-  public StatusRgb(Joint joint) {
+  public StatusRgb(Armevator armevator) {
     timer = new Timer();
-    this.joint = joint;
+    this.armevator = armevator;
+
+    // Set default values
+    scoringLevel = ScoringLevel.L1;
+    scoringPosition = ScoringPosition.B1;
+    updateButtonState();
   }
 
   public void acquiredCoral() {
@@ -49,10 +54,12 @@ public class StatusRgb extends SubsystemBase {
 
   public void setScoringLevel(ScoringLevel scoringLevel) {
     this.scoringLevel = scoringLevel;
+    updateButtonState();
   }
 
   public void setScoringPosition(ScoringPosition scoringPosition) {
     this.scoringPosition = scoringPosition;
+    updateButtonState();
   }
 
   private void updateButtonState() {
@@ -123,19 +130,19 @@ public class StatusRgb extends SubsystemBase {
     if (DriverStation.isDisabled()) {
       setMode(0);
 
-    } else if (joint.getSetPoint() == JointConstants.JOINT_CORAL_SETPOINT) {
+    } else if (armevator.getPose() == ArmevatorPose.CORAL_HP_LOAD) {
       setMode(6);
 
-    } else if (joint.getSetPoint() == JointConstants.JOINT_LV1_SETPOINT) {
+    } else if (armevator.getPose() == ArmevatorPose.CORAL_L1_SCORE) {
       setMode(2);
 
-    } else if (joint.getSetPoint() == JointConstants.JOINT_LV2_SETPOINT) {
+    } else if (armevator.getPose() == ArmevatorPose.CORAL_L2_SCORE) {
       setMode(3);
 
-    } else if (joint.getSetPoint() == JointConstants.JOINT_LV3_SETPOINT) {
+    } else if (armevator.getPose() == ArmevatorPose.CORAL_L3_SCORE) {
       setMode(4);
 
-    } else if (joint.getSetPoint() == JointConstants.JOINT_LV4_SETPOINT) {
+    } else if (armevator.getPose() == ArmevatorPose.CORAL_L4_SCORE) {
       setMode(5);
     } else {
       setMode(0);
