@@ -120,7 +120,8 @@ public class RobotContainer {
           .withDeadband(MaxSpeed * 0.01)
           .withSteerRequestType(SteerRequestType.MotionMagicExpo);
 
-  // use AdvantageKit's LoggedDashboardChooser instead of SendableChooser to ensure accurate logging
+  // use AdvantageKit's LoggedDashboardChooser instead of SendableChooser to
+  // ensure accurate logging
   private final LoggedDashboardChooser<Command> autoChooser =
       new LoggedDashboardChooser<>("Auto Routine");
 
@@ -207,7 +208,8 @@ public class RobotContainer {
 
     defineSubsystems();
 
-    // disable all telemetry in the LiveWindow to reduce the processing during each iteration
+    // disable all telemetry in the LiveWindow to reduce the processing during each
+    // iteration
     LiveWindow.disableAllTelemetry();
 
     constructField();
@@ -256,7 +258,8 @@ public class RobotContainer {
     }
     System.out.println(oi.getClass());
 
-    // clear the list of composed commands since we are about to rebind them to potentially new
+    // clear the list of composed commands since we are about to rebind them to
+    // potentially new
     // triggers
     CommandScheduler.getInstance().clearComposedCommands();
     configureButtonBindings();
@@ -306,21 +309,22 @@ public class RobotContainer {
     autoChooser.addOption("4 piece right", fourPieceRight);
 
     // Command startPoint =
-    //     Commands.runOnce(
-    //         () -> {
-    //           try {
-    //             drivetrain.resetPose(
-    //                 PathPlannerPath.fromPathFile("Start Point").getStartingDifferentialPose());
-    //           } catch (Exception e) {
-    //             pathFileMissingAlert.setText("Could not find the specified path file: Start
+    // Commands.runOnce(
+    // () -> {
+    // try {
+    // drivetrain.resetPose(
+    // PathPlannerPath.fromPathFile("Start Point").getStartingDifferentialPose());
+    // } catch (Exception e) {
+    // pathFileMissingAlert.setText("Could not find the specified path file: Start
     // Point");
-    //             pathFileMissingAlert.set(true);
-    //           }
-    //         },
-    //         drivetrain);
+    // pathFileMissingAlert.set(true);
+    // }
+    // },
+    // drivetrain);
     // autoChooser.addOption("Start Point", startPoint);
 
-    /************ Drive Velocity Tuning ************
+    /************
+     * Drive Velocity Tuning ************
      *
      * useful for tuning the drive velocity PID controller
      *
@@ -414,14 +418,17 @@ public class RobotContainer {
 
   private void configureDrivetrainCommands() {
     /*
-     * Set up the default command for the drivetrain. The joysticks' values map to percentage of the
-     * maximum velocities. The velocities may be specified from either the robot's frame of
+     * Set up the default command for the drivetrain. The joysticks' values map to
+     * percentage of the
+     * maximum velocities. The velocities may be specified from either the robot's
+     * frame of
      * reference or the field's frame of reference.
      * Robot-centric: +x is forward, +y is left, +theta is CCW
-     * Field-centric: origin is back-right (blue), 0deg is forward, +x is forward, +y is left,
+     * Field-centric: origin is back-right (blue), 0deg is forward, +x is forward,
+     * +y is left,
      * +theta is CCW direction.
-     *      ___________
-     *      |    |    | ^
+     * ___________
+     * | | | ^
      * (0,0).____|____| y, x-> 0->
      */
     drivetrain.setDefaultCommand(
@@ -443,7 +450,8 @@ public class RobotContainer {
                         -oi.getRotate()
                             * (slowModeSupplier.getAsBoolean()
                                 ? MaxSlowAngularRate
-                                : MaxAngularRate)) // Drive counterclockwise with negative X (left)
+                                : MaxAngularRate)) // Drive counterclockwise with negative X
+            // (left)
             ));
 
     driveFacingAngleRequest.HeadingController.setPID(7, 0, 0);
@@ -456,15 +464,17 @@ public class RobotContainer {
     oi.resetGyroButton().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
 
     // reset pose based on vision
-    /*oi.getResetPoseToVisionButton()
-    .onTrue(
-        Commands.repeatingSequence(Commands.none())
-            .until(() -> vision.getBestRobotPose() != null)
-            .andThen(
-                Commands.runOnce(
-                    () -> drivetrain.resetPoseToVision(() -> vision.getBestRobotPose())))
-            .ignoringDisable(true)
-            .withName("reset pose to vision"));*/
+    /*
+     * oi.getResetPoseToVisionButton()
+     * .onTrue(
+     * Commands.repeatingSequence(Commands.none())
+     * .until(() -> vision.getBestRobotPose() != null)
+     * .andThen(
+     * Commands.runOnce(
+     * () -> drivetrain.resetPoseToVision(() -> vision.getBestRobotPose())))
+     * .ignoringDisable(true)
+     * .withName("reset pose to vision"));
+     */
 
     // x-stance
     oi.xStanceButton().whileTrue(drivetrain.applyRequest(() -> brakeRequest));
@@ -594,16 +604,18 @@ public class RobotContainer {
 
   private void configureVisionCommands() {
     // enable/disable vision
-    /*oi.getVisionIsEnabledSwitch()
-        .onTrue(
-            Commands.runOnce(() -> vision.enable(true))
-                .ignoringDisable(true)
-                .withName("enable vision"));
-    oi.getVisionIsEnabledSwitch()
-        .onFalse(
-            Commands.runOnce(() -> vision.enable(false), vision)
-                .ignoringDisable(true)
-                .withName("disable vision"));*/
+    /*
+     * oi.getVisionIsEnabledSwitch()
+     * .onTrue(
+     * Commands.runOnce(() -> vision.enable(true))
+     * .ignoringDisable(true)
+     * .withName("enable vision"));
+     * oi.getVisionIsEnabledSwitch()
+     * .onFalse(
+     * Commands.runOnce(() -> vision.enable(false), vision)
+     * .ignoringDisable(true)
+     * .withName("disable vision"));
+     */
   }
 
   /**
@@ -646,10 +658,13 @@ public class RobotContainer {
 
   private Pose2d extractLimelightPose() {
     LimelightHelpers.PoseEstimate limelightMeasurement = visionApriltagSubsystem.getPoseEstimate();
-    if (limelightMeasurement.tagCount >= 2
-        || (limelightMeasurement.tagCount == 1 && limelightMeasurement.avgTagDist < 1.25)) {
 
-      return limelightMeasurement.pose;
+    if (limelightMeasurement != null) {
+      if (limelightMeasurement.tagCount >= 2
+          || (limelightMeasurement.tagCount == 1 && limelightMeasurement.avgTagDist < 1.25)) {
+
+        return limelightMeasurement.pose;
+      }
     }
     return null;
   }
@@ -664,8 +679,10 @@ public class RobotContainer {
   }
 
   public void teleopInit() {
-    // check if the alliance color has changed based on the FMS data; if the robot power cycled
-    // during a match, this would be the first opportunity to check the alliance color based on FMS
+    // check if the alliance color has changed based on the FMS data; if the robot
+    // power cycled
+    // during a match, this would be the first opportunity to check the alliance
+    // color based on FMS
     // data.
     this.checkAllianceColor();
   }
@@ -715,8 +732,8 @@ public class RobotContainer {
   public void updateVisionPose() {
     if (questNav.isConnected()) {
       questNav.updateAverageRobotPose();
-      //   drivetrain.addVisionMeasurement(
-      //       questNav.getRobotPose(), VecBuilder.fill(0.0, 0.0, 9999999.0));
+      // drivetrain.addVisionMeasurement(
+      // questNav.getRobotPose(), VecBuilder.fill(0.0, 0.0, 9999999.0));
       drivetrain.addVisionMeasurement(
           questNav.getAverageRobotPose(), VecBuilder.fill(0.0, 0.0, 0.0));
       return;
@@ -725,11 +742,12 @@ public class RobotContainer {
     // LimelightHelpers.PoseEstimate limelightMeasurement =
     // visionApriltagSubsystem.getPoseEstimate();
     // if (limelightMeasurement.tagCount >= 2
-    //     || (limelightMeasurement.tagCount == 1 && limelightMeasurement.avgTagDist < 1.25)) {
-    //   drivetrain.addVisionMeasurement(
-    //       limelightMeasurement.pose,
-    //       limelightMeasurement.timestampSeconds,
-    //       VecBuilder.fill(.6, .6, 9999999));
+    // || (limelightMeasurement.tagCount == 1 && limelightMeasurement.avgTagDist <
+    // 1.25)) {
+    // drivetrain.addVisionMeasurement(
+    // limelightMeasurement.pose,
+    // limelightMeasurement.timestampSeconds,
+    // VecBuilder.fill(.6, .6, 9999999));
     // }
   }
 }
