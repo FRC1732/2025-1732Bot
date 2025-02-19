@@ -34,16 +34,28 @@ public class Claw extends SubsystemBase {
     setupShuffleboard();
   }
 
-  public void runClaw() {
+  public void intakeCoral() {
     clawMotor.set(ClawConstants.CLAW_MOTOR_SPEED);
   }
 
-  public void brakeClaw() {
+  public void brakeCoral() {
+    clawMotor.set(ClawConstants.CLAW_BRAKE_SPEED * -1);
+  }
+
+  public void ejectCoral() {
+    clawMotor.set(ClawConstants.CLAW_MOTOR_SPEED * -1);
+  }
+
+  public void intakeAlgae() {
+    clawMotor.set(ClawConstants.CLAW_MOTOR_SPEED * -1);
+  }
+
+  public void brakeAlgae() {
     clawMotor.set(ClawConstants.CLAW_BRAKE_SPEED);
   }
 
-  public void reverseClaw() {
-    clawMotor.set(ClawConstants.CLAW_MOTOR_SPEED * -1);
+  public void ejectAlgae() {
+    clawMotor.set(ClawConstants.CLAW_MOTOR_SPEED);
   }
 
   public void stopClaw() {

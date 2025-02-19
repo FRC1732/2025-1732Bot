@@ -28,6 +28,8 @@ public class Climber extends SubsystemBase {
 
   private RelativeEncoder windmillRelativeEncoder;
 
+  private boolean windmillEngaged;
+
   public Climber() {
     climberMotor = new SparkMax(ClimberConstants.CLIMBER_CAN_ID, MotorType.kBrushless);
     windmillMotor = new SparkMax(ClimberConstants.WINDMILL_CAN_ID, MotorType.kBrushless);
@@ -36,6 +38,7 @@ public class Climber extends SubsystemBase {
     SparkMaxConfig windmillConfig = new SparkMaxConfig();
 
     climberConfig.inverted(true);
+    windmillConfig.inverted(true);
 
     EncoderConfig climberEncoderConfig = new EncoderConfig();
     climberEncoderConfig.positionConversionFactor(ClimberConstants.CLIMBER_INCHES_PER_ROTATION);
@@ -91,6 +94,30 @@ public class Climber extends SubsystemBase {
     windmillMotor.stopMotor();
   }
 
+  public void engageWindmill() {
+    windmillEngaged = true;
+  }
+
+  public void disengageWindmill() {
+    windmillEngaged = false;
+  }
+
+  public void extendClimber() {
+    if (getClimberPosition() < ClimberConstants.FULLY_EXTENDED_SETPOINT) {
+      runClimber();
+    } else {
+      stopClimber();
+    }
+  }
+
+  public void retractClimber() {
+    if (getClimberPosition() > ClimberConstants.CLIMB_SETPOINT) {
+      reverseClimber();
+    } else {
+      brakeClimber();
+    }
+  }
+
   public double getClimberPosition() {
     return climberRelativeEncoder.getPosition();
   }
@@ -117,7 +144,8 @@ public class Climber extends SubsystemBase {
   }
 
   public boolean isWindmillFullyEngaged() {
-    return windmillEncoder.getPosition() >= ClimberConstants.WINDMILL_FULLY_ENGAGED_SETPOINT;
+    return windmillEncoder.getPosition()
+        >= ClimberConstants.WINDMILL_FULLY_ENGAGED_SETPOINT - ClimberConstants.WINDMILL_TOLERANCE;
   }
 
   public void setupShuffleboard() {
@@ -130,13 +158,15 @@ public class Climber extends SubsystemBase {
 
   @Override
   public void periodic() {
-    // This method will be called once per scheduler run
-    if (climberRelativeEncoder.getPosition() > ClimberConstants.MAX_CLIMBER_EXTEND) {
-      climberMotor.stopMotor();
-    }
-
-    if (climberRelativeEncoder.getPosition() < ClimberConstants.MAX_CLIMBER_RETRACT) {
-      climberMotor.stopMotor();
+    if (windmillEngaged
+        && getWindmillPosition()
+            < ClimberConstants.WINDMILL_FULLY_ENGAGED_SETPOINT
+                - ClimberConstants.WINDMILL_TOLERANCE) {
+      runWindmill();
+    } else if (!windmillEngaged && getWindmillPosition() < ClimberConstants.WINDMILL_TOLERANCE) {
+      reverseWindmill();
+    } else {
+      stopWindmill();
     }
   }
 }

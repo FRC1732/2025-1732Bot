@@ -41,7 +41,7 @@ public class Armevator extends SubsystemBase {
   // private double armAngleSetpoint;
   // private double carriageHeightSetpoint;
 
-  private ArmevatorPose pose;
+  private ArmevatorPose currentPose;
 
   private int limitSwitchCounter;
   private boolean elevatorPIDOverride;
@@ -237,14 +237,23 @@ public class Armevator extends SubsystemBase {
     setupNT();
   }
 
-  public void setPose(ArmevatorPose pose) {
-    this.pose = pose;
+  public void setCurrentPose(ArmevatorPose pose) {
+    this.currentPose = pose;
     elevatorPID.setGoal(elevatorMap.get(pose));
     armPID.setGoal(armMap.get(pose));
   }
 
-  public ArmevatorPose getPose() {
-    return pose;
+  public void updateScoringLevel(ArmevatorPose pose) {
+    if (currentPose == ArmevatorPose.CORAL_L1_SCORE
+        || currentPose == ArmevatorPose.CORAL_L2_SCORE
+        || currentPose == ArmevatorPose.CORAL_L3_SCORE
+        || currentPose == ArmevatorPose.CORAL_L4_SCORE) {
+      setCurrentPose(pose);
+    }
+  }
+
+  public ArmevatorPose getCurrentPose() {
+    return currentPose;
   }
 
   public boolean isAtGoal() {

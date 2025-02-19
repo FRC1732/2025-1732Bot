@@ -39,14 +39,10 @@ import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SelectCommand;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
-import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 // import frc.lib.team3061.leds.LEDs;
 import frc.robot.commands.clawcommands.ClawBackwards;
 import frc.robot.commands.clawcommands.IntakeCoral;
-import frc.robot.commands.testCommands.TiltBackwards;
-import frc.robot.commands.testCommands.TiltForward;
 import frc.robot.field.Field2d;
 import frc.robot.field.FieldObject;
 import frc.robot.field.Region2d;
@@ -66,6 +62,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.BooleanSupplier;
+import java.util.function.Supplier;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;
 
@@ -102,6 +99,8 @@ public class RobotContainer {
   private BooleanSupplier slowModeSupplier = () -> isSlowMode;
   private boolean isFullAuto = true;
   private BooleanSupplier fullAutoSupplier = () -> isFullAuto;
+  private ArmevatorPose currentScoringLevel = ArmevatorPose.CORAL_L3_SCORE;
+  private Supplier<ArmevatorPose> currentScoringLevelSupplier = () -> currentScoringLevel;
   private ShuffleboardTab tab;
   private final Telemetry telemetryLogger = new Telemetry(MaxSpeed);
 
@@ -283,11 +282,12 @@ public class RobotContainer {
     NamedCommands.registerCommand(
         "intakeCoral",
         Commands.sequence(
-            armevator.runOnce(() -> armevator.setPose(ArmevatorPose.CORAL_HP_LOAD)),
+            armevator.runOnce(() -> armevator.setCurrentPose(ArmevatorPose.CORAL_HP_LOAD)),
             new IntakeCoral(claw, statusRgb)));
     NamedCommands.registerCommand("ejectCoral", new ClawBackwards(claw));
     NamedCommands.registerCommand(
-        "setPoseL4", armevator.runOnce(() -> armevator.setPose(ArmevatorPose.CORAL_L2_SCORE)));
+        "setPoseL4",
+        armevator.runOnce(() -> armevator.setCurrentPose(ArmevatorPose.CORAL_L3_SCORE)));
 
     // Event Markers
     new EventTrigger("Marker").onTrue(Commands.print("reached event marker"));
@@ -490,26 +490,26 @@ public class RobotContainer {
   private void configureSubsystemCommands() {
     // TODO remove once testing is finished
 
-    CommandJoystick controller = new CommandJoystick(0);
+    // CommandJoystick controller = new CommandJoystick(0);
 
-    Trigger aTrigger = controller.button(1);
-    Trigger bTrigger = controller.button(2);
-    Trigger xTrigger = controller.button(3);
-    Trigger yTrigger = controller.button(4);
-    Trigger rightTrigger = controller.button(5);
-    Trigger leftTrigger = controller.button(6);
+    // Trigger aTrigger = controller.button(1);
+    // Trigger bTrigger = controller.button(2);
+    // Trigger xTrigger = controller.button(3);
+    // Trigger yTrigger = controller.button(4);
+    // Trigger rightTrigger = controller.button(5);
+    // Trigger leftTrigger = controller.button(6);
 
-    Trigger clawIntake = controller.button(7);
-    Trigger clawEject = controller.button(8);
+    // Trigger clawIntake = controller.button(7);
+    // Trigger clawEject = controller.button(8);
 
-    Trigger tiltForward = controller.button(9);
-    Trigger tiltBackward = controller.button(10);
+    // Trigger tiltForward = controller.button(9);
+    // Trigger tiltBackward = controller.button(10);
 
-    Trigger windmillForward = new Trigger(() -> (controller.getRawAxis(0) > 0.5));
-    Trigger windmillBackward = new Trigger(() -> (controller.getRawAxis(1) > 0.5));
+    // Trigger windmillForward = new Trigger(() -> (controller.getRawAxis(0) > 0.5));
+    // Trigger windmillBackward = new Trigger(() -> (controller.getRawAxis(1) > 0.5));
 
-    Trigger pivotForward = new Trigger(() -> (controller.getRawAxis(2) > 0.5));
-    Trigger pivotBackward = new Trigger(() -> (controller.getRawAxis(3) > 0.5));
+    // Trigger pivotForward = new Trigger(() -> (controller.getRawAxis(2) > 0.5));
+    // Trigger pivotBackward = new Trigger(() -> (controller.getRawAxis(3) > 0.5));
 
     // aTrigger.whileTrue(new ElevatorUp(armevator));
     // bTrigger.whileTrue(new ElevatorDown(armevator));
@@ -519,11 +519,11 @@ public class RobotContainer {
     // rightTrigger.whileTrue(new ArmForwards(armevator));
     // leftTrigger.whileTrue(new ArmBackwards(armevator));
 
-    clawIntake.whileTrue(new IntakeCoral(claw, statusRgb));
-    clawEject.whileTrue(new ClawBackwards(claw));
+    // clawIntake.whileTrue(new IntakeCoral(claw, statusRgb));
+    // clawEject.whileTrue(new ClawBackwards(claw));
 
-    tiltForward.whileTrue(new TiltForward(intake));
-    tiltBackward.whileTrue(new TiltBackwards(intake));
+    // tiltForward.whileTrue(new TiltForward(intake));
+    // tiltBackward.whileTrue(new TiltBackwards(intake));
 
     // aTrigger.whileTrue(new WindmillForward(climber));
     // bTrigger.whileTrue(new WindmillBackward(climber));
@@ -538,7 +538,11 @@ public class RobotContainer {
     oi.operatorFullAutoPlacementSwitch().onTrue(Commands.runOnce(() -> isFullAuto = true));
     oi.operatorFullAutoPlacementSwitch().onFalse(Commands.runOnce(() -> isFullAuto = false));
 
-    oi.ejectAllButton().whileTrue(new ClawBackwards(claw));
+    //////////////////
+    // Coral Commands
+    //////////////////
+
+    oi.ejectCoralButton().whileTrue(new ClawBackwards(claw));
 
     oi.scoreCoralButton()
         .whileTrue(
@@ -546,7 +550,7 @@ public class RobotContainer {
                 .asProxy()
                 .andThen(
                     armevator
-                        .runOnce(() -> armevator.setPose(ArmevatorPose.CORAL_L2_SCORE))
+                        .runOnce(() -> armevator.setCurrentPose(currentScoringLevelSupplier.get()))
                         .asProxy())
                 .andThen(new ClawBackwards(claw).asProxy()));
 
@@ -555,7 +559,7 @@ public class RobotContainer {
             Commands.deadline(
                 Commands.sequence(
                     armevator
-                        .runOnce(() -> armevator.setPose(ArmevatorPose.CORAL_HP_LOAD))
+                        .runOnce(() -> armevator.setCurrentPose(ArmevatorPose.CORAL_HP_LOAD))
                         .asProxy(),
                     new IntakeCoral(claw, statusRgb)),
                 new ConditionalCommand(
@@ -564,14 +568,16 @@ public class RobotContainer {
                     this::shouldIntakeLeftSide)));
     oi.intakeCoralButton()
         .onFalse(
-            new WaitCommand(0.5)
-                .andThen(armevator.runOnce(() -> armevator.setPose(ArmevatorPose.CORAL_L2_SCORE))));
+            new WaitCommand(0.25)
+                .andThen(
+                    armevator.runOnce(
+                        () -> armevator.setCurrentPose(currentScoringLevelSupplier.get()))));
 
     oi.hybridIntakeCoralButton()
         .whileTrue(
             Commands.deadline(
                 Commands.sequence(
-                    armevator.runOnce(() -> armevator.setPose(ArmevatorPose.CORAL_HP_LOAD)),
+                    armevator.runOnce(() -> armevator.setCurrentPose(ArmevatorPose.CORAL_HP_LOAD)),
                     new IntakeCoral(claw, statusRgb)),
                 Commands.sequence(
                     Commands.runOnce(() -> preferLeftSide = shouldIntakeLeftSide()),
@@ -585,8 +591,10 @@ public class RobotContainer {
                                     : Rotation2d.fromDegrees(55))))));
     oi.hybridIntakeCoralButton()
         .onFalse(
-            new WaitCommand(0.5)
-                .andThen(armevator.runOnce(() -> armevator.setPose(ArmevatorPose.CORAL_L2_SCORE))));
+            new WaitCommand(0.25)
+                .andThen(
+                    armevator.runOnce(
+                        () -> armevator.setCurrentPose(currentScoringLevelSupplier.get()))));
 
     oi.operatorF1().onTrue(Commands.runOnce(() -> scoringPathOption = ScoringPathOption.PATH_F1));
     oi.operatorF2().onTrue(Commands.runOnce(() -> scoringPathOption = ScoringPathOption.PATH_F2));
@@ -600,6 +608,79 @@ public class RobotContainer {
     oi.operatorBR2().onTrue(Commands.runOnce(() -> scoringPathOption = ScoringPathOption.PATH_BR2));
     oi.operatorB1().onTrue(Commands.runOnce(() -> scoringPathOption = ScoringPathOption.PATH_B1));
     oi.operatorB2().onTrue(Commands.runOnce(() -> scoringPathOption = ScoringPathOption.PATH_B2));
+
+    oi.operatorL1()
+        .onTrue(
+            Commands.sequence(
+                Commands.runOnce(() -> currentScoringLevel = ArmevatorPose.CORAL_L1_SCORE),
+                armevator.runOnce(() -> armevator.updateScoringLevel(currentScoringLevel))));
+    oi.operatorL2()
+        .onTrue(
+            Commands.sequence(
+                Commands.runOnce(() -> currentScoringLevel = ArmevatorPose.CORAL_L2_SCORE),
+                armevator.runOnce(() -> armevator.updateScoringLevel(currentScoringLevel))));
+    oi.operatorL3()
+        .onTrue(
+            Commands.sequence(
+                Commands.runOnce(() -> currentScoringLevel = ArmevatorPose.CORAL_L3_SCORE),
+                armevator.runOnce(() -> armevator.updateScoringLevel(currentScoringLevel))));
+    oi.operatorL4()
+        .onTrue(
+            Commands.sequence(
+                Commands.runOnce(() -> currentScoringLevel = ArmevatorPose.CORAL_L4_SCORE),
+                armevator.runOnce(() -> armevator.updateScoringLevel(currentScoringLevel))));
+
+    //////////////////
+    // Algae Commands
+    //////////////////
+
+    oi.intakeAlgaeButton()
+        .whileTrue(
+            Commands.parallel(
+                intake.run(() -> intake.runIntake()), claw.run(() -> claw.intakeAlgae())));
+    oi.intakeAlgaeButton()
+        .onFalse(
+            Commands.parallel(
+                intake.run(() -> intake.stopIntake()), claw.run(() -> claw.brakeAlgae())));
+    oi.ejectAlgaeButton()
+        .whileTrue(
+            Commands.parallel(
+                intake.run(() -> intake.ejectIntake()), claw.run(() -> claw.ejectAlgae())));
+    oi.ejectAlgaeButton()
+        .onFalse(
+            Commands.parallel(
+                intake.run(() -> intake.stopIntake()), claw.run(() -> claw.stopClaw())));
+
+    oi.pluckAlgaeButton()
+        .whileTrue(
+            Commands.sequence(
+                armevator.runOnce(() -> armevator.setCurrentPose(ArmevatorPose.ALGAE_L3_PLUCK)),
+                claw.run(() -> claw.intakeAlgae())));
+    oi.pluckAlgaeButton()
+        .onFalse(
+            Commands.sequence(
+                armevator.runOnce(() -> armevator.setCurrentPose(ArmevatorPose.ALGAE_HANDOFF)),
+                claw.run(() -> claw.brakeAlgae())));
+
+    oi.aimAtNetButton()
+        .whileTrue(
+            armevator.runOnce(() -> armevator.setCurrentPose(ArmevatorPose.ALGAE_NET_SCORE)));
+    oi.aimAtNetButton()
+        .whileTrue(armevator.runOnce(() -> armevator.setCurrentPose(ArmevatorPose.ALGAE_HANDOFF)));
+
+    ////////////////////
+    // Climber Commands
+    ////////////////////
+
+    oi.operatorExtendClimber()
+        .whileTrue(
+            Commands.sequence(
+                climber.runOnce(() -> climber.disengageWindmill()),
+                climber.runOnce(() -> climber.extendClimber())));
+    oi.operatorExtendClimber().onFalse(climber.runOnce(() -> climber.engageWindmill()));
+
+    oi.operatorRetractClimber().whileTrue(climber.runOnce(() -> climber.retractClimber()));
+    oi.operatorRetractClimber().onFalse(climber.runOnce(() -> climber.brakeClimber()));
   }
 
   private void configureVisionCommands() {

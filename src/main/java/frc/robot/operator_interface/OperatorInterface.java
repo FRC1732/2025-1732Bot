@@ -64,7 +64,7 @@ public interface OperatorInterface {
     return new Trigger(() -> false);
   }
 
-  public default Trigger clearAlgaeButton() {
+  public default Trigger pluckAlgaeButton() {
     return new Trigger(() -> false);
   }
 
@@ -76,7 +76,11 @@ public interface OperatorInterface {
     return new Trigger(() -> false);
   }
 
-  public default Trigger ejectAllButton() {
+  public default Trigger ejectAlgaeButton() {
+    return new Trigger(() -> false);
+  }
+
+  public default Trigger ejectCoralButton() {
     return new Trigger(() -> false);
   }
 

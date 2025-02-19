@@ -130,19 +130,19 @@ public class StatusRgb extends SubsystemBase {
     if (DriverStation.isDisabled()) {
       setMode(0);
 
-    } else if (armevator.getPose() == ArmevatorPose.CORAL_HP_LOAD) {
+    } else if (armevator.getCurrentPose() == ArmevatorPose.CORAL_HP_LOAD) {
       setMode(6);
 
-    } else if (armevator.getPose() == ArmevatorPose.CORAL_L1_SCORE) {
+    } else if (armevator.getCurrentPose() == ArmevatorPose.CORAL_L1_SCORE) {
       setMode(2);
 
-    } else if (armevator.getPose() == ArmevatorPose.CORAL_L2_SCORE) {
+    } else if (armevator.getCurrentPose() == ArmevatorPose.CORAL_L2_SCORE) {
       setMode(3);
 
-    } else if (armevator.getPose() == ArmevatorPose.CORAL_L3_SCORE) {
+    } else if (armevator.getCurrentPose() == ArmevatorPose.CORAL_L3_SCORE) {
       setMode(4);
 
-    } else if (armevator.getPose() == ArmevatorPose.CORAL_L4_SCORE) {
+    } else if (armevator.getCurrentPose() == ArmevatorPose.CORAL_L4_SCORE) {
       setMode(5);
     } else {
       setMode(0);

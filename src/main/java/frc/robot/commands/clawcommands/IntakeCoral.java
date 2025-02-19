@@ -25,7 +25,7 @@ public class IntakeCoral extends Command {
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    claw.runClaw();
+    claw.intakeCoral();
   }
 
   // Called every time the scheduler runs while the command is scheduled.
@@ -35,10 +35,11 @@ public class IntakeCoral extends Command {
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-    claw.stopClaw();
-    if (claw.hasCoral()) {
+    if (!interrupted) {
       statusRgb.acquiredCoral();
     }
+
+    claw.brakeCoral();
   }
 
   // Returns true when the command should end.
