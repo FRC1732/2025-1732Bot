@@ -20,6 +20,10 @@ import edu.wpi.first.math.controller.ElevatorFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
+import edu.wpi.first.networktables.GenericEntry;
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
@@ -58,7 +62,39 @@ public class Armevator extends SubsystemBase {
   private AbsoluteEncoder armAbsoluteEncoder;
   private RelativeEncoder armRelativeEncoder;
 
+  // tuning variables
+
+  private NetworkTableInstance table = NetworkTableInstance.getDefault();
+  private NetworkTable networkTable = table.getTable("ArmevatorConstants");
+
+  private GenericEntry subscriberArmVelocity =
+      networkTable.getTopic("armMaxVelocity").getGenericEntry();
+  private GenericEntry subscriberArmMaxAcceleration =
+      networkTable.getTopic("armMaxAcceleration").getGenericEntry();
+  private GenericEntry subscriberArmGoalTolerance =
+      networkTable.getTopic("armGoalTolerance").getGenericEntry();
+  private GenericEntry subscriberArmKG = networkTable.getTopic("armKG").getGenericEntry();
+
+  private GenericEntry subscriberElevatorVelocity =
+      networkTable.getTopic("elevatorMaxVelocity").getGenericEntry();
+  private GenericEntry subscriberElevatormMaxAcceleration =
+      networkTable.getTopic("elevatorMaxAcceleration").getGenericEntry();
+  private GenericEntry subscriberElevatorGoalTolerance =
+      networkTable.getTopic("elevatorGoalTolerance").getGenericEntry();
+  private GenericEntry subscriberElevatorKG = networkTable.getTopic("elevatorKG").getGenericEntry();
+
   public Armevator() {
+    // ensure network tables are visible on elastic (unsure if this is needed)
+    subscriberArmVelocity.setDouble(ArmevatorConstants.ARM_MAX_VELOCITY);
+    subscriberArmMaxAcceleration.setDouble(ArmevatorConstants.ARM_MAX_ACCELERATION);
+    subscriberArmGoalTolerance.setDouble(ArmevatorConstants.ANGLE_GOAL_TOLERANCE_DEGREES);
+    subscriberArmKG.setDouble(ArmevatorConstants.ARM_KG);
+
+    subscriberElevatorVelocity.setDouble(ArmevatorConstants.ELEVATOR_MAX_VELOCITY);
+    subscriberElevatormMaxAcceleration.setDouble(ArmevatorConstants.ELEVATOR_MAX_ACCELERATION);
+    subscriberElevatorGoalTolerance.setDouble(ArmevatorConstants.HEIGHT_GOAL_TOLERANCE_INCHES);
+    subscriberElevatorKG.setDouble(ArmevatorConstants.ELEVATOR_KG);
+
     // setup poses
     armMap = new HashMap<>();
     armMap.put(ArmevatorPose.STARTING, 96.9);
@@ -219,8 +255,78 @@ public class Armevator extends SubsystemBase {
     armRelativeEncoder.setPosition(getAbsoluteDegrees());
   }
 
+  public void doConstantChecks() {
+    double newArmMaxVelocity = subscriberArmVelocity.getDouble(ArmevatorConstants.ARM_MAX_VELOCITY);
+    double newArmMaxAcceleration =
+        subscriberArmMaxAcceleration.getDouble(ArmevatorConstants.ARM_MAX_ACCELERATION);
+
+    if (armPID.getConstraints().maxVelocity != newArmMaxVelocity
+        || armPID.getConstraints().maxAcceleration != newArmMaxAcceleration) {
+      armPID.setConstraints(new Constraints(newArmMaxVelocity, newArmMaxAcceleration));
+      System.out.println(
+          "Updated arm velocity and accel: " + newArmMaxVelocity + ", " + newArmMaxAcceleration);
+    }
+
+    double setGoalTolerance =
+        subscriberArmGoalTolerance.getDouble(ArmevatorConstants.ANGLE_GOAL_TOLERANCE_DEGREES);
+    if (armPID.getPositionTolerance() != setGoalTolerance) {
+      armPID.setTolerance(setGoalTolerance);
+      System.out.println("Updated arm degree tolerance: " + setGoalTolerance);
+    }
+
+    double setArmKG = subscriberArmKG.getDouble(ArmevatorConstants.ARM_KG);
+    if (armFeedforward.getKg() != setArmKG) {
+      armFeedforward =
+          new ArmFeedforward(
+              ArmevatorConstants.ARM_KS,
+              setArmKG,
+              ArmevatorConstants.ARM_KV,
+              ArmevatorConstants.ARM_KA);
+
+      System.out.println("Updated arm KG: " + setArmKG);
+    }
+
+    double newElevatorMaxVelocity =
+        subscriberElevatorVelocity.getDouble(ArmevatorConstants.ELEVATOR_MAX_VELOCITY);
+    double newElevatorMaxAcceleration =
+        subscriberElevatormMaxAcceleration.getDouble(ArmevatorConstants.ELEVATOR_MAX_ACCELERATION);
+    if (elevatorPID.getConstraints().maxVelocity != newElevatorMaxVelocity
+        || elevatorPID.getConstraints().maxAcceleration != newElevatorMaxAcceleration) {
+      elevatorPID.setConstraints(
+          new Constraints(newElevatorMaxVelocity, newElevatorMaxAcceleration));
+      System.out.println(
+          "Updated elevator velocity and accel: "
+              + newElevatorMaxVelocity
+              + ", "
+              + newElevatorMaxAcceleration);
+    }
+
+    double setElevatorGoalTolerance =
+        subscriberElevatorGoalTolerance.getDouble(ArmevatorConstants.HEIGHT_GOAL_TOLERANCE_INCHES);
+    if (elevatorPID.getPositionTolerance() != setElevatorGoalTolerance) {
+      elevatorPID.setTolerance(setElevatorGoalTolerance);
+      System.out.println("Updated elevator height tolerance: " + setElevatorGoalTolerance);
+    }
+
+    double setElevatorKG = subscriberElevatorKG.getDouble(ArmevatorConstants.ELEVATOR_KG);
+    if (elevatorFeedforward.getKg() != setElevatorKG) {
+      elevatorFeedforward =
+          new ElevatorFeedforward(
+              ArmevatorConstants.ELEVATOR_KS,
+              setElevatorKG,
+              ArmevatorConstants.ELEVATOR_KV,
+              ArmevatorConstants.ELEVATOR_KA);
+
+      System.out.println("Updated elevator KG: " + setElevatorKG);
+    }
+  }
+
+  // 250, 900, 0.01
+
   @Override
   public void periodic() {
+    // doConstantChecks();
+
     if (DriverStation.isDisabled()) {
       elevatorPID.reset(elevatorEncoder.getPosition());
       armPID.reset(armRelativeEncoder.getPosition());

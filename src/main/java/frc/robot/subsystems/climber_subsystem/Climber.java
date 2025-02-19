@@ -13,9 +13,7 @@ import com.revrobotics.spark.config.EncoderConfig;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
-import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.commands.climber_commands.RetractIntoSafeBounds;
 
 public class Climber extends SubsystemBase {
   /** Creates a new Climber. */
@@ -25,7 +23,6 @@ public class Climber extends SubsystemBase {
   private RelativeEncoder windmillEncoder;
 
   private ShuffleboardTab tab;
-  private boolean runningReturnCommand;
 
   private RelativeEncoder climberRelativeEncoder;
 
@@ -64,8 +61,6 @@ public class Climber extends SubsystemBase {
     windmillMotor.stopMotor();
 
     setupShuffleboard();
-
-    runningReturnCommand = false;
   }
 
   public void runClimber() {
@@ -125,10 +120,6 @@ public class Climber extends SubsystemBase {
     return windmillEncoder.getPosition() >= ClimberConstants.WINDMILL_FULLY_ENGAGED_SETPOINT;
   }
 
-  public void setRunningReturnCommand(boolean running) {
-    runningReturnCommand = running;
-  }
-
   public void setupShuffleboard() {
     tab = Shuffleboard.getTab(ClimberConstants.SUBSYSTEM_NAME);
     tab.addDouble("climber position", this::getClimberPosition);
@@ -140,22 +131,12 @@ public class Climber extends SubsystemBase {
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
-    if (climberRelativeEncoder.getPosition() > ClimberConstants.MAX_CLIMBER_EXTEND
-        && !runningReturnCommand) {
+    if (climberRelativeEncoder.getPosition() > ClimberConstants.MAX_CLIMBER_EXTEND) {
       climberMotor.stopMotor();
-
-      CommandScheduler.getInstance()
-          .schedule(
-              new RetractIntoSafeBounds(this, true, ClimberConstants.RETREAT_TO_SAFE_BOUNDS_TIME));
     }
 
-    if (climberRelativeEncoder.getPosition() < ClimberConstants.MAX_CLIMBER_RETRACT
-        && !runningReturnCommand) {
+    if (climberRelativeEncoder.getPosition() < ClimberConstants.MAX_CLIMBER_RETRACT) {
       climberMotor.stopMotor();
-
-      CommandScheduler.getInstance()
-          .schedule(
-              new RetractIntoSafeBounds(this, false, ClimberConstants.RETREAT_TO_SAFE_BOUNDS_TIME));
     }
   }
 }

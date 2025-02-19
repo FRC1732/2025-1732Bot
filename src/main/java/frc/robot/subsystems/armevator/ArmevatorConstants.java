@@ -29,22 +29,22 @@ public class ArmevatorConstants {
   public static final double ANGLE_GOAL_TOLERANCE_DEGREES = 2.0;
   public static final double ANGLE_COG_OFFSET = 54.3;
 
-  public static final double ELEVATOR_MAX_VELOCITY = 10; // in/s 35.17 last year
-  public static final double ELEVATOR_MAX_ACCELERATION = 25; // in/s^2 100 last year
-  public static final double ELEVATOR_KP = 0; // 0.1 last year
+  public static final double ELEVATOR_MAX_VELOCITY = 28; // in/s 35.17 last year
+  public static final double ELEVATOR_MAX_ACCELERATION = 150; // in/s^2 100 last year
+  public static final double ELEVATOR_KP = 0.25; // 0.1 last year
   public static final double ELEVATOR_KI = 0;
   public static final double ELEVATOR_KD = 0;
-  public static final double ELEVATOR_KG = 0.1 / 12.0; // V 0.184 / 12 last year
+  public static final double ELEVATOR_KG = 0.0075; // V 0.184 / 12 last year
   public static final double ELEVATOR_KV = 0; // 0.334010 / 12 * .8; // V*s/in
   public static final double ELEVATOR_KA = 0; // 0.000762 / 12 * .8; // V*s^2/in
   public static final double ELEVATOR_KS = 0;
 
-  public static final double ARM_MAX_VELOCITY = 75; // deg/s 300 last year
-  public static final double ARM_MAX_ACCELERATION = 150; // deg/s^2 600 last year
-  public static final double ARM_KP = 0; // 0.04 last year
+  public static final double ARM_MAX_VELOCITY = 300; // deg/s 300 last year
+  public static final double ARM_MAX_ACCELERATION = 850; // deg/s^2 600 last year
+  public static final double ARM_KP = 0.0093; // 0.04 last year
   public static final double ARM_KI = 0;
   public static final double ARM_KD = 0;
-  public static final double ARM_KG = 0.1 / 12; // V 0.3465 / 12 last year
+  public static final double ARM_KG = 0.022; // V 0.3465 / 12 last year
   public static final double ARM_KV = 0; // 0.021778; // V*s/deg
   public static final double ARM_KA = 0; // 0.000361; // V*s^2/deg
   public static final double ARM_KS = 0;
