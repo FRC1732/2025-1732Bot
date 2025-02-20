@@ -636,8 +636,10 @@ public class RobotContainer {
 
     oi.intakeAlgaeButton()
         .whileTrue(
-            Commands.parallel(
-                intake.run(() -> intake.runIntake()), claw.run(() -> claw.intakeAlgae())));
+            Commands.sequence(
+                armevator.runOnce(() -> armevator.setCurrentPose(ArmevatorPose.ALGAE_INTAKE)),
+                Commands.parallel(
+                    intake.run(() -> intake.runIntake()), claw.run(() -> claw.intakeAlgae()))));
     oi.intakeAlgaeButton()
         .onFalse(
             Commands.parallel(
@@ -675,11 +677,17 @@ public class RobotContainer {
     oi.operatorExtendClimber()
         .whileTrue(
             Commands.sequence(
+                armevator.runOnce(() -> armevator.setCurrentPose(ArmevatorPose.CLIMB)),
                 climber.runOnce(() -> climber.disengageWindmill()),
-                climber.runOnce(() -> climber.extendClimber())));
-    oi.operatorExtendClimber().onFalse(climber.runOnce(() -> climber.engageWindmill()));
+                climber.run(() -> climber.extendClimber())));
+    oi.operatorExtendClimber().onFalse(climber.runOnce(() -> climber.brakeClimber()));
 
-    oi.operatorRetractClimber().whileTrue(climber.runOnce(() -> climber.retractClimber()));
+    oi.operatorRetractClimber()
+        .whileTrue(
+            Commands.sequence(
+                climber.runOnce(() -> climber.engageWindmill()),
+                new WaitCommand(0.1),
+                climber.run(() -> climber.retractClimber())));
     oi.operatorRetractClimber().onFalse(climber.runOnce(() -> climber.brakeClimber()));
   }
 

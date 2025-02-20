@@ -10,6 +10,7 @@ import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.EncoderConfig;
+import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
@@ -40,6 +41,9 @@ public class Climber extends SubsystemBase {
     climberConfig.inverted(true);
     windmillConfig.inverted(true);
 
+    climberConfig.idleMode(IdleMode.kBrake);
+    windmillConfig.idleMode(IdleMode.kBrake);
+
     EncoderConfig climberEncoderConfig = new EncoderConfig();
     climberEncoderConfig.positionConversionFactor(ClimberConstants.CLIMBER_INCHES_PER_ROTATION);
     climberEncoderConfig.velocityConversionFactor(
@@ -59,6 +63,9 @@ public class Climber extends SubsystemBase {
 
     climberRelativeEncoder = climberMotor.getEncoder();
     windmillRelativeEncoder = windmillMotor.getEncoder();
+
+    climberRelativeEncoder.setPosition(0);
+    windmillRelativeEncoder.setPosition(0);
 
     climberMotor.stopMotor();
     windmillMotor.stopMotor();
@@ -163,7 +170,7 @@ public class Climber extends SubsystemBase {
             < ClimberConstants.WINDMILL_FULLY_ENGAGED_SETPOINT
                 - ClimberConstants.WINDMILL_TOLERANCE) {
       runWindmill();
-    } else if (!windmillEngaged && getWindmillPosition() < ClimberConstants.WINDMILL_TOLERANCE) {
+    } else if (!windmillEngaged && getWindmillPosition() > ClimberConstants.WINDMILL_TOLERANCE) {
       reverseWindmill();
     } else {
       stopWindmill();

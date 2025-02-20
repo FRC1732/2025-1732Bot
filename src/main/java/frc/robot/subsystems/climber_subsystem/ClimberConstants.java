@@ -14,7 +14,7 @@ public class ClimberConstants {
   public static final int CLIMBER_CAN_ID = 20;
   public static final int WINDMILL_CAN_ID = 12;
 
-  public static final Double WINDMILL_SPEED = 0.2;
+  public static final Double WINDMILL_SPEED = 0.15;
   public static final Double CLIMBER_SPEED = 0.8;
   public static final Double CLIMBER_BRAKE_SPEED = 0.0;
 
@@ -24,8 +24,8 @@ public class ClimberConstants {
   public static final double MAX_CLIMBER_EXTEND = 0.0;
   public static final double MAX_CLIMBER_RETRACT = 0.0;
 
-  public static final double CLIMB_SETPOINT = 0; // 10.72"
-  public static final double FULLY_EXTENDED_SETPOINT = 30; // 17.65"
+  public static final double CLIMB_SETPOINT = 7.5; // 10.72"
+  public static final double FULLY_EXTENDED_SETPOINT = 15.4; // 17.65"
   public static final double WINDMILL_TOLERANCE = 3.0;
   public static final double WINDMILL_FULLY_ENGAGED_SETPOINT = 90.0;
   public static final double RETREAT_TO_SAFE_BOUNDS_TIME = 0.2;
