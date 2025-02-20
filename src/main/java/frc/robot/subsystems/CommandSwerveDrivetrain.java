@@ -62,7 +62,10 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
   private final SwerveRequest.SysIdSwerveRotation m_rotationCharacterization =
       new SwerveRequest.SysIdSwerveRotation();
 
-  /* SysId routine for characterizing translation. This is used to find PID gains for the drive motors. */
+  /*
+   * SysId routine for characterizing translation. This is used to find PID gains
+   * for the drive motors.
+   */
   private final SysIdRoutine m_sysIdRoutineTranslation =
       new SysIdRoutine(
           new SysIdRoutine.Config(
@@ -74,7 +77,10 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
           new SysIdRoutine.Mechanism(
               output -> setControl(m_translationCharacterization.withVolts(output)), null, this));
 
-  /* SysId routine for characterizing steer. This is used to find PID gains for the steer motors. */
+  /*
+   * SysId routine for characterizing steer. This is used to find PID gains for
+   * the steer motors.
+   */
   private final SysIdRoutine m_sysIdRoutineSteer =
       new SysIdRoutine(
           new SysIdRoutine.Config(
@@ -88,8 +94,10 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
   /*
    * SysId routine for characterizing rotation.
-   * This is used to find PID gains for the FieldCentricFacingAngle HeadingController.
-   * See the documentation of SwerveRequest.SysIdSwerveRotation for info on importing the log to SysId.
+   * This is used to find PID gains for the FieldCentricFacingAngle
+   * HeadingController.
+   * See the documentation of SwerveRequest.SysIdSwerveRotation for info on
+   * importing the log to SysId.
    */
   private final SysIdRoutine m_sysIdRoutineRotation =
       new SysIdRoutine(
@@ -216,7 +224,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
               // PID constants for rotation
               new PIDConstants(7, 0, 0)), // last year was 14.414076
           config,
-          // Assume the path needs to be flipped for Red vs Blue, this is normally the case
+          // Assume the path needs to be flipped for Red vs Blue, this is normally the
+          // case
           () -> DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red,
           this // Subsystem for requirements
           );
@@ -267,10 +276,14 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
   public void periodic() {
     /*
      * Periodically try to apply the operator perspective.
-     * If we haven't applied the operator perspective before, then we should apply it regardless of DS state.
-     * This allows us to correct the perspective in case the robot code restarts mid-match.
-     * Otherwise, only check and apply the operator perspective if the DS is disabled.
-     * This ensures driving behavior doesn't change until an explicit disable event occurs during testing.
+     * If we haven't applied the operator perspective before, then we should apply
+     * it regardless of DS state.
+     * This allows us to correct the perspective in case the robot code restarts
+     * mid-match.
+     * Otherwise, only check and apply the operator perspective if the DS is
+     * disabled.
+     * This ensures driving behavior doesn't change until an explicit disable event
+     * occurs during testing.
      */
     if (!m_hasAppliedOperatorPerspective || DriverStation.isDisabled()) {
       DriverStation.getAlliance()
@@ -385,5 +398,19 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     tab.addDouble("Pose_Rotation", () -> getPose().getRotation().getDegrees());
     tab.addDouble("PoseX", () -> getPose().getX());
     tab.addDouble("PoseY", () -> getPose().getY());
+
+    tab.addDouble("Back Left Encoder Degrees", () -> getEncodeInDegrees(2));
+    tab.addDouble("Back Right Encoder Degrees", () -> getEncodeInDegrees(3));
+    tab.addDouble("Front Left Encoder Degrees", () -> getEncodeInDegrees(0));
+    tab.addDouble("Front Right Encoder Degrees", () -> getEncodeInDegrees(1));
+
+    // FrontLeft,
+    // FrontRight,
+    // BackLeft,
+    // BackRight);
+  }
+
+  private double getEncodeInDegrees(int index) {
+    return new Rotation2d(getModule(index).getEncoder().getPosition().getValue()).getDegrees();
   }
 }

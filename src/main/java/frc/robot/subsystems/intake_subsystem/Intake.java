@@ -19,7 +19,8 @@ import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.subsystems.armevator.ArmevatorPose;
 import java.util.HashMap;
@@ -206,13 +207,14 @@ public class Intake extends SubsystemBase {
   }
 
   public double getAngle() {
-    return new Rotation2d(intakeMotor.getPosition().getValue()).getDegrees()
+    return new Rotation2d(intakeMotor.getPosition().getValue()).getRotations()
         * IntakeConstants.INTAKE_DEGREES_PER_ROTATION;
   }
 
   public double getVelocity() {
     return intakeMotor.getVelocity().getValueAsDouble()
-        * IntakeConstants.INTAKE_RPM_TO_DEGREES_PER_SECOND;
+        * IntakeConstants.INTAKE_RPM_TO_DEGREES_PER_SECOND
+        * 60;
   }
 
   public void setPose(ArmevatorPose pose) {
@@ -232,11 +234,11 @@ public class Intake extends SubsystemBase {
   }
 
   private void setupNT() {
-    // SmartDashboard.putData(IntakeConstants.SUBSYSTEM_NAME + "/Tilt PID", intakePID);
 
-    SmartDashboard.putNumber(IntakeConstants.SUBSYSTEM_NAME + "/Tilt Position", getTiltPosition());
-    SmartDashboard.putNumber(IntakeConstants.SUBSYSTEM_NAME + "/Tilt Velocity", getTiltVelocity());
-    // SmartDashboard.putNumber(
-    //     IntakeConstants.SUBSYSTEM_NAME + "/Tilt Goal", intakePID.getGoal().position);
+    ShuffleboardTab tab = Shuffleboard.getTab(IntakeConstants.SUBSYSTEM_NAME);
+
+    tab.addDouble("Tilt Position", this::getAngle);
+    tab.addDouble("Tilt Velocity", this::getVelocity);
+    tab.add("Tilt PID", intakePID);
   }
 }

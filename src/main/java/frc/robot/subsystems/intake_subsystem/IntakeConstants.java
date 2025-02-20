@@ -22,10 +22,10 @@ public class IntakeConstants {
   public static final double INTAKE_KA = 0; // V*s^2/deg
   public static final double INTAKE_KS = 0;
 
-  public static final double INTAKE_DEGREES_PER_ROTATION =
-      22.5; // degrees per motor revolution (360 / reduction = 360 / 16)
+  public static final double INTAKE_DEGREES_PER_ROTATION = 20.336;
+  // 22.5; // degrees per motor revolution (360 / reduction = 360 / 16)
   public static final double INTAKE_RPM_TO_DEGREES_PER_SECOND =
-      0.375; // RPM to deg/sec (360 / reduction / 60 = 360 / 16 / 60)
+      0.3389; // RPM to deg/sec (360 / reduction / 60 = 360 / 16 / 60)
 
   public static final double ROLLER_INTAKE_SPEED = -0.5;
   public static final double ROLLER_EJECT_SPEED = 0.3;
