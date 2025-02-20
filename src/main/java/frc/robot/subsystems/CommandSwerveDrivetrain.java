@@ -404,13 +404,13 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     tab.addDouble("Front Left Encoder Degrees", () -> getEncodeInDegrees(0));
     tab.addDouble("Front Right Encoder Degrees", () -> getEncodeInDegrees(1));
 
-    // FrontLeft,
-    // FrontRight,
-    // BackLeft,
-    // BackRight);
+    // 0 - FrontLeft,
+    // 1 - FrontRight,
+    // 2 - BackLeft,
+    // 3 - BackRight);
   }
 
   private double getEncodeInDegrees(int index) {
-    return new Rotation2d(getModule(index).getEncoder().getPosition().getValue()).getDegrees();
+    return getModule(index).getEncoder().getAbsolutePosition().getValue().in(Degrees);
   }
 }
