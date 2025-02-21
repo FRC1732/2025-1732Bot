@@ -69,15 +69,15 @@ public class DualJoysticksOI implements OperatorInterface {
     return translateJoystickButtons[3];
   }
 
-  @Override
-  public Trigger operatorExtendClimber() {
-    return translateJoystickButtons[5];
-  }
+  // @Override
+  // public Trigger operatorExtendClimber() {
+  //   return translateJoystickButtons[5];
+  // }
 
-  @Override
-  public Trigger operatorRetractClimber() {
-    return translateJoystickButtons[4];
-  }
+  // @Override
+  // public Trigger operatorRetractClimber() {
+  //   return translateJoystickButtons[4];
+  // }
 
   // Rotate Joystick Buttons
 

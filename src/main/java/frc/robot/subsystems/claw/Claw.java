@@ -55,7 +55,7 @@ public class Claw extends SubsystemBase {
   }
 
   public void ejectAlgae() {
-    clawMotor.set(ClawConstants.CLAW_MOTOR_SPEED * 1.5);
+    clawMotor.set(ClawConstants.CLAW_MOTOR_SPEED * 2.0);
   }
 
   public void stopClaw() {
@@ -98,7 +98,8 @@ public class Claw extends SubsystemBase {
         ClawConstants.SUBSYSTEM_NAME + "/Claw Encoder Position", this.getEncoderPosition());
     Logger.recordOutput(ClawConstants.SUBSYSTEM_NAME + "/Claw Speed", this.getClawSpeed());
     Logger.recordOutput(ClawConstants.SUBSYSTEM_NAME + "/Has Coral", this.hasCoral());
-    Logger.recordOutput(ClawConstants.SUBSYSTEM_NAME + "/Beambreak Voltage", this.getBeambreakVoltage());
+    Logger.recordOutput(
+        ClawConstants.SUBSYSTEM_NAME + "/Beambreak Voltage", this.getBeambreakVoltage());
     Logger.recordOutput(ClawConstants.SUBSYSTEM_NAME + "/Claw Current", this.getClawCurrent());
   }
 }

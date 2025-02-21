@@ -142,7 +142,7 @@ public class RobotContainer {
   StructPublisher<Pose2d> questPosePublisher =
       NetworkTableInstance.getDefault().getStructTopic("questPose", Pose2d.struct).publish();
 
-  PathConstraints pathConstraints = new PathConstraints(4.855, 5.8, 9.42, 14.8876585);
+  PathConstraints pathConstraints = new PathConstraints(3.0, 3.5, 8.42, 12.8876585);
   PathPlannerPath pathF1;
   PathPlannerPath pathF2;
   PathPlannerPath pathFL1;
@@ -283,6 +283,7 @@ public class RobotContainer {
         "intakeCoral",
         Commands.sequence(
             armevator.runOnce(() -> armevator.setTargetPose(ArmevatorPose.CORAL_HP_LOAD)),
+            intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.CORAL_HP_LOAD)),
             new IntakeCoral(claw, statusRgb)));
     NamedCommands.registerCommand("ejectCoral", new ClawBackwards(claw));
     NamedCommands.registerCommand(
@@ -548,13 +549,12 @@ public class RobotContainer {
 
     oi.scoreCoralButton()
         .whileTrue(
-            getScoringPathCommand()
-                .asProxy()
-                .andThen(
-                    armevator
-                        .runOnce(() -> armevator.setTargetPose(currentScoringLevelSupplier.get()))
-                        .asProxy())
-                .andThen(new ClawBackwards(claw).asProxy()));
+            Commands.sequence(
+                armevator
+                    .runOnce(() -> armevator.setTargetPose(currentScoringLevelSupplier.get()))
+                    .asProxy(),
+                getScoringPathCommand().asProxy(),
+                new ClawBackwards(claw).asProxy()));
     oi.scoreCoralButton()
         .onFalse(armevator.runOnce(() -> armevator.setTargetPose(ArmevatorPose.CORAL_HP_LOAD)));
 
@@ -657,8 +657,8 @@ public class RobotContainer {
     oi.ejectAlgaeButton()
         .whileTrue(
             Commands.sequence(
-                intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.ALGAE_HANDOFF)),
-                armevator.runOnce(() -> armevator.setTargetPose(ArmevatorPose.ALGAE_HANDOFF)),
+                // intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.ALGAE_HANDOFF)),
+                // armevator.runOnce(() -> armevator.setTargetPose(ArmevatorPose.ALGAE_HANDOFF)),
                 Commands.parallel(
                     intake.run(() -> intake.ejectIntake()), claw.run(() -> claw.ejectAlgae()))));
     oi.ejectAlgaeButton()
