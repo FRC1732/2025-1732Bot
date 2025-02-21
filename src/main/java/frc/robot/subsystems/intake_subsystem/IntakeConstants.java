@@ -12,12 +12,12 @@ public class IntakeConstants {
   public static final double MAX_ANGLE_DEGREES = 57.0;
   public static final double ANGLE_GOAL_TOLERANCE_DEGREES = 2.0;
 
-  public static final double INTAKE_MAX_VELOCITY = 50; // deg/s
-  public static final double INTAKE_MAX_ACCELERATION = 100; // deg/s^2
-  public static final double INTAKE_KP = 0;
+  public static final double INTAKE_MAX_VELOCITY = 150; // deg/s
+  public static final double INTAKE_MAX_ACCELERATION = 300; // deg/s^2
+  public static final double INTAKE_KP = 0.005;
   public static final double INTAKE_KI = 0;
   public static final double INTAKE_KD = 0;
-  public static final double INTAKE_KG = 0.1 / 12; // V
+  public static final double INTAKE_KG = 0.025; // V
   public static final double INTAKE_KV = 0; // V*s/deg
   public static final double INTAKE_KA = 0; // V*s^2/deg
   public static final double INTAKE_KS = 0;

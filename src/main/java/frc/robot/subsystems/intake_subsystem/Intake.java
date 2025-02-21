@@ -14,9 +14,6 @@ import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
-import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
-import edu.wpi.first.networktables.GenericEntry;
-import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
@@ -41,22 +38,23 @@ public class Intake extends SubsystemBase {
   private ArmevatorPose pose;
 
   private NetworkTableInstance table = NetworkTableInstance.getDefault();
-  private NetworkTable networkTable = table.getTable("IntakeConstants");
 
-  private GenericEntry subscriberIntakeVelocity =
-      networkTable.getTopic("intakeMaxVelocity").getGenericEntry();
-  private GenericEntry subscriberIntakeMaxAcceleration =
-      networkTable.getTopic("intakeMaxAcceleration").getGenericEntry();
-  private GenericEntry subscriberIntakeGoalTolerance =
-      networkTable.getTopic("intakeGoalTolerance").getGenericEntry();
-  private GenericEntry subscriberIntakeKG = networkTable.getTopic("intakeKG").getGenericEntry();
+  // private NetworkTable networkTable = table.getTable("IntakeConstants");
+
+  // private GenericEntry subscriberIntakeVelocity =
+  //     networkTable.getTopic("intakeMaxVelocity").getGenericEntry();
+  // private GenericEntry subscriberIntakeMaxAcceleration =
+  //     networkTable.getTopic("intakeMaxAcceleration").getGenericEntry();
+  // private GenericEntry subscriberIntakeGoalTolerance =
+  //     networkTable.getTopic("intakeGoalTolerance").getGenericEntry();
+  // private GenericEntry subscriberIntakeKG = networkTable.getTopic("intakeKG").getGenericEntry();
 
   public Intake() {
     // ensure network tables are visible on elastic (unsure if this is needed)
-    subscriberIntakeVelocity.setDouble(IntakeConstants.INTAKE_MAX_VELOCITY);
-    subscriberIntakeMaxAcceleration.setDouble(IntakeConstants.INTAKE_MAX_ACCELERATION);
-    subscriberIntakeGoalTolerance.setDouble(IntakeConstants.ANGLE_GOAL_TOLERANCE_DEGREES);
-    subscriberIntakeKG.setDouble(IntakeConstants.INTAKE_KG);
+    // subscriberIntakeVelocity.setDouble(IntakeConstants.INTAKE_MAX_VELOCITY);
+    // subscriberIntakeMaxAcceleration.setDouble(IntakeConstants.INTAKE_MAX_ACCELERATION);
+    // subscriberIntakeGoalTolerance.setDouble(IntakeConstants.ANGLE_GOAL_TOLERANCE_DEGREES);
+    // subscriberIntakeKG.setDouble(IntakeConstants.INTAKE_KG);
 
     rollerMotor = new TalonFX(IntakeConstants.ROLLER_MOTOR_ID);
     intakeMotor = new TalonFX(IntakeConstants.TILT_MOTOR_ID);
@@ -154,45 +152,45 @@ public class Intake extends SubsystemBase {
     return intakeMotor.getVelocity().getValueAsDouble();
   }
 
-  public void doConstantChecks() {
-    double newIntakeMaxVelocity =
-        subscriberIntakeVelocity.getDouble(IntakeConstants.INTAKE_MAX_VELOCITY);
-    double newIntakeMaxAcceleration =
-        subscriberIntakeMaxAcceleration.getDouble(IntakeConstants.INTAKE_MAX_ACCELERATION);
+  // public void doConstantChecks() {
+  //   double newIntakeMaxVelocity =
+  //       subscriberIntakeVelocity.getDouble(IntakeConstants.INTAKE_MAX_VELOCITY);
+  //   double newIntakeMaxAcceleration =
+  //       subscriberIntakeMaxAcceleration.getDouble(IntakeConstants.INTAKE_MAX_ACCELERATION);
 
-    if (intakePID.getConstraints().maxVelocity != newIntakeMaxVelocity
-        || intakePID.getConstraints().maxAcceleration != newIntakeMaxAcceleration) {
-      intakePID.setConstraints(new Constraints(newIntakeMaxVelocity, newIntakeMaxAcceleration));
-      System.out.println(
-          "Updated intake velocity and accel: "
-              + newIntakeMaxVelocity
-              + ", "
-              + newIntakeMaxAcceleration);
-    }
+  //   if (intakePID.getConstraints().maxVelocity != newIntakeMaxVelocity
+  //       || intakePID.getConstraints().maxAcceleration != newIntakeMaxAcceleration) {
+  //     intakePID.setConstraints(new Constraints(newIntakeMaxVelocity, newIntakeMaxAcceleration));
+  //     System.out.println(
+  //         "Updated intake velocity and accel: "
+  //             + newIntakeMaxVelocity
+  //             + ", "
+  //             + newIntakeMaxAcceleration);
+  //   }
 
-    double setGoalTolerance =
-        subscriberIntakeGoalTolerance.getDouble(IntakeConstants.ANGLE_GOAL_TOLERANCE_DEGREES);
-    if (intakePID.getPositionTolerance() != setGoalTolerance) {
-      intakePID.setTolerance(setGoalTolerance);
-      System.out.println("Updated intake degree tolerance: " + setGoalTolerance);
-    }
+  //   double setGoalTolerance =
+  //       subscriberIntakeGoalTolerance.getDouble(IntakeConstants.ANGLE_GOAL_TOLERANCE_DEGREES);
+  //   if (intakePID.getPositionTolerance() != setGoalTolerance) {
+  //     intakePID.setTolerance(setGoalTolerance);
+  //     System.out.println("Updated intake degree tolerance: " + setGoalTolerance);
+  //   }
 
-    double setIntakeKG = subscriberIntakeKG.getDouble(IntakeConstants.INTAKE_KG);
-    if (intakeFeedforward.getKg() != setIntakeKG) {
-      intakeFeedforward =
-          new ArmFeedforward(
-              IntakeConstants.INTAKE_KS,
-              setIntakeKG,
-              IntakeConstants.INTAKE_KV,
-              IntakeConstants.INTAKE_KA);
+  //   double setIntakeKG = subscriberIntakeKG.getDouble(IntakeConstants.INTAKE_KG);
+  //   if (intakeFeedforward.getKg() != setIntakeKG) {
+  //     intakeFeedforward =
+  //         new ArmFeedforward(
+  //             IntakeConstants.INTAKE_KS,
+  //             setIntakeKG,
+  //             IntakeConstants.INTAKE_KV,
+  //             IntakeConstants.INTAKE_KA);
 
-      System.out.println("Updated intake KG: " + setIntakeKG);
-    }
-  }
+  //     System.out.println("Updated intake KG: " + setIntakeKG);
+  //   }
+  // }
 
   @Override
   public void periodic() {
-    doConstantChecks();
+    // doConstantChecks();
 
     if (DriverStation.isDisabled()) {
       intakePID.reset(getAngle());
