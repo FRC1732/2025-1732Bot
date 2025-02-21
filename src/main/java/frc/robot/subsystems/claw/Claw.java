@@ -70,6 +70,10 @@ public class Claw extends SubsystemBase {
     return encoder.getPosition();
   }
 
+  public double getClawCurrent() {
+    return clawMotor.getOutputCurrent();
+  }
+
   public double getBeambreakVoltage() {
     return beamBreakSensor.getVoltage();
   }
@@ -79,6 +83,7 @@ public class Claw extends SubsystemBase {
     tab.addDouble("Claw Encoder Position", this::getEncoderPosition);
     tab.addDouble("Claw Speed", this::getClawSpeed);
     tab.addDouble("Beambreak Voltage", this::getBeambreakVoltage);
+    tab.addDouble("Claw Current", this::getClawCurrent);
     tab.addBoolean("Has Coral", this::hasCoral);
   }
 
@@ -93,5 +98,7 @@ public class Claw extends SubsystemBase {
         ClawConstants.SUBSYSTEM_NAME + "/Claw Encoder Position", this.getEncoderPosition());
     Logger.recordOutput(ClawConstants.SUBSYSTEM_NAME + "/Claw Speed", this.getClawSpeed());
     Logger.recordOutput(ClawConstants.SUBSYSTEM_NAME + "/Has Coral", this.hasCoral());
+    Logger.recordOutput(ClawConstants.SUBSYSTEM_NAME + "/Beambreak Voltage", this.getBeambreakVoltage());
+    Logger.recordOutput(ClawConstants.SUBSYSTEM_NAME + "/Claw Current", this.getClawCurrent());
   }
 }
