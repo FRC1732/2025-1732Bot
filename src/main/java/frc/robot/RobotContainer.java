@@ -645,29 +645,29 @@ public class RobotContainer {
             Commands.sequence(
                 intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.ALGAE_INTAKE)),
                 armevator.runOnce(() -> armevator.setTargetPose(ArmevatorPose.ALGAE_INTAKE)),
-                intake.run(() -> intake.runIntake()),
-                claw.run(() -> claw.intakeAlgae())));
+                Commands.parallel(
+                    intake.run(() -> intake.runIntake()), claw.run(() -> claw.intakeAlgae()))));
     oi.intakeAlgaeButton()
         .onFalse(
             Commands.sequence(
                 intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.ALGAE_HANDOFF)),
                 armevator.runOnce(() -> armevator.setTargetPose(ArmevatorPose.ALGAE_HANDOFF)),
-                intake.run(() -> intake.stopIntake()),
-                claw.run(() -> claw.brakeAlgae())));
+                Commands.parallel(
+                    intake.run(() -> intake.stopIntake()), claw.run(() -> claw.brakeAlgae()))));
     oi.ejectAlgaeButton()
         .whileTrue(
             Commands.sequence(
                 intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.ALGAE_HANDOFF)),
                 armevator.runOnce(() -> armevator.setTargetPose(ArmevatorPose.ALGAE_HANDOFF)),
-                intake.run(() -> intake.ejectIntake()),
-                claw.run(() -> claw.ejectAlgae())));
+                Commands.parallel(
+                    intake.run(() -> intake.ejectIntake()), claw.run(() -> claw.ejectAlgae()))));
     oi.ejectAlgaeButton()
         .onFalse(
             Commands.sequence(
                 intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.CORAL_L1_SCORE)),
                 armevator.runOnce(() -> armevator.setTargetPose(ArmevatorPose.CORAL_L1_SCORE)),
-                intake.run(() -> intake.stopIntake()),
-                claw.run(() -> claw.stopClaw())));
+                Commands.parallel(
+                    intake.run(() -> intake.stopIntake()), claw.run(() -> claw.stopClaw()))));
 
     oi.pluckAlgaeButton()
         .whileTrue(
@@ -685,7 +685,7 @@ public class RobotContainer {
     oi.aimAtNetButton()
         .whileTrue(armevator.runOnce(() -> armevator.setTargetPose(ArmevatorPose.ALGAE_NET_SCORE)));
     oi.aimAtNetButton()
-        .whileTrue(armevator.runOnce(() -> armevator.setTargetPose(ArmevatorPose.ALGAE_HANDOFF)));
+        .onFalse(armevator.runOnce(() -> armevator.setTargetPose(ArmevatorPose.ALGAE_HANDOFF)));
 
     ////////////////////
     // Climber Commands

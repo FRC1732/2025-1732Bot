@@ -55,7 +55,7 @@ public class Claw extends SubsystemBase {
   }
 
   public void ejectAlgae() {
-    clawMotor.set(ClawConstants.CLAW_MOTOR_SPEED);
+    clawMotor.set(ClawConstants.CLAW_MOTOR_SPEED * 1.5);
   }
 
   public void stopClaw() {
