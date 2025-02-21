@@ -60,13 +60,13 @@ public class DualJoysticksOI implements OperatorInterface {
   }
 
   @Override
-  public Trigger pluckAlgaeButton() {
-    return translateJoystickButtons[2];
+  public Trigger aimAtNetButton() {
+    return translateJoystickButtons[3];
   }
 
   @Override
-  public Trigger aimAtNetButton() {
-    return translateJoystickButtons[3];
+  public Trigger intakeAlgaeButton() {
+    return translateJoystickButtons[2];
   }
 
   // @Override
@@ -92,17 +92,17 @@ public class DualJoysticksOI implements OperatorInterface {
   }
 
   @Override
-  public Trigger intakeAlgaeButton() {
+  public Trigger ejectAlgaeButton() {
     return rotateJoystickButtons[3];
   }
 
-  @Override
-  public Trigger ejectAlgaeButton() {
-    return rotateJoystickButtons[5];
-  }
+  // @Override
+  // public Trigger hybridIntakeCoralButton() {
+  //   return rotateJoystickButtons[5];
+  // }
 
   @Override
-  public Trigger hybridIntakeCoralButton() {
+  public Trigger pluckAlgaeButton() {
     return rotateJoystickButtons[4];
   }
 

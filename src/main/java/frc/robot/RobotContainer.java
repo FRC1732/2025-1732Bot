@@ -97,7 +97,7 @@ public class RobotContainer {
   private double MaxSlowAngularRate = 0.25 * MaxAngularRate; // 25% of max angular rate
   private boolean isSlowMode = false;
   private BooleanSupplier slowModeSupplier = () -> isSlowMode;
-  private boolean isFullAuto = true;
+  private boolean isFullAuto = false;
   private BooleanSupplier fullAutoSupplier = () -> isFullAuto;
   private ArmevatorPose currentScoringLevel = ArmevatorPose.CORAL_L4_SCORE;
   private Supplier<ArmevatorPose> currentScoringLevelSupplier = () -> currentScoringLevel;
@@ -176,6 +176,7 @@ public class RobotContainer {
   }
 
   Map<ScoringPathOption, Command> scoringPathMap = new HashMap<>(12);
+  Map<ScoringPathOption, Rotation2d> scoringAngleMap = new HashMap<>(12);
 
   private Field2d field2d;
 
@@ -553,7 +554,17 @@ public class RobotContainer {
                 armevator
                     .runOnce(() -> armevator.setTargetPose(currentScoringLevelSupplier.get()))
                     .asProxy(),
-                getScoringPathCommand().asProxy(),
+                new ConditionalCommand(
+                    getScoringPathCommand().asProxy(),
+                    drivetrain
+                        .run(
+                            () ->
+                                driveFacingAngle(
+                                    -oi.getTranslateX() * MaxSpeed,
+                                    -oi.getTranslateY() * MaxSpeed,
+                                    scoringAngleMap.get(scoringPathOption)))
+                        .asProxy(),
+                    fullAutoSupplier),
                 new ClawBackwards(claw).asProxy()));
     oi.scoreCoralButton()
         .onFalse(armevator.runOnce(() -> armevator.setTargetPose(ArmevatorPose.CORAL_HP_LOAD)));
@@ -562,15 +573,29 @@ public class RobotContainer {
         .whileTrue(
             Commands.deadline(
                 Commands.sequence(
-                    intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.CORAL_L1_SCORE)),
+                    intake
+                        .runOnce(() -> intake.setTargetPose(ArmevatorPose.CORAL_L1_SCORE))
+                        .asProxy(),
                     armevator
                         .runOnce(() -> armevator.setTargetPose(ArmevatorPose.CORAL_HP_LOAD))
                         .asProxy(),
                     new IntakeCoral(claw, statusRgb)),
                 new ConditionalCommand(
-                    AutoBuilder.pathfindThenFollowPath(pathLeftHP, pathConstraints),
-                    AutoBuilder.pathfindThenFollowPath(pathRightHP, pathConstraints),
-                    this::shouldIntakeLeftSide)));
+                    new ConditionalCommand(
+                        AutoBuilder.pathfindThenFollowPath(pathLeftHP, pathConstraints),
+                        AutoBuilder.pathfindThenFollowPath(pathRightHP, pathConstraints),
+                        this::shouldIntakeLeftSide),
+                    Commands.sequence(
+                        Commands.runOnce(() -> preferLeftSide = shouldIntakeLeftSide()),
+                        drivetrain.run(
+                            () ->
+                                driveFacingAngle(
+                                    -oi.getTranslateX() * MaxSpeed,
+                                    -oi.getTranslateY() * MaxSpeed,
+                                    preferLeftSide
+                                        ? Rotation2d.fromDegrees(-55)
+                                        : Rotation2d.fromDegrees(55)))),
+                    fullAutoSupplier)));
     oi.intakeCoralButton()
         .onFalse(
             new WaitCommand(0.25)
@@ -578,13 +603,14 @@ public class RobotContainer {
                     armevator.runOnce(
                         () -> armevator.setTargetPose(currentScoringLevelSupplier.get()))));
 
-    oi.hybridIntakeCoralButton()
-        .whileTrue(
-            Commands.deadline(
-                Commands.sequence(
-                    intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.CORAL_L1_SCORE)),
-                    armevator.runOnce(() -> armevator.setTargetPose(ArmevatorPose.CORAL_HP_LOAD)),
-                    new IntakeCoral(claw, statusRgb))));
+    // oi.hybridIntakeCoralButton()
+    //     .whileTrue(
+    //         Commands.deadline(
+    //             Commands.sequence(
+    //                 intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.CORAL_L1_SCORE)),
+    //                 armevator.runOnce(() ->
+    // armevator.setTargetPose(ArmevatorPose.CORAL_HP_LOAD)),
+    //                 new IntakeCoral(claw, statusRgb))));
     // Commands.sequence(
     //     Commands.runOnce(() -> preferLeftSide = shouldIntakeLeftSide()),
     //     drivetrain.run(
@@ -595,12 +621,12 @@ public class RobotContainer {
     //                 preferLeftSide
     //                     ? Rotation2d.fromDegrees(-55)
     //                     : Rotation2d.fromDegrees(55))))));
-    oi.hybridIntakeCoralButton()
-        .onFalse(
-            new WaitCommand(0.25)
-                .andThen(
-                    armevator.runOnce(
-                        () -> armevator.setTargetPose(currentScoringLevelSupplier.get()))));
+    // oi.hybridIntakeCoralButton()
+    //     .onFalse(
+    //         new WaitCommand(0.25)
+    //             .andThen(
+    //                 armevator.runOnce(
+    //                     () -> armevator.setTargetPose(currentScoringLevelSupplier.get()))));
 
     oi.operatorF1().onTrue(Commands.runOnce(() -> scoringPathOption = ScoringPathOption.PATH_F1));
     oi.operatorF2().onTrue(Commands.runOnce(() -> scoringPathOption = ScoringPathOption.PATH_F2));
@@ -834,6 +860,19 @@ public class RobotContainer {
         ScoringPathOption.PATH_B1, AutoBuilder.pathfindThenFollowPath(pathB1, pathConstraints));
     scoringPathMap.put(
         ScoringPathOption.PATH_B2, AutoBuilder.pathfindThenFollowPath(pathB2, pathConstraints));
+
+    scoringAngleMap.put(ScoringPathOption.PATH_F1, Rotation2d.fromDegrees(0.0));
+    scoringAngleMap.put(ScoringPathOption.PATH_F2, Rotation2d.fromDegrees(0.0));
+    scoringAngleMap.put(ScoringPathOption.PATH_FL1, Rotation2d.fromDegrees(-60.0));
+    scoringAngleMap.put(ScoringPathOption.PATH_FL2, Rotation2d.fromDegrees(-60.0));
+    scoringAngleMap.put(ScoringPathOption.PATH_FR1, Rotation2d.fromDegrees(60.0));
+    scoringAngleMap.put(ScoringPathOption.PATH_FR2, Rotation2d.fromDegrees(60.0));
+    scoringAngleMap.put(ScoringPathOption.PATH_BL1, Rotation2d.fromDegrees(-120.0));
+    scoringAngleMap.put(ScoringPathOption.PATH_BL2, Rotation2d.fromDegrees(-120.0));
+    scoringAngleMap.put(ScoringPathOption.PATH_BR1, Rotation2d.fromDegrees(120.0));
+    scoringAngleMap.put(ScoringPathOption.PATH_BR2, Rotation2d.fromDegrees(120.0));
+    scoringAngleMap.put(ScoringPathOption.PATH_B1, Rotation2d.fromDegrees(180.0));
+    scoringAngleMap.put(ScoringPathOption.PATH_B2, Rotation2d.fromDegrees(180.0));
   }
 
   public void updateVisionPose() {
