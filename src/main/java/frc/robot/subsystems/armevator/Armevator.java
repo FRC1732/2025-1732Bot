@@ -107,7 +107,7 @@ public class Armevator extends SubsystemBase {
     armMap.put(ArmevatorPose.ALGAE_INTAKE, 90.0);
     armMap.put(ArmevatorPose.ALGAE_HANDOFF, 90.0);
     armMap.put(ArmevatorPose.ALGAE_NET_SCORE, -55.0);
-    armMap.put(ArmevatorPose.ALGAE_L3_PLUCK, 25.0);
+    armMap.put(ArmevatorPose.ALGAE_L3_PLUCK, 15.0);
     armMap.put(ArmevatorPose.ALGAE_L3_DROP, 5.0);
     armMap.put(ArmevatorPose.ALGAE_L2_PLUCK, 25.0);
     armMap.put(ArmevatorPose.ALGAE_L2_DROP, 5.0);
@@ -123,7 +123,7 @@ public class Armevator extends SubsystemBase {
     elevatorMap.put(ArmevatorPose.ALGAE_INTAKE, 0.0);
     elevatorMap.put(ArmevatorPose.ALGAE_HANDOFF, 0.0);
     elevatorMap.put(ArmevatorPose.ALGAE_NET_SCORE, 31.5);
-    elevatorMap.put(ArmevatorPose.ALGAE_L3_PLUCK, 15.0);
+    elevatorMap.put(ArmevatorPose.ALGAE_L3_PLUCK, 18.0);
     elevatorMap.put(ArmevatorPose.ALGAE_L3_DROP, 20.0);
     elevatorMap.put(ArmevatorPose.ALGAE_L2_PLUCK, 0.0);
     elevatorMap.put(ArmevatorPose.ALGAE_L2_DROP, 4.5);

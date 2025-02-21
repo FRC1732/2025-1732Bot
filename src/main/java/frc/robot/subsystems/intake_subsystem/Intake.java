@@ -90,7 +90,8 @@ public class Intake extends SubsystemBase {
 
     intakeMotor.getConfigurator().apply(intakeConfig);
 
-    intakeMotor.setPosition(intakeMap.get(ArmevatorPose.STARTING));
+    intakeMotor.setPosition(
+        intakeMap.get(ArmevatorPose.STARTING) / IntakeConstants.INTAKE_DEGREES_PER_ROTATION);
 
     intakeFeedforward =
         new ArmFeedforward(
