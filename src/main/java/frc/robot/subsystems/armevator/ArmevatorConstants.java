@@ -18,8 +18,8 @@ public class ArmevatorConstants {
   public static final double PID_PERIOD_SEC = 0.02;
 
   public static final double MIN_HEIGHT_INCHES = 0.0;
-  public static final double MAX_HEIGHT_INCHES = 32.0;
-  public static final double HEIGHT_GOAL_TOLERANCE_INCHES = 1.0;
+  public static final double MAX_HEIGHT_INCHES = 32.25;
+  public static final double HEIGHT_GOAL_TOLERANCE_INCHES = 0.5;
   public static final double MIN_HEIGHT_CLEARANCE_INCHES = 2.5;
 
   public static final double MIN_ANGLE_CLEARANCE_DEGREES = -108.0;

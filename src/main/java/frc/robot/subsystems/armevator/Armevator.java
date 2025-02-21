@@ -100,7 +100,7 @@ public class Armevator extends SubsystemBase {
     armMap.put(ArmevatorPose.STARTING, 96.9);
     armMap.put(ArmevatorPose.CLIMB, -110.0);
     armMap.put(ArmevatorPose.CORAL_HP_LOAD, -125.0);
-    armMap.put(ArmevatorPose.CORAL_L4_SCORE, 55.0);
+    armMap.put(ArmevatorPose.CORAL_L4_SCORE, 50.0);
     armMap.put(ArmevatorPose.CORAL_L3_SCORE, 45.0);
     armMap.put(ArmevatorPose.CORAL_L2_SCORE, 72.0);
     armMap.put(ArmevatorPose.CORAL_L1_SCORE, 80.0);
@@ -115,8 +115,8 @@ public class Armevator extends SubsystemBase {
     elevatorMap = new HashMap<>(); // in inches
     elevatorMap.put(ArmevatorPose.STARTING, 0.0);
     elevatorMap.put(ArmevatorPose.CLIMB, 0.0);
-    elevatorMap.put(ArmevatorPose.CORAL_HP_LOAD, 3.25);
-    elevatorMap.put(ArmevatorPose.CORAL_L4_SCORE, 31.5);
+    elevatorMap.put(ArmevatorPose.CORAL_HP_LOAD, 3.5);
+    elevatorMap.put(ArmevatorPose.CORAL_L4_SCORE, 32.0);
     elevatorMap.put(ArmevatorPose.CORAL_L3_SCORE, 4.5);
     elevatorMap.put(ArmevatorPose.CORAL_L2_SCORE, 0.0);
     elevatorMap.put(ArmevatorPose.CORAL_L1_SCORE, 0.0);
@@ -237,7 +237,7 @@ public class Armevator extends SubsystemBase {
     setupNT();
   }
 
-  public void setCurrentPose(ArmevatorPose pose) {
+  public void setTargetPose(ArmevatorPose pose) {
     this.currentPose = pose;
     elevatorPID.setGoal(elevatorMap.get(pose));
     armPID.setGoal(armMap.get(pose));
@@ -248,7 +248,7 @@ public class Armevator extends SubsystemBase {
         || currentPose == ArmevatorPose.CORAL_L2_SCORE
         || currentPose == ArmevatorPose.CORAL_L3_SCORE
         || currentPose == ArmevatorPose.CORAL_L4_SCORE) {
-      setCurrentPose(pose);
+      setTargetPose(pose);
     }
   }
 

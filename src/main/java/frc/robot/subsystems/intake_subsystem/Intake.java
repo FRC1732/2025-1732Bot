@@ -62,7 +62,7 @@ public class Intake extends SubsystemBase {
     intakeMotor = new TalonFX(IntakeConstants.TILT_MOTOR_ID);
 
     intakeMap = new HashMap<>();
-    intakeMap.put(ArmevatorPose.STARTING, 0.0);
+    intakeMap.put(ArmevatorPose.STARTING, -4.0);
     intakeMap.put(ArmevatorPose.CLIMB, 35.0);
     intakeMap.put(ArmevatorPose.CORAL_HP_LOAD, 5.0);
     intakeMap.put(ArmevatorPose.CORAL_L4_SCORE, 5.0);
@@ -92,6 +92,8 @@ public class Intake extends SubsystemBase {
 
     intakeMotor.getConfigurator().apply(intakeConfig);
 
+    intakeMotor.setPosition(intakeMap.get(ArmevatorPose.STARTING));
+
     intakeFeedforward =
         new ArmFeedforward(
             IntakeConstants.INTAKE_KS,
@@ -109,9 +111,7 @@ public class Intake extends SubsystemBase {
             IntakeConstants.PID_PERIOD_SEC);
     intakePID.setTolerance(IntakeConstants.ANGLE_GOAL_TOLERANCE_DEGREES);
     intakePID.reset(intakeMap.get(ArmevatorPose.STARTING));
-    intakePID.setGoal(intakeMap.get(ArmevatorPose.STARTING));
-
-    intakeMotor.setPosition(intakeMap.get(ArmevatorPose.STARTING));
+    intakePID.setGoal(intakeMap.get(ArmevatorPose.CORAL_L1_SCORE));
 
     intakeMotor.stopMotor();
 
@@ -217,7 +217,7 @@ public class Intake extends SubsystemBase {
         * 60;
   }
 
-  public void setPose(ArmevatorPose pose) {
+  public void setTargetPose(ArmevatorPose pose) {
     this.pose = pose;
     intakePID.setGoal(intakeMap.get(pose));
   }
