@@ -15,6 +15,8 @@ import edu.wpi.first.networktables.IntegerSubscriber;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import frc.robot.util.RollingAveragePose2d;
 
 /**
@@ -58,6 +60,7 @@ public class QuestNav {
     }
 
     rollingAvg = new RollingAveragePose2d(windowSize);
+    setupShuffleboard();
   }
 
   public QuestNav() {
@@ -173,5 +176,11 @@ public class QuestNav {
     var questnavPosition = questPosition.get();
     var translation = new Translation2d(questnavPosition[2], -questnavPosition[0]);
     return new Pose2d(translation, rotation);
+  }
+
+  private void setupShuffleboard() {
+    ShuffleboardTab tab = Shuffleboard.getTab("QuestNav");
+
+    tab.addBoolean("Quest Nav Connected", () -> isConnected());
   }
 }

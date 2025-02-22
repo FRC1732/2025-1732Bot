@@ -27,6 +27,6 @@ public class IntakeConstants {
   public static final double INTAKE_RPM_TO_DEGREES_PER_SECOND =
       0.3389; // RPM to deg/sec (360 / reduction / 60 = 360 / 16 / 60)
 
-  public static final double ROLLER_INTAKE_SPEED = -0.25;
+  public static final double ROLLER_INTAKE_SPEED = -0.50;
   public static final double ROLLER_EJECT_SPEED = 0.4;
 }
