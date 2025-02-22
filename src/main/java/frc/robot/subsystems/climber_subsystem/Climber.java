@@ -86,7 +86,7 @@ public class Climber extends SubsystemBase {
   }
 
   public void reverseClimber() {
-    climberMotor.set(ClimberConstants.CLIMBER_SPEED * -0.5);
+    climberMotor.set(ClimberConstants.CLIMBER_SPEED * -0.75);
   }
 
   public void reverseWindmill() {
