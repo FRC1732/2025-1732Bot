@@ -130,11 +130,11 @@ public class Intake extends SubsystemBase {
   }
 
   public void tiltForward() {
-    intakeMotor.set(0.1);
+    intakeMotor.set(0.3);
   }
 
   public void tiltBackwards() {
-    intakeMotor.set(-0.1);
+    intakeMotor.set(-0.3);
   }
 
   public void stopTilt() {
