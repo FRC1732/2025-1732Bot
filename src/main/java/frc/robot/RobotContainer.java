@@ -57,6 +57,8 @@ import frc.robot.subsystems.armevator.ArmevatorPose;
 import frc.robot.subsystems.claw.Claw;
 import frc.robot.subsystems.climber_subsystem.Climber;
 import frc.robot.subsystems.intake_subsystem.Intake;
+import frc.robot.subsystems.rgb.ScoringLevel;
+import frc.robot.subsystems.rgb.ScoringPosition;
 import frc.robot.subsystems.rgb.StatusRgb;
 import java.util.HashMap;
 import java.util.Map;
@@ -630,7 +632,15 @@ public class RobotContainer {
     //                 armevator.runOnce(
     //                     () -> armevator.setTargetPose(currentScoringLevelSupplier.get()))));
 
-    oi.operatorF1().onTrue(Commands.runOnce(() -> scoringPathOption = ScoringPathOption.PATH_F1));
+    oi.operatorF1()
+        .onTrue(
+            Commands.sequence(
+                Commands.runOnce(() -> scoringPathOption = ScoringPathOption.PATH_F1),
+                Commands.runOnce(
+                    () ->
+                        statusRgb.setScoringPosition(
+                            ScoringPosition.F1)) // TODO: Repeat for other positions
+                ));
     oi.operatorF2().onTrue(Commands.runOnce(() -> scoringPathOption = ScoringPathOption.PATH_F2));
     oi.operatorFL1().onTrue(Commands.runOnce(() -> scoringPathOption = ScoringPathOption.PATH_FL1));
     oi.operatorFL2().onTrue(Commands.runOnce(() -> scoringPathOption = ScoringPathOption.PATH_FL2));
@@ -647,6 +657,10 @@ public class RobotContainer {
         .onTrue(
             Commands.sequence(
                 Commands.runOnce(() -> currentScoringLevel = ArmevatorPose.CORAL_L1_SCORE),
+                Commands.runOnce(
+                    () ->
+                        statusRgb.setScoringLevel(
+                            ScoringLevel.LEVEL_1)), // TODO: repeat for other levels
                 armevator.runOnce(() -> armevator.updateScoringLevel(currentScoringLevel))));
     oi.operatorL2()
         .onTrue(
