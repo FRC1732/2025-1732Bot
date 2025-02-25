@@ -651,19 +651,119 @@ public class RobotContainer {
                 Commands.runOnce(
                     () ->
                         statusRgb.setScoringPosition(
-                            ScoringPosition.F1)) // TODO: Repeat for other positions
+                            ScoringPosition.F1))
                 ));
-    oi.operatorF2().onTrue(Commands.runOnce(() -> scoringPathOption = ScoringPathOption.PATH_F2));
-    oi.operatorFL1().onTrue(Commands.runOnce(() -> scoringPathOption = ScoringPathOption.PATH_FL1));
-    oi.operatorFL2().onTrue(Commands.runOnce(() -> scoringPathOption = ScoringPathOption.PATH_FL2));
-    oi.operatorFR1().onTrue(Commands.runOnce(() -> scoringPathOption = ScoringPathOption.PATH_FR1));
-    oi.operatorFR2().onTrue(Commands.runOnce(() -> scoringPathOption = ScoringPathOption.PATH_FR2));
-    oi.operatorBL1().onTrue(Commands.runOnce(() -> scoringPathOption = ScoringPathOption.PATH_BL1));
-    oi.operatorBL2().onTrue(Commands.runOnce(() -> scoringPathOption = ScoringPathOption.PATH_BL2));
-    oi.operatorBR1().onTrue(Commands.runOnce(() -> scoringPathOption = ScoringPathOption.PATH_BR1));
-    oi.operatorBR2().onTrue(Commands.runOnce(() -> scoringPathOption = ScoringPathOption.PATH_BR2));
-    oi.operatorB1().onTrue(Commands.runOnce(() -> scoringPathOption = ScoringPathOption.PATH_B1));
-    oi.operatorB2().onTrue(Commands.runOnce(() -> scoringPathOption = ScoringPathOption.PATH_B2));
+
+    oi.operatorF2()
+        .onTrue(
+            Commands.sequence(
+                Commands.runOnce(() -> scoringPathOption = ScoringPathOption.PATH_F2),
+                Commands.runOnce(
+                    () ->
+                        statusRgb.setScoringPosition(
+                            ScoringPosition.F2))
+                ));
+
+    oi.operatorFL1()
+        .onTrue(
+            Commands.sequence(
+                Commands.runOnce(() -> scoringPathOption = ScoringPathOption.PATH_FL1),
+                Commands.runOnce(
+                    () ->
+                        statusRgb.setScoringPosition(
+                            ScoringPosition.FL1))
+                ));
+
+    oi.operatorFL2()
+        .onTrue(
+            Commands.sequence(
+                Commands.runOnce(() -> scoringPathOption = ScoringPathOption.PATH_FL2),
+                Commands.runOnce(
+                    () ->
+                        statusRgb.setScoringPosition(
+                            ScoringPosition.FL2))
+                ));
+
+    oi.operatorFR1()
+        .onTrue(
+            Commands.sequence(
+                Commands.runOnce(() -> scoringPathOption = ScoringPathOption.PATH_FR1),
+                Commands.runOnce(
+                    () ->
+                        statusRgb.setScoringPosition(
+                            ScoringPosition.FR1))
+                ));
+
+    oi.operatorFR2()
+        .onTrue(
+            Commands.sequence(
+                Commands.runOnce(() -> scoringPathOption = ScoringPathOption.PATH_FR2),
+                Commands.runOnce(
+                    () ->
+                        statusRgb.setScoringPosition(
+                            ScoringPosition.FR2))
+                ));
+
+    oi.operatorBL1()
+        .onTrue(
+            Commands.sequence(
+                Commands.runOnce(() -> scoringPathOption = ScoringPathOption.PATH_BL1),
+                Commands.runOnce(
+                    () ->
+                        statusRgb.setScoringPosition(
+                            ScoringPosition.BL1))
+                )); 
+
+    oi.operatorBL2()
+        .onTrue(
+            Commands.sequence(
+                Commands.runOnce(() -> scoringPathOption = ScoringPathOption.PATH_BL2),
+                Commands.runOnce(
+                    () ->
+                        statusRgb.setScoringPosition(
+                            ScoringPosition.BL2))
+                ));
+
+    oi.operatorBR1()
+        .onTrue(
+            Commands.sequence(
+                Commands.runOnce(() -> scoringPathOption = ScoringPathOption.PATH_BR1),
+                Commands.runOnce(
+                    () ->
+                        statusRgb.setScoringPosition(
+                            ScoringPosition.BR1))
+                ));
+
+    oi.operatorBR2()
+        .onTrue(
+            Commands.sequence(
+                Commands.runOnce(() -> scoringPathOption = ScoringPathOption.PATH_BR2),
+                Commands.runOnce(
+                    () ->
+                        statusRgb.setScoringPosition(
+                            ScoringPosition.BR2))
+                ));
+
+    oi.operatorB1()
+        .onTrue(
+            Commands.sequence(
+                Commands.runOnce(() -> scoringPathOption = ScoringPathOption.PATH_B1),
+                Commands.runOnce(
+                    () ->
+                        statusRgb.setScoringPosition(
+                            ScoringPosition.B1))
+                ));
+
+    oi.operatorB2()
+        .onTrue(
+            Commands.sequence(
+                Commands.runOnce(() -> scoringPathOption = ScoringPathOption.PATH_B2),
+                Commands.runOnce(
+                    () ->
+                        statusRgb.setScoringPosition(
+                            ScoringPosition.B2))
+                ));
+
 
     oi.operatorL1()
         .onTrue(
@@ -672,22 +772,34 @@ public class RobotContainer {
                 Commands.runOnce(
                     () ->
                         statusRgb.setScoringLevel(
-                            ScoringLevel.LEVEL_1)), // TODO: repeat for other levels
+                            ScoringLevel.LEVEL_1)),
                 armevator.runOnce(() -> armevator.updateScoringLevel(currentScoringLevel))));
     oi.operatorL2()
         .onTrue(
             Commands.sequence(
                 Commands.runOnce(() -> currentScoringLevel = ArmevatorPose.CORAL_L2_SCORE),
+                Commands.runOnce(
+                    () ->
+                        statusRgb.setScoringLevel(
+                            ScoringLevel.LEVEL_2)),
                 armevator.runOnce(() -> armevator.updateScoringLevel(currentScoringLevel))));
     oi.operatorL3()
         .onTrue(
             Commands.sequence(
                 Commands.runOnce(() -> currentScoringLevel = ArmevatorPose.CORAL_L3_SCORE),
+                Commands.runOnce(
+                    () ->
+                        statusRgb.setScoringLevel(
+                            ScoringLevel.LEVEL_3)),
                 armevator.runOnce(() -> armevator.updateScoringLevel(currentScoringLevel))));
     oi.operatorL4()
         .onTrue(
             Commands.sequence(
                 Commands.runOnce(() -> currentScoringLevel = ArmevatorPose.CORAL_L4_SCORE),
+                Commands.runOnce(
+                    () ->
+                        statusRgb.setScoringLevel(
+                            ScoringLevel.LEVEL_4)),
                 armevator.runOnce(() -> armevator.updateScoringLevel(currentScoringLevel))));
 
     //////////////////
