@@ -1,5 +1,6 @@
 package frc.robot.limelightVision.ApriltagVision;
 
+import edu.wpi.first.cscore.HttpCamera;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
@@ -15,6 +16,8 @@ public class VisionApriltagSubsystem extends SubsystemBase {
   private ShuffleboardTab tab;
   private double lastDistance;
   private DoubleSupplier rotationSupplier;
+
+  private HttpCamera LLFeed;
 
   @AutoLog
   public static class VisionApriltagSubsystemIOInput {
@@ -140,6 +143,16 @@ public class VisionApriltagSubsystem extends SubsystemBase {
 
   private void setUpShuffleboard() {
     tab = Shuffleboard.getTab("VisionApriltag");
+
+    LLFeed =
+        new HttpCamera(
+            getLimelightName(),
+            "http://10.17.32.13:5800/stream.mjpg"); // TODO check if this IP is correct
+    tab.add("Limelight Feed", LLFeed)
+      .withWidget("Camera Stream")
+      .withPosition(0, 0)
+      .withSize(4, 4);
+
     tab.addDouble("Tx", () -> this.getTX());
     tab.addDouble("Ty", () -> this.getTY());
     tab.addDouble("Distance", () -> this.getDistanceToTarget());
