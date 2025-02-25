@@ -551,7 +551,7 @@ public class RobotContainer {
     oi.ejectCoralButton()
         .onFalse(
             armevator
-                .runOnce(() -> armevator.setTargetPose(ArmevatorPose.CORAL_POST_SCORE))
+                .runOnce(() -> armevator.setTargetPose(ArmevatorPose.CORAL_POST_SCORE)) // TODO needs testing
                 .andThen(Commands.waitSeconds(0.25))
                 .andThen(
                     armevator.runOnce(() -> armevator.setTargetPose(ArmevatorPose.CORAL_HP_LOAD))));
