@@ -57,6 +57,8 @@ import frc.robot.subsystems.armevator.ArmevatorPose;
 import frc.robot.subsystems.claw.Claw;
 import frc.robot.subsystems.climber_subsystem.Climber;
 import frc.robot.subsystems.intake_subsystem.Intake;
+import frc.robot.subsystems.rgb.ScoringLevel;
+import frc.robot.subsystems.rgb.ScoringPosition;
 import frc.robot.subsystems.rgb.StatusRgb;
 import java.util.HashMap;
 import java.util.Map;
@@ -98,6 +100,7 @@ public class RobotContainer {
   private boolean isSlowMode = false;
   private BooleanSupplier slowModeSupplier = () -> isSlowMode;
   private boolean isFullAuto = false;
+  private boolean isPlucking = false;
   private BooleanSupplier fullAutoSupplier = () -> isFullAuto;
   private ArmevatorPose currentScoringLevel = ArmevatorPose.CORAL_L4_SCORE;
   private Supplier<ArmevatorPose> currentScoringLevelSupplier = () -> currentScoringLevel;
@@ -546,7 +549,15 @@ public class RobotContainer {
 
     oi.ejectCoralButton().whileTrue(new ClawBackwards(claw));
     oi.ejectCoralButton()
-        .onFalse(armevator.runOnce(() -> armevator.setTargetPose(ArmevatorPose.CORAL_HP_LOAD)));
+        .onFalse(
+            armevator
+                .runOnce(
+                    () ->
+                        armevator.setTargetPose(
+                            ArmevatorPose.CORAL_POST_SCORE)) // TODO needs testing
+                .andThen(Commands.waitSeconds(0.25))
+                .andThen(
+                    armevator.runOnce(() -> armevator.setTargetPose(ArmevatorPose.CORAL_HP_LOAD))));
 
     oi.scoreCoralButton()
         .whileTrue(
@@ -569,7 +580,13 @@ public class RobotContainer {
                         .asProxy(),
                     fullAutoSupplier)));
     oi.scoreCoralButton()
-        .onFalse(armevator.runOnce(() -> armevator.setTargetPose(ArmevatorPose.CORAL_HP_LOAD)));
+        .onFalse(
+            new ConditionalCommand(
+                new InstantCommand(),
+                armevator
+                    .runOnce(() -> armevator.setTargetPose(ArmevatorPose.CORAL_HP_LOAD))
+                    .asProxy(),
+                () -> isPlucking));
 
     oi.intakeCoralButton()
         .whileTrue(
@@ -630,38 +647,101 @@ public class RobotContainer {
     //                 armevator.runOnce(
     //                     () -> armevator.setTargetPose(currentScoringLevelSupplier.get()))));
 
-    oi.operatorF1().onTrue(Commands.runOnce(() -> scoringPathOption = ScoringPathOption.PATH_F1));
-    oi.operatorF2().onTrue(Commands.runOnce(() -> scoringPathOption = ScoringPathOption.PATH_F2));
-    oi.operatorFL1().onTrue(Commands.runOnce(() -> scoringPathOption = ScoringPathOption.PATH_FL1));
-    oi.operatorFL2().onTrue(Commands.runOnce(() -> scoringPathOption = ScoringPathOption.PATH_FL2));
-    oi.operatorFR1().onTrue(Commands.runOnce(() -> scoringPathOption = ScoringPathOption.PATH_FR1));
-    oi.operatorFR2().onTrue(Commands.runOnce(() -> scoringPathOption = ScoringPathOption.PATH_FR2));
-    oi.operatorBL1().onTrue(Commands.runOnce(() -> scoringPathOption = ScoringPathOption.PATH_BL1));
-    oi.operatorBL2().onTrue(Commands.runOnce(() -> scoringPathOption = ScoringPathOption.PATH_BL2));
-    oi.operatorBR1().onTrue(Commands.runOnce(() -> scoringPathOption = ScoringPathOption.PATH_BR1));
-    oi.operatorBR2().onTrue(Commands.runOnce(() -> scoringPathOption = ScoringPathOption.PATH_BR2));
-    oi.operatorB1().onTrue(Commands.runOnce(() -> scoringPathOption = ScoringPathOption.PATH_B1));
-    oi.operatorB2().onTrue(Commands.runOnce(() -> scoringPathOption = ScoringPathOption.PATH_B2));
+    oi.operatorF1()
+        .onTrue(
+            Commands.sequence(
+                Commands.runOnce(() -> scoringPathOption = ScoringPathOption.PATH_F1),
+                Commands.runOnce(() -> statusRgb.setScoringPosition(ScoringPosition.F1))));
+
+    oi.operatorF2()
+        .onTrue(
+            Commands.sequence(
+                Commands.runOnce(() -> scoringPathOption = ScoringPathOption.PATH_F2),
+                Commands.runOnce(() -> statusRgb.setScoringPosition(ScoringPosition.F2))));
+
+    oi.operatorFL1()
+        .onTrue(
+            Commands.sequence(
+                Commands.runOnce(() -> scoringPathOption = ScoringPathOption.PATH_FL1),
+                Commands.runOnce(() -> statusRgb.setScoringPosition(ScoringPosition.FL1))));
+
+    oi.operatorFL2()
+        .onTrue(
+            Commands.sequence(
+                Commands.runOnce(() -> scoringPathOption = ScoringPathOption.PATH_FL2),
+                Commands.runOnce(() -> statusRgb.setScoringPosition(ScoringPosition.FL2))));
+
+    oi.operatorFR1()
+        .onTrue(
+            Commands.sequence(
+                Commands.runOnce(() -> scoringPathOption = ScoringPathOption.PATH_FR1),
+                Commands.runOnce(() -> statusRgb.setScoringPosition(ScoringPosition.FR1))));
+
+    oi.operatorFR2()
+        .onTrue(
+            Commands.sequence(
+                Commands.runOnce(() -> scoringPathOption = ScoringPathOption.PATH_FR2),
+                Commands.runOnce(() -> statusRgb.setScoringPosition(ScoringPosition.FR2))));
+
+    oi.operatorBL1()
+        .onTrue(
+            Commands.sequence(
+                Commands.runOnce(() -> scoringPathOption = ScoringPathOption.PATH_BL1),
+                Commands.runOnce(() -> statusRgb.setScoringPosition(ScoringPosition.BL1))));
+
+    oi.operatorBL2()
+        .onTrue(
+            Commands.sequence(
+                Commands.runOnce(() -> scoringPathOption = ScoringPathOption.PATH_BL2),
+                Commands.runOnce(() -> statusRgb.setScoringPosition(ScoringPosition.BL2))));
+
+    oi.operatorBR1()
+        .onTrue(
+            Commands.sequence(
+                Commands.runOnce(() -> scoringPathOption = ScoringPathOption.PATH_BR1),
+                Commands.runOnce(() -> statusRgb.setScoringPosition(ScoringPosition.BR1))));
+
+    oi.operatorBR2()
+        .onTrue(
+            Commands.sequence(
+                Commands.runOnce(() -> scoringPathOption = ScoringPathOption.PATH_BR2),
+                Commands.runOnce(() -> statusRgb.setScoringPosition(ScoringPosition.BR2))));
+
+    oi.operatorB1()
+        .onTrue(
+            Commands.sequence(
+                Commands.runOnce(() -> scoringPathOption = ScoringPathOption.PATH_B1),
+                Commands.runOnce(() -> statusRgb.setScoringPosition(ScoringPosition.B1))));
+
+    oi.operatorB2()
+        .onTrue(
+            Commands.sequence(
+                Commands.runOnce(() -> scoringPathOption = ScoringPathOption.PATH_B2),
+                Commands.runOnce(() -> statusRgb.setScoringPosition(ScoringPosition.B2))));
 
     oi.operatorL1()
         .onTrue(
             Commands.sequence(
                 Commands.runOnce(() -> currentScoringLevel = ArmevatorPose.CORAL_L1_SCORE),
+                Commands.runOnce(() -> statusRgb.setScoringLevel(ScoringLevel.LEVEL_1)),
                 armevator.runOnce(() -> armevator.updateScoringLevel(currentScoringLevel))));
     oi.operatorL2()
         .onTrue(
             Commands.sequence(
                 Commands.runOnce(() -> currentScoringLevel = ArmevatorPose.CORAL_L2_SCORE),
+                Commands.runOnce(() -> statusRgb.setScoringLevel(ScoringLevel.LEVEL_2)),
                 armevator.runOnce(() -> armevator.updateScoringLevel(currentScoringLevel))));
     oi.operatorL3()
         .onTrue(
             Commands.sequence(
                 Commands.runOnce(() -> currentScoringLevel = ArmevatorPose.CORAL_L3_SCORE),
+                Commands.runOnce(() -> statusRgb.setScoringLevel(ScoringLevel.LEVEL_3)),
                 armevator.runOnce(() -> armevator.updateScoringLevel(currentScoringLevel))));
     oi.operatorL4()
         .onTrue(
             Commands.sequence(
                 Commands.runOnce(() -> currentScoringLevel = ArmevatorPose.CORAL_L4_SCORE),
+                Commands.runOnce(() -> statusRgb.setScoringLevel(ScoringLevel.LEVEL_4)),
                 armevator.runOnce(() -> armevator.updateScoringLevel(currentScoringLevel))));
 
     //////////////////
@@ -699,20 +779,26 @@ public class RobotContainer {
 
     oi.pluckAlgaeButton()
         .whileTrue(
-            Commands.deadline(
-                    Commands.sequence(
-                        new WaitCommand(0.25),
-                        intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.ALGAE_L3_PLUCK)),
-                        armevator.runOnce(
-                            () -> armevator.setTargetPose(ArmevatorPose.ALGAE_L3_PLUCK))),
-                    claw.run(() -> claw.ejectCoral()))
-                .andThen(claw.run(() -> claw.intakeAlgae())));
+            Commands.runOnce(() -> isPlucking = true)
+                .andThen(
+                    Commands.deadline(
+                            Commands.sequence(
+                                new WaitCommand(0.25),
+                                intake.runOnce(
+                                    () -> intake.setTargetPose(ArmevatorPose.ALGAE_L3_PLUCK)),
+                                armevator.runOnce(
+                                    () -> armevator.setTargetPose(ArmevatorPose.ALGAE_L3_PLUCK))),
+                            claw.run(() -> claw.ejectCoral()))
+                        .andThen(claw.run(() -> claw.intakeAlgae()))));
     oi.pluckAlgaeButton()
         .onFalse(
-            Commands.sequence(
-                intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.ALGAE_HANDOFF)),
-                armevator.runOnce(() -> armevator.setTargetPose(ArmevatorPose.ALGAE_HANDOFF)),
-                claw.run(() -> claw.brakeAlgae())));
+            Commands.runOnce(() -> isPlucking = false)
+                .andThen(
+                    Commands.sequence(
+                        intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.ALGAE_HANDOFF)),
+                        armevator.runOnce(
+                            () -> armevator.setTargetPose(ArmevatorPose.ALGAE_HANDOFF)),
+                        claw.run(() -> claw.brakeAlgae()))));
 
     oi.aimAtNetButton()
         .whileTrue(armevator.runOnce(() -> armevator.setTargetPose(ArmevatorPose.ALGAE_NET_SCORE)));

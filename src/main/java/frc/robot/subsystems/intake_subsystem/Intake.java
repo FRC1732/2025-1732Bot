@@ -67,6 +67,7 @@ public class Intake extends SubsystemBase {
     intakeMap.put(ArmevatorPose.CORAL_L3_SCORE, 5.0);
     intakeMap.put(ArmevatorPose.CORAL_L2_SCORE, 5.0);
     intakeMap.put(ArmevatorPose.CORAL_L1_SCORE, 5.0);
+    intakeMap.put(ArmevatorPose.CORAL_POST_SCORE, 5.0);
     intakeMap.put(ArmevatorPose.ALGAE_INTAKE, 55.0);
     intakeMap.put(ArmevatorPose.ALGAE_HANDOFF, 10.0);
     intakeMap.put(ArmevatorPose.ALGAE_NET_SCORE, 5.0);
@@ -228,8 +229,8 @@ public class Intake extends SubsystemBase {
   private void doLogging() {
     Logger.recordOutput(IntakeConstants.SUBSYSTEM_NAME + "/Tilt Position", getTiltPosition());
     Logger.recordOutput(IntakeConstants.SUBSYSTEM_NAME + "/Tilt Velocity", getTiltVelocity());
-    // Logger.recordOutput(
-    //     IntakeConstants.SUBSYSTEM_NAME + "/Tilt Goal", intakePID.getGoal().position);
+    Logger.recordOutput(
+        IntakeConstants.SUBSYSTEM_NAME + "/Tilt Goal", intakePID.getGoal().position);
   }
 
   private void setupNT() {

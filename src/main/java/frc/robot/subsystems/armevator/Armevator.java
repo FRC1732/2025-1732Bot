@@ -104,6 +104,7 @@ public class Armevator extends SubsystemBase {
     armMap.put(ArmevatorPose.CORAL_L3_SCORE, 45.0);
     armMap.put(ArmevatorPose.CORAL_L2_SCORE, 72.0);
     armMap.put(ArmevatorPose.CORAL_L1_SCORE, 80.0);
+    armMap.put(ArmevatorPose.CORAL_POST_SCORE, 55.0);
     armMap.put(ArmevatorPose.ALGAE_INTAKE, 90.0);
     armMap.put(ArmevatorPose.ALGAE_HANDOFF, 90.0);
     armMap.put(ArmevatorPose.ALGAE_NET_SCORE, -70.0);
@@ -120,6 +121,7 @@ public class Armevator extends SubsystemBase {
     elevatorMap.put(ArmevatorPose.CORAL_L3_SCORE, 4.5);
     elevatorMap.put(ArmevatorPose.CORAL_L2_SCORE, 0.0);
     elevatorMap.put(ArmevatorPose.CORAL_L1_SCORE, 0.0);
+    elevatorMap.put(ArmevatorPose.CORAL_POST_SCORE, 4.0);
     elevatorMap.put(ArmevatorPose.ALGAE_INTAKE, 0.0);
     elevatorMap.put(ArmevatorPose.ALGAE_HANDOFF, 0.0);
     elevatorMap.put(ArmevatorPose.ALGAE_NET_SCORE, 32.0);
@@ -393,22 +395,23 @@ public class Armevator extends SubsystemBase {
         ArmevatorConstants.SUBSYSTEM_NAME + "/Elevator Position", elevatorEncoder.getPosition());
     Logger.recordOutput(
         ArmevatorConstants.SUBSYSTEM_NAME + "/Elevator Velocity", elevatorEncoder.getVelocity());
-    // Logger.recordOutput(
-    // ArmevatorConstants.SUBSYSTEM_NAME + "/Elevator Goal",
-    // elevatorPID.getGoal().position);
+    Logger.recordOutput(
+        ArmevatorConstants.SUBSYSTEM_NAME + "/Elevator Goal", elevatorPID.getGoal().position);
 
     Logger.recordOutput(
         ArmevatorConstants.SUBSYSTEM_NAME + "/Arm Position", armRelativeEncoder.getPosition());
     Logger.recordOutput(
         ArmevatorConstants.SUBSYSTEM_NAME + "/Arm Velocity", armRelativeEncoder.getVelocity());
-    // Logger.recordOutput(ArmevatorConstants.SUBSYSTEM_NAME + "/Arm Goal",
-    // armPID.getGoal().position);
+    Logger.recordOutput(ArmevatorConstants.SUBSYSTEM_NAME + "/Arm Goal", armPID.getGoal().position);
 
     Logger.recordOutput(
         ArmevatorConstants.SUBSYSTEM_NAME + "/Elevator Limit Switch",
         elevatorLimitSwitch.isPressed());
     Logger.recordOutput(
         ArmevatorConstants.SUBSYSTEM_NAME + "/Arm Absolute Encoder", getAbsolutePosition());
+
+    Logger.recordOutput(
+        ArmevatorConstants.SUBSYSTEM_NAME + "/Arm Absolute Degrees", getAbsoluteDegrees());
   }
 
   private void setupNT() {
