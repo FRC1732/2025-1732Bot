@@ -67,6 +67,7 @@ public class Intake extends SubsystemBase {
     intakeMap.put(ArmevatorPose.CORAL_L3_SCORE, 5.0);
     intakeMap.put(ArmevatorPose.CORAL_L2_SCORE, 5.0);
     intakeMap.put(ArmevatorPose.CORAL_L1_SCORE, 5.0);
+    intakeMap.put(ArmevatorPose.CORAL_POST_SCORE, 5.0);
     intakeMap.put(ArmevatorPose.ALGAE_INTAKE, 55.0);
     intakeMap.put(ArmevatorPose.ALGAE_HANDOFF, 10.0);
     intakeMap.put(ArmevatorPose.ALGAE_NET_SCORE, 5.0);

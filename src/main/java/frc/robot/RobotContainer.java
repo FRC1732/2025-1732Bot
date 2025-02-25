@@ -549,7 +549,12 @@ public class RobotContainer {
 
     oi.ejectCoralButton().whileTrue(new ClawBackwards(claw));
     oi.ejectCoralButton()
-        .onFalse(armevator.runOnce(() -> armevator.setTargetPose(ArmevatorPose.CORAL_HP_LOAD)));
+        .onFalse(
+            armevator
+                .runOnce(() -> armevator.setTargetPose(ArmevatorPose.CORAL_POST_SCORE))
+                .andThen(Commands.waitSeconds(0.25))
+                .andThen(
+                    armevator.runOnce(() -> armevator.setTargetPose(ArmevatorPose.CORAL_HP_LOAD))));
 
     oi.scoreCoralButton()
         .whileTrue(
