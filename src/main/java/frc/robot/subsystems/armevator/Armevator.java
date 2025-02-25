@@ -395,22 +395,23 @@ public class Armevator extends SubsystemBase {
         ArmevatorConstants.SUBSYSTEM_NAME + "/Elevator Position", elevatorEncoder.getPosition());
     Logger.recordOutput(
         ArmevatorConstants.SUBSYSTEM_NAME + "/Elevator Velocity", elevatorEncoder.getVelocity());
-    // Logger.recordOutput(
-    // ArmevatorConstants.SUBSYSTEM_NAME + "/Elevator Goal",
-    // elevatorPID.getGoal().position);
+    Logger.recordOutput(
+        ArmevatorConstants.SUBSYSTEM_NAME + "/Elevator Goal", elevatorPID.getGoal().position);
 
     Logger.recordOutput(
         ArmevatorConstants.SUBSYSTEM_NAME + "/Arm Position", armRelativeEncoder.getPosition());
     Logger.recordOutput(
         ArmevatorConstants.SUBSYSTEM_NAME + "/Arm Velocity", armRelativeEncoder.getVelocity());
-    // Logger.recordOutput(ArmevatorConstants.SUBSYSTEM_NAME + "/Arm Goal",
-    // armPID.getGoal().position);
+    Logger.recordOutput(ArmevatorConstants.SUBSYSTEM_NAME + "/Arm Goal", armPID.getGoal().position);
 
     Logger.recordOutput(
         ArmevatorConstants.SUBSYSTEM_NAME + "/Elevator Limit Switch",
         elevatorLimitSwitch.isPressed());
     Logger.recordOutput(
         ArmevatorConstants.SUBSYSTEM_NAME + "/Arm Absolute Encoder", getAbsolutePosition());
+
+    Logger.recordOutput(
+        ArmevatorConstants.SUBSYSTEM_NAME + "/Arm Absolute Degrees", getAbsoluteDegrees());
   }
 
   private void setupNT() {

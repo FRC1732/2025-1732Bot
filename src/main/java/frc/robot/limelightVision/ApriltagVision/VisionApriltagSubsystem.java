@@ -148,10 +148,7 @@ public class VisionApriltagSubsystem extends SubsystemBase {
         new HttpCamera(
             getLimelightName(),
             "http://10.17.32.13:5800/stream.mjpg"); // TODO check if this IP is correct
-    tab.add("Limelight Feed", LLFeed)
-      .withWidget("Camera Stream")
-      .withPosition(0, 0)
-      .withSize(4, 4);
+    tab.add("Limelight Feed", LLFeed).withWidget("Camera Stream").withPosition(0, 0).withSize(4, 4);
 
     tab.addDouble("Tx", () -> this.getTX());
     tab.addDouble("Ty", () -> this.getTY());

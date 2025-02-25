@@ -229,8 +229,8 @@ public class Intake extends SubsystemBase {
   private void doLogging() {
     Logger.recordOutput(IntakeConstants.SUBSYSTEM_NAME + "/Tilt Position", getTiltPosition());
     Logger.recordOutput(IntakeConstants.SUBSYSTEM_NAME + "/Tilt Velocity", getTiltVelocity());
-    // Logger.recordOutput(
-    //     IntakeConstants.SUBSYSTEM_NAME + "/Tilt Goal", intakePID.getGoal().position);
+    Logger.recordOutput(
+        IntakeConstants.SUBSYSTEM_NAME + "/Tilt Goal", intakePID.getGoal().position);
   }
 
   private void setupNT() {
