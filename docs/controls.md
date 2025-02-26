@@ -55,14 +55,14 @@ In certain circumstances, the robot automatically handles orientation or alignme
 - **Button 2 (down)**: Hold to eject coral
 - **Button 3 (up)**: Hold to eject algae
 - **Button 4 (left)**: Hold to clear/remove algae from reef
-- **Button 8**: Press to reset gyro
+- **Button 8**: Press to reset gyro and robot pose to F1
 
 ### Operator Panel
-- ~~**Button 1**: Hold to eject all~~
-- ~~**Button 2**: Press to reset gyro~~
+- **Button 1**: Hold to eject algae
+- **Button 2**: Press to reset gyro and robot pose to F1
 - **Button 3**: Press to extend climber
 - **Button 4**: Hold to retract climber
-- ~~**Button 5**: Switch to Engage/disengage slow mode (max speed limited to 25%)~~
+~~- **Button 5**: Switch to Engage/disengage slow mode (max speed limited to 25%)~~
 - **Button 6**: Set coral target height to 1
 - **Button 7**: Set coral target height to 2
 - **Button 8**: Set coral target height to 3
@@ -80,11 +80,11 @@ In certain circumstances, the robot automatically handles orientation or alignme
 - **Button 20**: Set coral target to B1
 - **Button 21**: Set coral target to B2
 - ~~**Button 22**: Switch to set preferred coral target side to 1 or 2~~
-- **Button 23**: Switch to set algae clearing height to 2 or 3
-- ~~**Button 24**: Hold to clear algae~~
-- ~~**Button 25**: Switch to set algae target to low or high~~
+- **Button 23**: Retract climber slowly switch
+- **Button 24**: Hold to eject coral
+- **Button 25**: Switch to set algae target to low or high
 - **Button 26**: Switch to enable/disable full auto placement
-- ~~**Button 27**: Switch to enable/disable vision~~
+- **Button 27**: Switch to enable/disable vision
 
 ---
 ## Scoring Targets Explanation

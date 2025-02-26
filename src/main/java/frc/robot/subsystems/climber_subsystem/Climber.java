@@ -82,7 +82,7 @@ public class Climber extends SubsystemBase {
   }
 
   public void brakeClimber() {
-    climberMotor.set(ClimberConstants.CLIMBER_BRAKE_SPEED);
+    climberMotor.set(ClimberConstants.CLIMBER_BRAKE_SPEED * -1);
   }
 
   public void reverseClimber() {

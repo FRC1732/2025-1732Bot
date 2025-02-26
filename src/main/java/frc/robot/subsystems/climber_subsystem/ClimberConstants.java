@@ -14,9 +14,9 @@ public class ClimberConstants {
   public static final int CLIMBER_CAN_ID = 20;
   public static final int WINDMILL_CAN_ID = 12;
 
-  public static final Double WINDMILL_SPEED = 0.15;
-  public static final Double CLIMBER_SPEED = 0.8;
-  public static final Double CLIMBER_BRAKE_SPEED = 0.0;
+  public static final Double WINDMILL_SPEED = 0.2;
+  public static final Double CLIMBER_SPEED = 0.9;
+  public static final Double CLIMBER_BRAKE_SPEED = 0.05;
 
   public static final boolean CLIMBER_LOGGING = true;
   public static final double CLIMBER_TOLERANCE = 0.1;

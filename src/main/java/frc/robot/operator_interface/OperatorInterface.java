@@ -84,7 +84,7 @@ public interface OperatorInterface {
     return new Trigger(() -> false);
   }
 
-  public default Trigger operatorEjectAll() { // button 1
+  public default Trigger operatorEjectAlgae() { // button 1
     return new Trigger(() -> false);
   }
 
@@ -176,15 +176,15 @@ public interface OperatorInterface {
     return new Trigger(() -> false);
   }
 
-  public default Trigger operatorAlgaeClearingHeightSwitch() { // button 23
+  public default Trigger retractClimberSlowlySwitch() { // button 23
     return new Trigger(() -> false);
   }
 
-  public default Trigger operatorClearAlgaeButton() { // button 24
+  public default Trigger operatorEjectCoral() { // button 24
     return new Trigger(() -> false);
   }
 
-  public default Trigger operatorAlgaeTargetSwitch() { // button 25
+  public default Trigger operatorAlgaePluckHeightSwitch() { // button 25
     return new Trigger(() -> false);
   }
 

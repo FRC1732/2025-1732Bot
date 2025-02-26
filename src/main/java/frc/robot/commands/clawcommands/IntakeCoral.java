@@ -25,7 +25,9 @@ public class IntakeCoral extends Command {
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    claw.intakeCoral();
+    if (!claw.hasCoral()) {
+      claw.intakeCoral();
+    }
   }
 
   // Called every time the scheduler runs while the command is scheduled.

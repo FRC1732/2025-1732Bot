@@ -11,7 +11,7 @@ import frc.robot.operator_interface.OperatorInterface;
 public class PrintOperatorPanelTests {
   public PrintOperatorPanelTests(OperatorInterface oi) {
 
-    oi.operatorEjectAll().whileTrue(new PrintCommand("Eject All"));
+    oi.operatorEjectAlgae().whileTrue(new PrintCommand("Eject All"));
     oi.operatorVisionIsEnabledSwitch().whileTrue(new PrintCommand("Vision"));
     oi.operatorResetGyroButton().whileTrue(new PrintCommand("Gyro"));
     oi.operatorExtendClimber().whileTrue(new PrintCommand("Extend Climber"));
@@ -34,9 +34,9 @@ public class PrintOperatorPanelTests {
     oi.operatorB1().whileTrue(new PrintCommand("B1"));
     oi.operatorB2().whileTrue(new PrintCommand("B2"));
     oi.operatorCoralSideSwitch().whileTrue(new PrintCommand("Side Switch"));
-    oi.operatorAlgaeClearingHeightSwitch().whileTrue(new PrintCommand("Height Switch"));
-    oi.operatorClearAlgaeButton().whileTrue(new PrintCommand("Clear Algae"));
-    oi.operatorAlgaeTargetSwitch().whileTrue(new PrintCommand("Target Switch"));
+    oi.retractClimberSlowlySwitch().whileTrue(new PrintCommand("Height Switch"));
+    oi.operatorEjectCoral().whileTrue(new PrintCommand("Clear Algae"));
+    oi.operatorAlgaePluckHeightSwitch().whileTrue(new PrintCommand("Target Switch"));
     oi.operatorFullAutoPlacementSwitch().whileTrue(new PrintCommand("Auto Placement"));
   }
 }

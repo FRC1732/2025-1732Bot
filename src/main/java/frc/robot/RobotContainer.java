@@ -39,7 +39,6 @@ import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SelectCommand;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 // import frc.lib.team3061.leds.LEDs;
 import frc.robot.commands.clawcommands.ClawBackwards;
 import frc.robot.commands.clawcommands.IntakeCoral;
@@ -98,10 +97,15 @@ public class RobotContainer {
   private double MaxSlowSpeed = 0.25 * MaxSpeed; // 25% of max speed
   private double MaxSlowAngularRate = 0.25 * MaxAngularRate; // 25% of max angular rate
   private boolean isSlowMode = false;
-  private BooleanSupplier slowModeSupplier = () -> isSlowMode;
   private boolean isFullAuto = false;
   private boolean isPlucking = false;
-  private BooleanSupplier fullAutoSupplier = () -> isFullAuto;
+  private boolean isVisionEnabled = true;
+  private boolean isPluckTargetHigh = true;
+  private BooleanSupplier slowModeSupplier = () -> isSlowMode;
+  private BooleanSupplier isFullAutoSupplier = () -> isFullAuto;
+  private BooleanSupplier isPluckingSupplier = () -> isPlucking;
+  private BooleanSupplier isVisionEnabledSupplier = () -> isVisionEnabled;
+  private BooleanSupplier isPluckTargetHighSupplier = () -> isPluckTargetHigh;
   private ArmevatorPose currentScoringLevel = ArmevatorPose.CORAL_L4_SCORE;
   private Supplier<ArmevatorPose> currentScoringLevelSupplier = () -> currentScoringLevel;
   private ShuffleboardTab tab;
@@ -289,6 +293,7 @@ public class RobotContainer {
             armevator.runOnce(() -> armevator.setTargetPose(ArmevatorPose.CORAL_HP_LOAD)),
             intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.CORAL_HP_LOAD)),
             new IntakeCoral(claw, statusRgb)));
+    NamedCommands.registerCommand("brakeCoral", new IntakeCoral(claw, statusRgb));
     NamedCommands.registerCommand("ejectCoral", new ClawBackwards(claw));
     NamedCommands.registerCommand(
         "setPoseL4",
@@ -466,82 +471,44 @@ public class RobotContainer {
     oi.slowModeSwitch().onFalse(Commands.runOnce(() -> isSlowMode = false));
 
     // reset gyro to 0 degrees
-    oi.resetGyroButton().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
-
-    // reset pose based on vision
-    /*
-     * oi.getResetPoseToVisionButton()
-     * .onTrue(
-     * Commands.repeatingSequence(Commands.none())
-     * .until(() -> vision.getBestRobotPose() != null)
-     * .andThen(
-     * Commands.runOnce(
-     * () -> drivetrain.resetPoseToVision(() -> vision.getBestRobotPose())))
-     * .ignoringDisable(true)
-     * .withName("reset pose to vision"));
-     */
+    oi.resetGyroButton()
+        .onTrue(
+            Commands.runOnce(
+                () -> {
+                  drivetrain.resetPose(new Pose2d(3.203, 4.190, new Rotation2d(0)));
+                  questNav.resetPose(new Pose2d(3.203, 4.190, new Rotation2d(0)));
+                }));
+    // oi.resetGyroButton().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
+    oi.operatorResetGyroButton()
+        .onTrue(
+            Commands.runOnce(
+                () -> {
+                  drivetrain.resetPose(new Pose2d(3.203, 4.190, new Rotation2d(0)));
+                  questNav.resetPose(new Pose2d(3.203, 4.190, new Rotation2d(0)));
+                }));
 
     // x-stance
-    oi.xStanceButton().whileTrue(drivetrain.applyRequest(() -> brakeRequest));
+    // oi.xStanceButton().whileTrue(drivetrain.applyRequest(() -> brakeRequest));
 
-    oi.getSysIdDynamicForward().whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
-    oi.getSysIdDynamicReverse().whileTrue(drivetrain.sysIdDynamic(Direction.kReverse));
-    oi.getSysIdQuasistaticForward().whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
-    oi.getSysIdQuasistaticReverse().whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
+    // oi.getSysIdDynamicForward().whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
+    // oi.getSysIdDynamicReverse().whileTrue(drivetrain.sysIdDynamic(Direction.kReverse));
+    // oi.getSysIdQuasistaticForward().whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
+    // oi.getSysIdQuasistaticReverse().whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
 
     // drivetrain.registerTelemetry(telemetryLogger::telemeterize);
   }
 
   private void configureSubsystemCommands() {
-    // TODO remove once testing is finished
-
-    // CommandJoystick controller = new CommandJoystick(0);
-
-    // Trigger aTrigger = controller.button(1);
-    // Trigger bTrigger = controller.button(2);
-    // Trigger xTrigger = controller.button(3);
-    // Trigger yTrigger = controller.button(4);
-    // Trigger rightTrigger = controller.button(5);
-    // Trigger leftTrigger = controller.button(6);
-
-    // Trigger clawIntake = controller.button(7);
-    // Trigger clawEject = controller.button(8);
-
-    // Trigger tiltForward = controller.button(9);
-    // Trigger tiltBackward = controller.button(10);
-
-    // Trigger windmillForward = new Trigger(() -> (controller.getRawAxis(0) > 0.5));
-    // Trigger windmillBackward = new Trigger(() -> (controller.getRawAxis(1) > 0.5));
-
-    // Trigger pivotForward = new Trigger(() -> (controller.getRawAxis(2) > 0.5));
-    // Trigger pivotBackward = new Trigger(() -> (controller.getRawAxis(3) > 0.5));
-
-    // aTrigger.whileTrue(new ElevatorUp(armevator));
-    // bTrigger.whileTrue(new ElevatorDown(armevator));
-    // xTrigger.whileTrue(new IntakeForward(intake));
-    // yTrigger.whileTrue(new IntakeBackwards(intake));
-
-    // rightTrigger.whileTrue(new ArmForwards(armevator));
-    // leftTrigger.whileTrue(new ArmBackwards(armevator));
-
-    // clawIntake.whileTrue(new IntakeCoral(claw, statusRgb));
-    // clawEject.whileTrue(new ClawBackwards(claw));
-
-    // tiltForward.whileTrue(new TiltForward(intake));
-    // tiltBackward.whileTrue(new TiltBackwards(intake));
-
-    // aTrigger.whileTrue(new WindmillForward(climber));
-    // bTrigger.whileTrue(new WindmillBackward(climber));
-    // xTrigger.whileTrue(new PivotForward(climber));
-    // yTrigger.whileTrue(new PivotBackward(climber));
-
-    // aTrigger.whileTrue(new PrintCommand("A trigger"));
-    // bTrigger.whileTrue(new PrintCommand("B trigger"));
-    //
 
     // full-auto toggle
     oi.operatorFullAutoPlacementSwitch().onTrue(Commands.runOnce(() -> isFullAuto = true));
     oi.operatorFullAutoPlacementSwitch().onFalse(Commands.runOnce(() -> isFullAuto = false));
+
+    oi.operatorVisionIsEnabledSwitch().onTrue(Commands.runOnce(() -> isVisionEnabled = true));
+    oi.operatorVisionIsEnabledSwitch().onFalse(Commands.runOnce(() -> isVisionEnabled = false));
+
+    oi.operatorAlgaePluckHeightSwitch().onTrue(Commands.runOnce(() -> isPluckTargetHigh = true));
+    oi.operatorAlgaePluckHeightSwitch().onFalse(Commands.runOnce(() -> isPluckTargetHigh = false));
 
     //////////////////
     // Coral Commands
@@ -549,15 +516,11 @@ public class RobotContainer {
 
     oi.ejectCoralButton().whileTrue(new ClawBackwards(claw));
     oi.ejectCoralButton()
-        .onFalse(
-            armevator
-                .runOnce(
-                    () ->
-                        armevator.setTargetPose(
-                            ArmevatorPose.CORAL_POST_SCORE)) // TODO needs testing
-                .andThen(Commands.waitSeconds(0.25))
-                .andThen(
-                    armevator.runOnce(() -> armevator.setTargetPose(ArmevatorPose.CORAL_HP_LOAD))));
+        .onFalse(armevator.runOnce(() -> armevator.setTargetPose(ArmevatorPose.CORAL_POST_SCORE)));
+
+    oi.operatorEjectCoral().whileTrue(new ClawBackwards(claw));
+    oi.operatorEjectCoral()
+        .onFalse(armevator.runOnce(() -> armevator.setTargetPose(ArmevatorPose.CORAL_POST_SCORE)));
 
     oi.scoreCoralButton()
         .whileTrue(
@@ -578,7 +541,7 @@ public class RobotContainer {
                                     -oi.getTranslateY() * MaxSpeed,
                                     scoringAngleMap.get(scoringPathOption)))
                         .asProxy(),
-                    fullAutoSupplier)));
+                    isFullAutoSupplier)));
     oi.scoreCoralButton()
         .onFalse(
             new ConditionalCommand(
@@ -601,51 +564,22 @@ public class RobotContainer {
                     new IntakeCoral(claw, statusRgb)),
                 new ConditionalCommand(
                     new ConditionalCommand(
-                        AutoBuilder.pathfindThenFollowPath(pathLeftHP, pathConstraints),
-                        AutoBuilder.pathfindThenFollowPath(pathRightHP, pathConstraints),
+                        AutoBuilder.pathfindThenFollowPath(pathLeftHP, pathConstraints).asProxy(),
+                        AutoBuilder.pathfindThenFollowPath(pathRightHP, pathConstraints).asProxy(),
                         this::shouldIntakeLeftSide),
                     Commands.sequence(
                         Commands.runOnce(() -> preferLeftSide = shouldIntakeLeftSide()),
-                        drivetrain.run(
-                            () ->
-                                driveFacingAngle(
-                                    -oi.getTranslateX() * MaxSpeed,
-                                    -oi.getTranslateY() * MaxSpeed,
-                                    preferLeftSide
-                                        ? Rotation2d.fromDegrees(-55)
-                                        : Rotation2d.fromDegrees(55)))),
-                    fullAutoSupplier)));
-    // oi.intakeCoralButton()
-    //     .onFalse(
-    //         new WaitCommand(0.25)
-    //             .andThen(
-    //                 armevator.runOnce(
-    //                     () -> armevator.setTargetPose(currentScoringLevelSupplier.get()))));
-
-    // oi.hybridIntakeCoralButton()
-    //     .whileTrue(
-    //         Commands.deadline(
-    //             Commands.sequence(
-    //                 intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.CORAL_L1_SCORE)),
-    //                 armevator.runOnce(() ->
-    // armevator.setTargetPose(ArmevatorPose.CORAL_HP_LOAD)),
-    //                 new IntakeCoral(claw, statusRgb))));
-    // Commands.sequence(
-    //     Commands.runOnce(() -> preferLeftSide = shouldIntakeLeftSide()),
-    //     drivetrain.run(
-    //         () ->
-    //             driveFacingAngle(
-    //                 -oi.getTranslateX() * MaxSpeed,
-    //                 -oi.getTranslateY() * MaxSpeed,
-    //                 preferLeftSide
-    //                     ? Rotation2d.fromDegrees(-55)
-    //                     : Rotation2d.fromDegrees(55))))));
-    // oi.hybridIntakeCoralButton()
-    //     .onFalse(
-    //         new WaitCommand(0.25)
-    //             .andThen(
-    //                 armevator.runOnce(
-    //                     () -> armevator.setTargetPose(currentScoringLevelSupplier.get()))));
+                        drivetrain
+                            .run(
+                                () ->
+                                    driveFacingAngle(
+                                        -oi.getTranslateX() * MaxSpeed,
+                                        -oi.getTranslateY() * MaxSpeed,
+                                        preferLeftSide
+                                            ? Rotation2d.fromDegrees(-55)
+                                            : Rotation2d.fromDegrees(55)))
+                            .asProxy()),
+                    isFullAutoSupplier)));
 
     oi.operatorF1()
         .onTrue(
@@ -762,14 +696,30 @@ public class RobotContainer {
                 armevator.runOnce(() -> armevator.setTargetPose(ArmevatorPose.ALGAE_HANDOFF)),
                 Commands.parallel(
                     intake.run(() -> intake.stopIntake()), claw.run(() -> claw.brakeAlgae()))));
+
     oi.ejectAlgaeButton()
         .whileTrue(
             Commands.sequence(
-                // intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.ALGAE_HANDOFF)),
-                // armevator.runOnce(() -> armevator.setTargetPose(ArmevatorPose.ALGAE_HANDOFF)),
+                intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.ALGAE_HANDOFF)),
+                armevator.runOnce(() -> armevator.setTargetPose(ArmevatorPose.ALGAE_HANDOFF)),
                 Commands.parallel(
                     intake.run(() -> intake.ejectIntake()), claw.run(() -> claw.ejectAlgae()))));
     oi.ejectAlgaeButton()
+        .onFalse(
+            Commands.sequence(
+                intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.CORAL_L1_SCORE)),
+                armevator.runOnce(() -> armevator.setTargetPose(ArmevatorPose.CORAL_L1_SCORE)),
+                Commands.parallel(
+                    intake.run(() -> intake.stopIntake()), claw.run(() -> claw.stopClaw()))));
+
+    oi.operatorEjectAlgae()
+        .whileTrue(
+            Commands.sequence(
+                intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.ALGAE_HANDOFF)),
+                armevator.runOnce(() -> armevator.setTargetPose(ArmevatorPose.ALGAE_HANDOFF)),
+                Commands.parallel(
+                    intake.run(() -> intake.ejectIntake()), claw.run(() -> claw.ejectAlgae()))));
+    oi.operatorEjectAlgae()
         .onFalse(
             Commands.sequence(
                 intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.CORAL_L1_SCORE)),
@@ -785,9 +735,17 @@ public class RobotContainer {
                             Commands.sequence(
                                 new WaitCommand(0.25),
                                 intake.runOnce(
-                                    () -> intake.setTargetPose(ArmevatorPose.ALGAE_L3_PLUCK)),
+                                    () ->
+                                        intake.setTargetPose(
+                                            isPluckTargetHighSupplier.getAsBoolean()
+                                                ? ArmevatorPose.ALGAE_L3_PLUCK
+                                                : ArmevatorPose.ALGAE_L2_PLUCK)),
                                 armevator.runOnce(
-                                    () -> armevator.setTargetPose(ArmevatorPose.ALGAE_L3_PLUCK))),
+                                    () ->
+                                        armevator.setTargetPose(
+                                            isPluckTargetHighSupplier.getAsBoolean()
+                                                ? ArmevatorPose.ALGAE_L3_PLUCK
+                                                : ArmevatorPose.ALGAE_L2_PLUCK))),
                             claw.run(() -> claw.ejectCoral()))
                         .andThen(claw.run(() -> claw.intakeAlgae()))));
     oi.pluckAlgaeButton()
@@ -816,7 +774,7 @@ public class RobotContainer {
                 armevator.runOnce(() -> armevator.setTargetPose(ArmevatorPose.CLIMB)),
                 climber.runOnce(() -> climber.disengageWindmill()),
                 climber.run(() -> climber.extendClimber())));
-    oi.operatorExtendClimber().onFalse(climber.runOnce(() -> climber.brakeClimber()));
+    oi.operatorExtendClimber().onFalse(climber.runOnce(() -> climber.stopClimber()));
 
     oi.operatorRetractClimber()
         .whileTrue(
@@ -825,6 +783,9 @@ public class RobotContainer {
                 new WaitCommand(0.1),
                 climber.run(() -> climber.retractClimber())));
     oi.operatorRetractClimber().onFalse(climber.runOnce(() -> climber.brakeClimber()));
+
+    oi.retractClimberSlowlySwitch().whileTrue(climber.runOnce(() -> climber.brakeClimber()));
+    oi.retractClimberSlowlySwitch().onFalse(climber.runOnce(() -> climber.stopClimber()));
   }
 
   private void configureVisionCommands() {
@@ -968,7 +929,7 @@ public class RobotContainer {
   }
 
   public void updateVisionPose() {
-    if (questNav.isConnected()) {
+    if (questNav.isConnected() && isVisionEnabled) {
       questNav.updateAverageRobotPose();
       // drivetrain.addVisionMeasurement(
       // questNav.getRobotPose(), VecBuilder.fill(0.0, 0.0, 9999999.0));

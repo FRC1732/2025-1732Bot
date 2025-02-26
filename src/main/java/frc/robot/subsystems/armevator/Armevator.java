@@ -110,7 +110,7 @@ public class Armevator extends SubsystemBase {
     armMap.put(ArmevatorPose.ALGAE_NET_SCORE, -70.0);
     armMap.put(ArmevatorPose.ALGAE_L3_PLUCK, 15.0);
     armMap.put(ArmevatorPose.ALGAE_L3_DROP, 5.0);
-    armMap.put(ArmevatorPose.ALGAE_L2_PLUCK, 25.0);
+    armMap.put(ArmevatorPose.ALGAE_L2_PLUCK, 15.0);
     armMap.put(ArmevatorPose.ALGAE_L2_DROP, 5.0);
 
     elevatorMap = new HashMap<>(); // in inches
@@ -127,7 +127,7 @@ public class Armevator extends SubsystemBase {
     elevatorMap.put(ArmevatorPose.ALGAE_NET_SCORE, 32.0);
     elevatorMap.put(ArmevatorPose.ALGAE_L3_PLUCK, 18.0);
     elevatorMap.put(ArmevatorPose.ALGAE_L3_DROP, 20.0);
-    elevatorMap.put(ArmevatorPose.ALGAE_L2_PLUCK, 0.0);
+    elevatorMap.put(ArmevatorPose.ALGAE_L2_PLUCK, 3.0);
     elevatorMap.put(ArmevatorPose.ALGAE_L2_DROP, 4.5);
 
     /////////////////////////

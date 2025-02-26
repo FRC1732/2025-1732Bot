@@ -33,7 +33,7 @@ public class FullOperatorConsoleOI extends DualJoysticksOI {
   }
 
   @Override
-  public Trigger operatorEjectAll() {
+  public Trigger operatorEjectAlgae() {
     return operatorPanelButtonsTwo[9];
   }
 
@@ -143,17 +143,17 @@ public class FullOperatorConsoleOI extends DualJoysticksOI {
   }
 
   @Override
-  public Trigger operatorAlgaeClearingHeightSwitch() {
+  public Trigger retractClimberSlowlySwitch() {
     return operatorPanelButtonsOne[3];
   }
 
   @Override
-  public Trigger operatorClearAlgaeButton() {
+  public Trigger operatorEjectCoral() {
     return operatorPanelButtonsOne[8];
   }
 
   @Override
-  public Trigger operatorAlgaeTargetSwitch() {
+  public Trigger operatorAlgaePluckHeightSwitch() {
     return operatorPanelButtonsTwo[11];
   }
 
