@@ -874,10 +874,10 @@ public class RobotContainer {
   }
 
   private boolean shouldIntakeLeftSide() {
-    if (oi.getTranslateY() < -0.05) {
+    if (oi.getTranslateY() < -0.02) {
       return true;
     }
-    if (oi.getTranslateY() > 0.05) {
+    if (oi.getTranslateY() > 0.02) {
       return false;
     }
     return drivetrain.getPose().getY() > 4.0; // half the field width in meters
