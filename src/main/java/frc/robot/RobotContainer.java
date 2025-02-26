@@ -547,7 +547,7 @@ public class RobotContainer {
             new ConditionalCommand(
                 new InstantCommand(),
                 armevator
-                    .runOnce(() -> armevator.setTargetPose(ArmevatorPose.CORAL_HP_LOAD))
+                    .runOnce(() -> armevator.setTargetPose(ArmevatorPose.CORAL_POST_SCORE))
                     .asProxy(),
                 () -> isPlucking));
 
