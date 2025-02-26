@@ -62,7 +62,7 @@ In certain circumstances, the robot automatically handles orientation or alignme
 - **Button 2**: Press to reset gyro and robot pose to F1
 - **Button 3**: Press to extend climber
 - **Button 4**: Hold to retract climber
-~~- **Button 5**: Switch to Engage/disengage slow mode (max speed limited to 25%)~~
+- ~~- **Button 5**: Switch to Engage/disengage slow mode (max speed limited to 25%)~~
 - **Button 6**: Set coral target height to 1
 - **Button 7**: Set coral target height to 2
 - **Button 8**: Set coral target height to 3
