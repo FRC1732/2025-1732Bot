@@ -26,7 +26,6 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
@@ -61,7 +60,6 @@ import frc.robot.subsystems.rgb.ScoringPosition;
 import frc.robot.subsystems.rgb.StatusRgb;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
@@ -84,7 +82,7 @@ public class RobotContainer {
   private Intake intake;
   private Climber climber;
 
-  private Alliance lastAlliance = Field2d.getInstance().getAlliance();
+  private Alliance lastAlliance = Alliance.Blue; // Field2d.getInstance().getAlliance();
 
   public final CommandSwerveDrivetrain drivetrain =
       TunerConstants.createDrivetrain((pose) -> questNav.resetPose(pose));
@@ -149,7 +147,9 @@ public class RobotContainer {
   StructPublisher<Pose2d> questPosePublisher =
       NetworkTableInstance.getDefault().getStructTopic("questPose", Pose2d.struct).publish();
 
-  PathConstraints pathConstraints = new PathConstraints(3.0, 3.5, 8.42, 12.8876585);
+  PathConstraints hpPathConstraints = new PathConstraints(4.0, 3.5, 8.42, 12.8876585);
+
+  PathConstraints scorePathConstraints = new PathConstraints(3.0, 2.0, 8.0, 10.0);
   PathPlannerPath pathF1;
   PathPlannerPath pathF2;
   PathPlannerPath pathFL1;
@@ -165,7 +165,7 @@ public class RobotContainer {
   PathPlannerPath pathLeftHP;
   PathPlannerPath pathRightHP;
 
-  private ScoringPathOption scoringPathOption;
+  private ScoringPathOption scoringPathOption = ScoringPathOption.PATH_F1;
 
   public enum ScoringPathOption {
     PATH_F1,
@@ -483,8 +483,8 @@ public class RobotContainer {
         .onTrue(
             Commands.runOnce(
                 () -> {
-                  drivetrain.resetPose(new Pose2d(3.203, 4.190, new Rotation2d(0)));
-                  questNav.resetPose(new Pose2d(3.203, 4.190, new Rotation2d(0)));
+                  drivetrain.resetPose(new Pose2d(7.112, 5.050, new Rotation2d(179.294)));
+                  questNav.resetPose(new Pose2d(7.112, 5.050, new Rotation2d(179.294)));
                 }));
 
     // x-stance
@@ -515,12 +515,8 @@ public class RobotContainer {
     //////////////////
 
     oi.ejectCoralButton().whileTrue(new ClawBackwards(claw));
-    oi.ejectCoralButton()
-        .onFalse(armevator.runOnce(() -> armevator.setTargetPose(ArmevatorPose.CORAL_POST_SCORE)));
 
     oi.operatorEjectCoral().whileTrue(new ClawBackwards(claw));
-    oi.operatorEjectCoral()
-        .onFalse(armevator.runOnce(() -> armevator.setTargetPose(ArmevatorPose.CORAL_POST_SCORE)));
 
     oi.scoreCoralButton()
         .whileTrue(
@@ -564,8 +560,9 @@ public class RobotContainer {
                     new IntakeCoral(claw, statusRgb)),
                 new ConditionalCommand(
                     new ConditionalCommand(
-                        AutoBuilder.pathfindThenFollowPath(pathLeftHP, pathConstraints).asProxy(),
-                        AutoBuilder.pathfindThenFollowPath(pathRightHP, pathConstraints).asProxy(),
+                        AutoBuilder.pathfindThenFollowPath(pathLeftHP, hpPathConstraints).asProxy(),
+                        AutoBuilder.pathfindThenFollowPath(pathRightHP, hpPathConstraints)
+                            .asProxy(),
                         this::shouldIntakeLeftSide),
                     Commands.sequence(
                         Commands.runOnce(() -> preferLeftSide = shouldIntakeLeftSide()),
@@ -714,18 +711,12 @@ public class RobotContainer {
 
     oi.operatorEjectAlgae()
         .whileTrue(
-            Commands.sequence(
-                intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.ALGAE_HANDOFF)),
-                armevator.runOnce(() -> armevator.setTargetPose(ArmevatorPose.ALGAE_HANDOFF)),
-                Commands.parallel(
-                    intake.run(() -> intake.ejectIntake()), claw.run(() -> claw.ejectAlgae()))));
+            Commands.parallel(
+                intake.run(() -> intake.ejectIntake()), claw.run(() -> claw.ejectAlgae())));
     oi.operatorEjectAlgae()
         .onFalse(
             Commands.sequence(
-                intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.CORAL_L1_SCORE)),
-                armevator.runOnce(() -> armevator.setTargetPose(ArmevatorPose.CORAL_L1_SCORE)),
-                Commands.parallel(
-                    intake.run(() -> intake.stopIntake()), claw.run(() -> claw.stopClaw()))));
+                intake.runOnce(() -> intake.stopIntake()), claw.runOnce(() -> claw.stopClaw())));
 
     oi.pluckAlgaeButton()
         .whileTrue(
@@ -818,11 +809,14 @@ public class RobotContainer {
    * singleton.
    */
   public void checkAllianceColor() {
-    Optional<Alliance> alliance = DriverStation.getAlliance();
-    if (alliance.isPresent() && alliance.get() != lastAlliance) {
-      this.lastAlliance = alliance.get();
-      Field2d.getInstance().updateAlliance(this.lastAlliance);
-    }
+    lastAlliance = Alliance.Blue;
+    Field2d.getInstance().updateAlliance(this.lastAlliance);
+
+    // Optional<Alliance> alliance = DriverStation.getAlliance();
+    // if (alliance.isPresent() && alliance.get() != lastAlliance) {
+    //   this.lastAlliance = alliance.get();
+    //   Field2d.getInstance().updateAlliance(this.lastAlliance);
+    // }
   }
 
   public void periodic() {
@@ -890,29 +884,41 @@ public class RobotContainer {
   // run on init
   private void setupScoringPathMap() {
     scoringPathMap.put(
-        ScoringPathOption.PATH_F1, AutoBuilder.pathfindThenFollowPath(pathF1, pathConstraints));
+        ScoringPathOption.PATH_F1,
+        AutoBuilder.pathfindThenFollowPath(pathF1, scorePathConstraints));
     scoringPathMap.put(
-        ScoringPathOption.PATH_F2, AutoBuilder.pathfindThenFollowPath(pathF2, pathConstraints));
+        ScoringPathOption.PATH_F2,
+        AutoBuilder.pathfindThenFollowPath(pathF2, scorePathConstraints));
     scoringPathMap.put(
-        ScoringPathOption.PATH_FL1, AutoBuilder.pathfindThenFollowPath(pathFL1, pathConstraints));
+        ScoringPathOption.PATH_FL1,
+        AutoBuilder.pathfindThenFollowPath(pathFL1, scorePathConstraints));
     scoringPathMap.put(
-        ScoringPathOption.PATH_FL2, AutoBuilder.pathfindThenFollowPath(pathFL2, pathConstraints));
+        ScoringPathOption.PATH_FL2,
+        AutoBuilder.pathfindThenFollowPath(pathFL2, scorePathConstraints));
     scoringPathMap.put(
-        ScoringPathOption.PATH_FR1, AutoBuilder.pathfindThenFollowPath(pathFR1, pathConstraints));
+        ScoringPathOption.PATH_FR1,
+        AutoBuilder.pathfindThenFollowPath(pathFR1, scorePathConstraints));
     scoringPathMap.put(
-        ScoringPathOption.PATH_FR2, AutoBuilder.pathfindThenFollowPath(pathFR2, pathConstraints));
+        ScoringPathOption.PATH_FR2,
+        AutoBuilder.pathfindThenFollowPath(pathFR2, scorePathConstraints));
     scoringPathMap.put(
-        ScoringPathOption.PATH_BL1, AutoBuilder.pathfindThenFollowPath(pathBL1, pathConstraints));
+        ScoringPathOption.PATH_BL1,
+        AutoBuilder.pathfindThenFollowPath(pathBL1, scorePathConstraints));
     scoringPathMap.put(
-        ScoringPathOption.PATH_BL2, AutoBuilder.pathfindThenFollowPath(pathBL2, pathConstraints));
+        ScoringPathOption.PATH_BL2,
+        AutoBuilder.pathfindThenFollowPath(pathBL2, scorePathConstraints));
     scoringPathMap.put(
-        ScoringPathOption.PATH_BR1, AutoBuilder.pathfindThenFollowPath(pathBR1, pathConstraints));
+        ScoringPathOption.PATH_BR1,
+        AutoBuilder.pathfindThenFollowPath(pathBR1, scorePathConstraints));
     scoringPathMap.put(
-        ScoringPathOption.PATH_BR2, AutoBuilder.pathfindThenFollowPath(pathBR2, pathConstraints));
+        ScoringPathOption.PATH_BR2,
+        AutoBuilder.pathfindThenFollowPath(pathBR2, scorePathConstraints));
     scoringPathMap.put(
-        ScoringPathOption.PATH_B1, AutoBuilder.pathfindThenFollowPath(pathB1, pathConstraints));
+        ScoringPathOption.PATH_B1,
+        AutoBuilder.pathfindThenFollowPath(pathB1, scorePathConstraints));
     scoringPathMap.put(
-        ScoringPathOption.PATH_B2, AutoBuilder.pathfindThenFollowPath(pathB2, pathConstraints));
+        ScoringPathOption.PATH_B2,
+        AutoBuilder.pathfindThenFollowPath(pathB2, scorePathConstraints));
 
     scoringAngleMap.put(ScoringPathOption.PATH_F1, Rotation2d.fromDegrees(0.0));
     scoringAngleMap.put(ScoringPathOption.PATH_F2, Rotation2d.fromDegrees(0.0));

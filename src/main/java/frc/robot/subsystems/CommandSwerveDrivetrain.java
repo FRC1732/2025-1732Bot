@@ -18,7 +18,6 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
@@ -226,7 +225,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
           config,
           // Assume the path needs to be flipped for Red vs Blue, this is normally the
           // case
-          () -> DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red,
+          () -> false, // DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red,
           this // Subsystem for requirements
           );
     } catch (Exception ex) {
@@ -290,7 +289,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
           .ifPresent(
               allianceColor -> {
                 setOperatorPerspectiveForward(
-                    allianceColor == Alliance.Red
+                    false // allianceColor == Alliance.Red
                         ? kRedAlliancePerspectiveRotation
                         : kBlueAlliancePerspectiveRotation);
                 m_hasAppliedOperatorPerspective = true;

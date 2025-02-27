@@ -47,7 +47,7 @@
   "reversed": false,
   "folder": "Scoring Paths",
   "idealStartingState": {
-    "velocity": 0.0,
+    "velocity": 0.2,
     "rotation": -59.99999999999999
   },
   "useDefaultConstraints": false
