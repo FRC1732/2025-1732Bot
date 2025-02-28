@@ -3,25 +3,25 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 1.538,
-        "y": 7.529
+        "x": 1.6407199149133123,
+        "y": 7.595809348228941
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.472779605263158,
-        "y": 5.766529605263157
+        "x": 2.4841415465268675,
+        "y": 5.807601572739186
       },
       "isLocked": false,
       "linkedName": "HP"
     },
     {
       "anchor": {
-        "x": 3.27,
-        "y": 4.26
+        "x": 3.297404848767369,
+        "y": 4.2987685708749135
       },
       "prevControl": {
-        "x": 1.25,
-        "y": 4.26
+        "x": 1.047404848767369,
+        "y": 4.2987685708749135
       },
       "nextControl": null,
       "isLocked": false,
@@ -56,7 +56,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -2.0
+    "rotation": 0.0
   },
   "reversed": false,
   "folder": "Reefscape",
