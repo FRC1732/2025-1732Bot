@@ -4,8 +4,6 @@
 
 package frc.robot.subsystems;
 
-import org.littletonrobotics.junction.Logger;
-
 import edu.wpi.first.networktables.DoubleSubscriber;
 import edu.wpi.first.networktables.FloatArraySubscriber;
 import edu.wpi.first.networktables.IntegerSubscriber;
@@ -13,6 +11,7 @@ import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.QuestNav;
+import org.littletonrobotics.junction.Logger;
 
 public class QuestNavLoggerSubsystem extends SubsystemBase {
   private NetworkTableInstance nt4Instance;
@@ -38,16 +37,18 @@ public class QuestNavLoggerSubsystem extends SubsystemBase {
     questMosi = nt4Table.getIntegerTopic("mosi").subscribe(0);
 
     questTimestamp = nt4Table.getDoubleTopic("timestamp").subscribe(0.0f);
-    questPosition = nt4Table.getFloatArrayTopic("position").subscribe(new float[] { 0.0f, 0.0f, 0.0f });
-    questQuaternion = nt4Table.getFloatArrayTopic("quaternion").subscribe(new float[] { 0.0f, 0.0f, 0.0f, 0.0f });
-    questEulerAngles = nt4Table.getFloatArrayTopic("eulerAngles").subscribe(new float[] { 0.0f, 0.0f, 0.0f });
+    questPosition =
+        nt4Table.getFloatArrayTopic("position").subscribe(new float[] {0.0f, 0.0f, 0.0f});
+    questQuaternion =
+        nt4Table.getFloatArrayTopic("quaternion").subscribe(new float[] {0.0f, 0.0f, 0.0f, 0.0f});
+    questEulerAngles =
+        nt4Table.getFloatArrayTopic("eulerAngles").subscribe(new float[] {0.0f, 0.0f, 0.0f});
     questBatteryPercent = nt4Table.getDoubleTopic("batteryPercent").subscribe(0.0f);
   }
 
   @Override
   public void periodic() {
     doLogging();
-
   }
 
   private void doLogging() {
@@ -63,6 +64,5 @@ public class QuestNavLoggerSubsystem extends SubsystemBase {
     Logger.recordOutput("QuestNav" + "/isConnected", questNav.isConnected());
     Logger.recordOutput("QuestNav" + "/getQuestPose", questNav.getQuestPose());
     Logger.recordOutput("QuestNav" + "/getRobotPose", questNav.getRobotPose());
-
   }
 }
