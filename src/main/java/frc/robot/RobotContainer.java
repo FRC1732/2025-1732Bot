@@ -301,6 +301,12 @@ public class RobotContainer {
             intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.CORAL_L4_SCORE)),
             armevator.runOnce(() -> armevator.setTargetPose(ArmevatorPose.CORAL_L4_SCORE))));
     NamedCommands.registerCommand(
+        "setPoseL4Wait",
+        Commands.sequence(
+            Commands.waitUntil(armevator::isMaxHeight),
+            intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.CORAL_L4_SCORE)),
+            armevator.runOnce(() -> armevator.setTargetPose(ArmevatorPose.CORAL_L4_SCORE))));
+    NamedCommands.registerCommand(
         "setPoseStage",
         Commands.sequence(
             intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.CORAL_AUTO_STAGE)),

@@ -264,6 +264,10 @@ public class Armevator extends SubsystemBase {
     return elevatorPID.atGoal() && armPID.atGoal();
   }
 
+  public boolean isMaxHeight() {
+    return elevatorEncoder.getPosition() > 31.0;
+  }
+
   public void resetToAbsoluteEncoder() {
     armRelativeEncoder.setPosition(getAbsoluteDegrees());
   }
