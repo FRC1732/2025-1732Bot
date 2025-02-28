@@ -50,6 +50,7 @@ import frc.robot.limelightVision.LimelightHelpers;
 import frc.robot.operator_interface.OISelector;
 import frc.robot.operator_interface.OperatorInterface;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
+import frc.robot.subsystems.QuestNavLoggerSubsystem;
 import frc.robot.subsystems.armevator.Armevator;
 import frc.robot.subsystems.armevator.ArmevatorPose;
 import frc.robot.subsystems.claw.Claw;
@@ -78,6 +79,7 @@ public class RobotContainer {
   private StatusRgb statusRgb;
   private VisionApriltagSubsystem visionApriltagSubsystem;
   private QuestNav questNav = new QuestNav();
+  private QuestNavLoggerSubsystem questNavLoggerSubsystem = new QuestNavLoggerSubsystem(questNav);
   private Armevator armevator;
   private Intake intake;
   private Climber climber;
