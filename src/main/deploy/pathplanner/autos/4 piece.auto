@@ -17,7 +17,13 @@
               {
                 "type": "named",
                 "data": {
-                  "name": "setPoseL4"
+                  "name": "setPoseStage"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "brakeCoral"
                 }
               }
             ]

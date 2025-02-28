@@ -62,6 +62,7 @@ public class Intake extends SubsystemBase {
     intakeMap = new HashMap<>();
     intakeMap.put(ArmevatorPose.STARTING, -4.0);
     intakeMap.put(ArmevatorPose.CLIMB, 10.0);
+    intakeMap.put(ArmevatorPose.CORAL_AUTO_STAGE, 5.0);
     intakeMap.put(ArmevatorPose.CORAL_HP_LOAD, 5.0);
     intakeMap.put(ArmevatorPose.CORAL_L4_SCORE, 5.0);
     intakeMap.put(ArmevatorPose.CORAL_L3_SCORE, 5.0);

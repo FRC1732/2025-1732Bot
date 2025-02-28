@@ -3,6 +3,7 @@ package frc.robot.subsystems.armevator;
 public enum ArmevatorPose {
   STARTING,
   CLIMB,
+  CORAL_AUTO_STAGE,
   CORAL_HP_LOAD,
   CORAL_L4_SCORE,
   CORAL_L3_SCORE,

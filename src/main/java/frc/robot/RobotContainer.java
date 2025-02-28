@@ -98,7 +98,7 @@ public class RobotContainer {
   private boolean isFullAuto = false;
   private boolean isPlucking = false;
   private boolean isVisionEnabled = true;
-  private boolean isPluckTargetHigh = true;
+  private boolean isPluckTargetHigh = false;
   private BooleanSupplier slowModeSupplier = () -> isSlowMode;
   private BooleanSupplier isFullAutoSupplier = () -> isFullAuto;
   private BooleanSupplier isPluckingSupplier = () -> isPlucking;
@@ -149,7 +149,7 @@ public class RobotContainer {
 
   PathConstraints hpPathConstraints = new PathConstraints(4.0, 3.5, 8.42, 12.8876585);
 
-  PathConstraints scorePathConstraints = new PathConstraints(3.0, 2.0, 8.0, 10.0);
+  PathConstraints scorePathConstraints = new PathConstraints(3.0, 2.5, 8.0, 10.0);
   PathPlannerPath pathF1;
   PathPlannerPath pathF2;
   PathPlannerPath pathFL1;
@@ -297,7 +297,14 @@ public class RobotContainer {
     NamedCommands.registerCommand("ejectCoral", new ClawBackwards(claw));
     NamedCommands.registerCommand(
         "setPoseL4",
-        armevator.runOnce(() -> armevator.setTargetPose(ArmevatorPose.CORAL_L4_SCORE)));
+        Commands.sequence(
+            intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.CORAL_L4_SCORE)),
+            armevator.runOnce(() -> armevator.setTargetPose(ArmevatorPose.CORAL_L4_SCORE))));
+    NamedCommands.registerCommand(
+        "setPoseStage",
+        Commands.sequence(
+            intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.CORAL_AUTO_STAGE)),
+            armevator.runOnce(() -> armevator.setTargetPose(ArmevatorPose.CORAL_AUTO_STAGE))));
 
     // Event Markers
     new EventTrigger("Marker").onTrue(Commands.print("reached event marker"));
@@ -483,8 +490,8 @@ public class RobotContainer {
         .onTrue(
             Commands.runOnce(
                 () -> {
-                  drivetrain.resetPose(new Pose2d(7.112, 5.050, new Rotation2d(179.294)));
-                  questNav.resetPose(new Pose2d(7.112, 5.050, new Rotation2d(179.294)));
+                  drivetrain.resetPose(new Pose2d(3.203, 4.190, new Rotation2d(0)));
+                  questNav.resetPose(new Pose2d(3.203, 4.190, new Rotation2d(0)));
                 }));
 
     // x-stance
@@ -577,6 +584,21 @@ public class RobotContainer {
                                             : Rotation2d.fromDegrees(55)))
                             .asProxy()),
                     isFullAutoSupplier)));
+
+    oi.hybridIntakeCoralButton()
+        .whileTrue(
+            Commands.sequence(
+                Commands.runOnce(() -> preferLeftSide = shouldIntakeLeftSide()),
+                drivetrain
+                    .run(
+                        () ->
+                            driveFacingAngle(
+                                -oi.getTranslateX() * MaxSpeed,
+                                -oi.getTranslateY() * MaxSpeed,
+                                preferLeftSide
+                                    ? Rotation2d.fromDegrees(-55)
+                                    : Rotation2d.fromDegrees(55)))
+                    .asProxy()));
 
     oi.operatorF1()
         .onTrue(

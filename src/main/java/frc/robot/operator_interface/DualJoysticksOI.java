@@ -52,6 +52,11 @@ public class DualJoysticksOI implements OperatorInterface {
     return Math.copySign(Math.pow(input, 3), input);
   }
 
+  // @Override
+  public Trigger hybridIntakeCoralButton() {
+    return translateJoystickButtons[5];
+  }
+
   // Translation Joystick Buttons
 
   @Override
@@ -95,11 +100,6 @@ public class DualJoysticksOI implements OperatorInterface {
   public Trigger ejectAlgaeButton() {
     return rotateJoystickButtons[3];
   }
-
-  // @Override
-  // public Trigger hybridIntakeCoralButton() {
-  //   return rotateJoystickButtons[5];
-  // }
 
   @Override
   public Trigger pluckAlgaeButton() {
