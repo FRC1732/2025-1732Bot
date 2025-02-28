@@ -265,7 +265,8 @@ public class Armevator extends SubsystemBase {
   }
 
   public boolean isMaxHeight() {
-    return elevatorEncoder.getPosition() > 31.0;
+    double temp = elevatorEncoder.getPosition();
+    return temp > 23.0;
   }
 
   public void resetToAbsoluteEncoder() {

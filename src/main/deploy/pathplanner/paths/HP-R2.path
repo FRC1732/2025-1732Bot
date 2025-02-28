@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 1.5655261135196727,
-        "y": 7.448475480859112
+        "x": 1.550378049048853,
+        "y": 7.467322612290225
       },
       "prevControl": null,
       "nextControl": {
-        "x": 3.0744212108480977,
-        "y": 6.72869245093911
+        "x": 3.059273146377278,
+        "y": 6.747539582370223
       },
       "isLocked": false,
       "linkedName": "HP"
@@ -34,7 +34,7 @@
   "eventMarkers": [],
   "globalConstraints": {
     "maxVelocity": 4.8,
-    "maxAcceleration": 3.175,
+    "maxAcceleration": 2.75,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0,
     "nominalVoltage": 12.0,
