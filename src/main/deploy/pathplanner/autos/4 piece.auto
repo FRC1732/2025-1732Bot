@@ -17,13 +17,26 @@
               {
                 "type": "named",
                 "data": {
-                  "name": "setPoseStage"
+                  "name": "brakeCoral"
                 }
               },
               {
-                "type": "named",
+                "type": "sequential",
                 "data": {
-                  "name": "brakeCoral"
+                  "commands": [
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "setPoseStage"
+                      }
+                    },
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "setPoseL4Wait"
+                      }
+                    }
+                  ]
                 }
               }
             ]
@@ -43,6 +56,12 @@
                 "type": "sequential",
                 "data": {
                   "commands": [
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "setPoseL4"
+                      }
+                    },
                     {
                       "type": "deadline",
                       "data": {

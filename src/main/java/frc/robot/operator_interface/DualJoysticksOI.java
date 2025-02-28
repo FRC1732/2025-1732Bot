@@ -52,7 +52,7 @@ public class DualJoysticksOI implements OperatorInterface {
     return Math.copySign(Math.pow(input, 3), input);
   }
 
-  // @Override
+  @Override
   public Trigger hybridIntakeCoralButton() {
     return translateJoystickButtons[5];
   }
