@@ -56,7 +56,11 @@ public interface OperatorInterface {
     return new Trigger(() -> false);
   }
 
-  public default Trigger hybridIntakeCoralButton() {
+  public default Trigger manualModeButton() {
+    return new Trigger(() -> false);
+  }
+
+  public default Trigger fullAutoModeButton() {
     return new Trigger(() -> false);
   }
 

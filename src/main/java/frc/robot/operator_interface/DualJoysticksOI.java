@@ -53,8 +53,13 @@ public class DualJoysticksOI implements OperatorInterface {
   }
 
   @Override
-  public Trigger hybridIntakeCoralButton() {
+  public Trigger manualModeButton() {
     return translateJoystickButtons[5];
+  }
+
+  @Override
+  public Trigger fullAutoModeButton() {
+    return translateJoystickButtons[4];
   }
 
   // Translation Joystick Buttons

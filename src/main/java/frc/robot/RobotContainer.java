@@ -517,6 +517,9 @@ public class RobotContainer {
     oi.operatorFullAutoPlacementSwitch().onTrue(Commands.runOnce(() -> isFullAuto = true));
     oi.operatorFullAutoPlacementSwitch().onFalse(Commands.runOnce(() -> isFullAuto = false));
 
+    oi.fullAutoModeButton().onTrue(Commands.runOnce(() -> isFullAuto = true));
+    oi.manualModeButton().onTrue(Commands.runOnce(() -> isFullAuto = false));
+
     oi.operatorVisionIsEnabledSwitch().onTrue(Commands.runOnce(() -> isVisionEnabled = true));
     oi.operatorVisionIsEnabledSwitch().onFalse(Commands.runOnce(() -> isVisionEnabled = false));
 
@@ -590,21 +593,6 @@ public class RobotContainer {
                                             : Rotation2d.fromDegrees(55)))
                             .asProxy()),
                     isFullAutoSupplier)));
-
-    oi.hybridIntakeCoralButton()
-        .whileTrue(
-            Commands.sequence(
-                Commands.runOnce(() -> preferLeftSide = shouldIntakeLeftSide()),
-                drivetrain
-                    .run(
-                        () ->
-                            driveFacingAngle(
-                                -oi.getTranslateX() * MaxSpeed,
-                                -oi.getTranslateY() * MaxSpeed,
-                                preferLeftSide
-                                    ? Rotation2d.fromDegrees(-55)
-                                    : Rotation2d.fromDegrees(55)))
-                    .asProxy()));
 
     oi.operatorF1()
         .onTrue(
