@@ -38,6 +38,7 @@ import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SelectCommand;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
+import frc.robot.commands.DriveToPose;
 // import frc.lib.team3061.leds.LEDs;
 import frc.robot.commands.clawcommands.ClawBackwards;
 import frc.robot.commands.clawcommands.IntakeCoral;
@@ -546,7 +547,18 @@ public class RobotContainer {
                         .asProxy()),
                 new ConditionalCommand(
                     Commands.sequence(
-                        getScoringPathCommand().asProxy(), new ClawBackwards(claw).asProxy()),
+                        new ConditionalCommand(
+                                getScoringPathCommand(),
+                                Commands.sequence(
+                                    new DriveToPose(
+                                        drivetrain,
+                                        () -> getPathStartingPose(scoringPathOption),
+                                        driveRequest),
+                                    AutoBuilder.followPath(
+                                        getCurrentScoringPath(scoringPathOption))),
+                                this::isFarEnoughForPathfinding)
+                            .asProxy(),
+                        new ClawBackwards(claw).asProxy()),
                     drivetrain
                         .run(
                             () ->
@@ -895,8 +907,48 @@ public class RobotContainer {
     return drivetrain.getPose().getY() > 4.0; // half the field width in meters
   }
 
+  private boolean isFarEnoughForPathfinding() {
+    Pose2d targetPose = getPathStartingPose(scoringPathOption);
+    Pose2d currentPose = drivetrain.getPose();
+    return targetPose.getTranslation().getDistance(currentPose.getTranslation()) > 2.0;
+  }
+
   private Command getScoringPathCommand() {
     return new SelectCommand<>(scoringPathMap, () -> scoringPathOption);
+  }
+
+  private Pose2d getPathStartingPose(ScoringPathOption scoringPathOption) {
+    return getCurrentScoringPath(scoringPathOption).getStartingHolonomicPose().get();
+  }
+
+  private PathPlannerPath getCurrentScoringPath(ScoringPathOption scoringPathOption) {
+    switch (scoringPathOption) {
+      case PATH_F1:
+        return pathF1;
+      case PATH_F2:
+        return pathF2;
+      case PATH_FL1:
+        return pathFL1;
+      case PATH_FL2:
+        return pathFL2;
+      case PATH_FR1:
+        return pathFR1;
+      case PATH_FR2:
+        return pathFR2;
+      case PATH_BL1:
+        return pathBL1;
+      case PATH_BL2:
+        return pathBL2;
+      case PATH_BR1:
+        return pathBR1;
+      case PATH_BR2:
+        return pathBR2;
+      case PATH_B1:
+        return pathB1;
+      case PATH_B2:
+        return pathB2;
+    }
+    return pathF1;
   }
 
   // run on init

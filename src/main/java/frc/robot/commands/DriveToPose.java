@@ -43,18 +43,18 @@ public class DriveToPose extends Command {
   private boolean running = false;
   private Timer timer;
 
-  private static final double driveKp = 0.0;
+  private static final double driveKp = 10.0;
   private static final double driveKd = 0.0;
   private static final double driveKi = 0.0;
-  private static final double thetaKp = 0.0;
+  private static final double thetaKp = 7.0;
   private static final double thetaKd = 0.0;
   private static final double thetaKi = 0.0;
-  private static final double driveMaxVelocity = 0.0;
-  private static final double driveMaxAcceleration = 0.0;
-  private static final double thetaMaxVelocity = 0.0;
-  private static final double thetaMaxAcceleration = 0.0;
-  private static final double driveTolerance = 0.0;
-  private static final double thetaTolerance = 0.0;
+  private static final double driveMaxVelocity = 3.0;
+  private static final double driveMaxAcceleration = 2.5;
+  private static final double thetaMaxVelocity = 8.0;
+  private static final double thetaMaxAcceleration = 10.0;
+  private static final double driveTolerance = 0.5;
+  private static final double thetaTolerance = 5.0;
   private static final double timeout = 5.0;
 
   private final ProfiledPIDController xController =
@@ -110,9 +110,10 @@ public class DriveToPose extends Command {
   public void initialize() {
     // Reset all controllers
     Pose2d currentPose = drivetrain.getPose();
-    xController.reset(currentPose.getX());
-    yController.reset(currentPose.getY());
-    thetaController.reset(currentPose.getRotation().getRadians());
+    xController.reset(currentPose.getX(), drivetrain.getState().Speeds.vxMetersPerSecond);
+    yController.reset(currentPose.getY(), drivetrain.getState().Speeds.vyMetersPerSecond);
+    thetaController.reset(
+        currentPose.getRotation().getRadians(), drivetrain.getState().Speeds.omegaRadiansPerSecond);
     xController.setTolerance(driveTolerance);
     yController.setTolerance(driveTolerance);
     thetaController.setTolerance(thetaTolerance);
