@@ -120,7 +120,7 @@ public class QuestNav {
     // System.out.println(
     //     "Diff: " + (RobotController.getFPGATime() - questBatteryPercent.getLastChange()) /
     // 1000.0);
-    return ((RobotController.getFPGATime() - questBatteryPercent.getLastChange()) / 1000.0) < 30.0;
+    return ((RobotController.getFPGATime() - questPosition.getLastChange()) / 1000.0) < 30.0;
   }
 
   /**
