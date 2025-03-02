@@ -186,6 +186,7 @@ public class RobotContainer {
   }
 
   Map<ScoringPathOption, Command> scoringPathMap = new HashMap<>(12);
+  Map<ScoringPathOption, Command> simpleScoringPathMap = new HashMap<>(12);
   Map<ScoringPathOption, Rotation2d> scoringAngleMap = new HashMap<>(12);
 
   private Field2d field2d;
@@ -554,8 +555,8 @@ public class RobotContainer {
                                         drivetrain,
                                         () -> getPathStartingPose(scoringPathOption),
                                         driveRequest),
-                                    AutoBuilder.followPath(
-                                        getCurrentScoringPath(scoringPathOption))),
+                                    new WaitCommand(0.25),
+                                    getSimpleScoringPathCommand()),
                                 this::isFarEnoughForPathfinding)
                             .asProxy(),
                         new ClawBackwards(claw).asProxy()),
@@ -910,11 +911,15 @@ public class RobotContainer {
   private boolean isFarEnoughForPathfinding() {
     Pose2d targetPose = getPathStartingPose(scoringPathOption);
     Pose2d currentPose = drivetrain.getPose();
-    return targetPose.getTranslation().getDistance(currentPose.getTranslation()) > 2.0;
+    return targetPose.getTranslation().getDistance(currentPose.getTranslation()) > 1.1;
   }
 
   private Command getScoringPathCommand() {
     return new SelectCommand<>(scoringPathMap, () -> scoringPathOption);
+  }
+
+  private Command getSimpleScoringPathCommand() {
+    return new SelectCommand<>(simpleScoringPathMap, () -> scoringPathOption);
   }
 
   private Pose2d getPathStartingPose(ScoringPathOption scoringPathOption) {
@@ -989,6 +994,19 @@ public class RobotContainer {
     scoringPathMap.put(
         ScoringPathOption.PATH_B2,
         AutoBuilder.pathfindThenFollowPath(pathB2, scorePathConstraints));
+
+    simpleScoringPathMap.put(ScoringPathOption.PATH_F1, AutoBuilder.followPath(pathF1));
+    simpleScoringPathMap.put(ScoringPathOption.PATH_F2, AutoBuilder.followPath(pathF2));
+    simpleScoringPathMap.put(ScoringPathOption.PATH_FL1, AutoBuilder.followPath(pathFL1));
+    simpleScoringPathMap.put(ScoringPathOption.PATH_FL2, AutoBuilder.followPath(pathFL2));
+    simpleScoringPathMap.put(ScoringPathOption.PATH_FR1, AutoBuilder.followPath(pathFR1));
+    simpleScoringPathMap.put(ScoringPathOption.PATH_FR2, AutoBuilder.followPath(pathFR2));
+    simpleScoringPathMap.put(ScoringPathOption.PATH_BL1, AutoBuilder.followPath(pathBL1));
+    simpleScoringPathMap.put(ScoringPathOption.PATH_BL2, AutoBuilder.followPath(pathBL2));
+    simpleScoringPathMap.put(ScoringPathOption.PATH_BR1, AutoBuilder.followPath(pathBR1));
+    simpleScoringPathMap.put(ScoringPathOption.PATH_BR2, AutoBuilder.followPath(pathBR2));
+    simpleScoringPathMap.put(ScoringPathOption.PATH_B1, AutoBuilder.followPath(pathB1));
+    simpleScoringPathMap.put(ScoringPathOption.PATH_B2, AutoBuilder.followPath(pathB2));
 
     scoringAngleMap.put(ScoringPathOption.PATH_F1, Rotation2d.fromDegrees(0.0));
     scoringAngleMap.put(ScoringPathOption.PATH_F2, Rotation2d.fromDegrees(0.0));

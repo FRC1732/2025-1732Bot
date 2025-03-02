@@ -110,10 +110,9 @@ public class DriveToPose extends Command {
   public void initialize() {
     // Reset all controllers
     Pose2d currentPose = drivetrain.getPose();
-    xController.reset(currentPose.getX(), drivetrain.getState().Speeds.vxMetersPerSecond);
-    yController.reset(currentPose.getY(), drivetrain.getState().Speeds.vyMetersPerSecond);
-    thetaController.reset(
-        currentPose.getRotation().getRadians(), drivetrain.getState().Speeds.omegaRadiansPerSecond);
+    xController.reset(currentPose.getX());
+    yController.reset(currentPose.getY());
+    thetaController.reset(currentPose.getRotation().getRadians());
     xController.setTolerance(driveTolerance);
     yController.setTolerance(driveTolerance);
     thetaController.setTolerance(thetaTolerance);
