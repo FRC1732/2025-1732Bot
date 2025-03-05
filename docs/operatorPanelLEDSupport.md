@@ -21,4 +21,4 @@ Solution:<p>
 
 - **Driver Station Application** can be a simple console application that understands the network tables and Serial USB connection.
 
-- **Arduino** will use the Serial interface to receive text updates from the driver station computer.  Likewise the arduino will be able to use teh same Serial interface to return acknowledgement messages.  Controlling 16 buttons would require 16 IO pins and while larger Arduino form factors, the smaller solution is a 4 to 16 decoder chip like the CD54HC4514 chip.  Using four outputs plus another for a latch, with the decode chip, all 16 button LEDs can be controlled.
+- **Arduino** will use the Serial interface to receive text updates from the driver station computer.  Likewise the arduino will be able to use the same Serial interface to return acknowledgement messages.  
