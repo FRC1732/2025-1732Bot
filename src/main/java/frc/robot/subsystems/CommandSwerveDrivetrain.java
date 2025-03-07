@@ -29,6 +29,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+import org.littletonrobotics.junction.Logger;
 
 /**
  * Class that extends the Phoenix 6 SwerveDrivetrain class and implements Subsystem so it can easily
@@ -283,6 +284,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                 m_hasAppliedOperatorPerspective = true;
               });
     }
+
+    doLogging();
   }
 
   private void startSimThread() {
@@ -385,5 +388,39 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     tab.addDouble("Pose_Rotation", () -> getPose().getRotation().getDegrees());
     tab.addDouble("PoseX", () -> getPose().getX());
     tab.addDouble("PoseY", () -> getPose().getY());
+  }
+
+  private void doLogging() {
+    Logger.recordOutput("DriveTrain" + "/Robot_Velocity_x", getState().Speeds.vxMetersPerSecond);
+    Logger.recordOutput("DriveTrain" + "/Robot_Velocity_y", getState().Speeds.vyMetersPerSecond);
+    Logger.recordOutput(
+        "DriveTrain" + "/FR_Velocity",
+        getModule(0).getDriveMotor().getVelocity().getValueAsDouble() * 0.0541);
+    Logger.recordOutput(
+        "DriveTrain" + "/FR_Turn", getModule(0).getSteerMotor().getVelocity().getValueAsDouble());
+    Logger.recordOutput(
+        "DriveTrain" + "/FL_Velocity",
+        getModule(1).getDriveMotor().getVelocity().getValueAsDouble() * 0.0541);
+    Logger.recordOutput(
+        "DriveTrain" + "/FL_Turn", getModule(1).getSteerMotor().getVelocity().getValueAsDouble());
+    Logger.recordOutput(
+        "DriveTrain" + "/BR_Velocity",
+        getModule(2).getDriveMotor().getVelocity().getValueAsDouble() * 0.0541);
+    Logger.recordOutput(
+        "DriveTrain" + "/BR_Turn", getModule(2).getSteerMotor().getVelocity().getValueAsDouble());
+    Logger.recordOutput(
+        "DriveTrain" + "/BL_Velocity",
+        getModule(3).getDriveMotor().getVelocity().getValueAsDouble() * 0.0541);
+    Logger.recordOutput(
+        "DriveTrain" + "/BL_Turn", getModule(3).getSteerMotor().getVelocity().getValueAsDouble());
+    Logger.recordOutput("DriveTrain" + "/Pose", getPose());
+    Logger.recordOutput("DriveTrain" + "/Back Left Encoder Degrees", getEncodeInDegrees(2));
+    Logger.recordOutput("DriveTrain" + "/Back Right Encoder Degrees", getEncodeInDegrees(3));
+    Logger.recordOutput("DriveTrain" + "/Front Left Encoder Degrees", getEncodeInDegrees(0));
+    Logger.recordOutput("DriveTrain" + "/Front Right Encoder Degrees", getEncodeInDegrees(1));
+  }
+
+  private double getEncodeInDegrees(int index) {
+    return getModule(index).getEncoder().getAbsolutePosition().getValue().in(Degrees);
   }
 }
