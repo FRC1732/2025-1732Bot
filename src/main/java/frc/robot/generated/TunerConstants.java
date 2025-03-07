@@ -23,7 +23,7 @@ public class TunerConstants {
   // Both sets of gains need to be tuned to your individual robot.
 
   public static final double kHalfSize = 10.375;
-  public static final String kCanBusName = "Tai Lung";
+  public static final String kCanBusName = "Mantis";
   // The steer motor uses any SwerveModule.SteerRequestType control request with the
   // output type specified by SwerveModuleConstants.SteerMotorClosedLoopOutput
   private static final Slot0Configs steerGains =
