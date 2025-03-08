@@ -102,11 +102,17 @@ public class RobotContainer {
   private boolean isPlucking = false;
   private boolean isVisionEnabled = true;
   private boolean isPluckTargetHigh = false;
+  private boolean isClimbing = false;
+  private boolean isRunningPath = false;
+
   private BooleanSupplier slowModeSupplier = () -> isSlowMode;
   private BooleanSupplier isFullAutoSupplier = () -> isFullAuto;
   private BooleanSupplier isPluckingSupplier = () -> isPlucking;
   private BooleanSupplier isVisionEnabledSupplier = () -> isVisionEnabled;
   private BooleanSupplier isPluckTargetHighSupplier = () -> isPluckTargetHigh;
+
+  private Pose2d targetPose = new Pose2d();
+
   private ArmevatorPose currentScoringLevel = ArmevatorPose.CORAL_L4_SCORE;
   private Supplier<ArmevatorPose> currentScoringLevelSupplier = () -> currentScoringLevel;
   private ShuffleboardTab tab;
@@ -238,7 +244,8 @@ public class RobotContainer {
   private void defineSubsystems() {
     claw = new Claw();
     armevator = new Armevator();
-    statusRgb = new StatusRgb(armevator);
+    statusRgb =
+        new StatusRgb(armevator, () -> isClimbing, () -> false, this::getCurrentPathfindError);
     intake = new Intake();
     climber = new Climber();
 
@@ -534,9 +541,20 @@ public class RobotContainer {
     // Coral Commands
     //////////////////
 
-    oi.ejectCoralButton().whileTrue(new ClawBackwards(claw));
+    Command setHPLeds =
+        new WaitCommand(0.25)
+            .andThen(
+                new InstantCommand(
+                    () -> {
+                      if (shouldIntakeLeftSide()) {
+                        statusRgb.leftSideHP();
+                      } else {
+                        statusRgb.rightSideHP();
+                      }
+                    }));
+    oi.ejectCoralButton().whileTrue(new ClawBackwards(claw).alongWith(setHPLeds));
 
-    oi.operatorEjectCoral().whileTrue(new ClawBackwards(claw));
+    oi.operatorEjectCoral().whileTrue(new ClawBackwards(claw).alongWith(setHPLeds));
 
     oi.scoreCoralButton()
         .whileTrue(
@@ -549,14 +567,16 @@ public class RobotContainer {
                 new ConditionalCommand(
                     Commands.sequence(
                         new ConditionalCommand(
-                                getScoringPathCommand(),
+                                getScoringPathCommand()
+                                    .alongWith(new InstantCommand(() -> isRunningPath = true)),
                                 Commands.sequence(
                                     new DriveToPose(
                                         drivetrain,
                                         () -> getPathStartingPose(scoringPathOption),
                                         driveRequest),
                                     new WaitCommand(0.25),
-                                    getSimpleScoringPathCommand()),
+                                    getSimpleScoringPathCommand()
+                                        .alongWith(new InstantCommand(() -> isRunningPath = true))),
                                 this::isFarEnoughForPathfinding)
                             .asProxy(),
                         new ClawBackwards(claw).asProxy()),
@@ -572,11 +592,12 @@ public class RobotContainer {
     oi.scoreCoralButton()
         .onFalse(
             new ConditionalCommand(
-                new InstantCommand(),
-                armevator
-                    .runOnce(() -> armevator.setTargetPose(ArmevatorPose.CORAL_POST_SCORE))
-                    .asProxy(),
-                () -> isPlucking));
+                    new InstantCommand(),
+                    armevator
+                        .runOnce(() -> armevator.setTargetPose(ArmevatorPose.CORAL_POST_SCORE))
+                        .asProxy(),
+                    () -> isPlucking)
+                .alongWith(new InstantCommand(() -> isRunningPath = false)));
 
     oi.intakeCoralButton()
         .whileTrue(
@@ -591,10 +612,12 @@ public class RobotContainer {
                     new IntakeCoral(claw, statusRgb)),
                 new ConditionalCommand(
                     new ConditionalCommand(
-                        AutoBuilder.pathfindThenFollowPath(pathLeftHP, hpPathConstraints).asProxy(),
-                        AutoBuilder.pathfindThenFollowPath(pathRightHP, hpPathConstraints)
-                            .asProxy(),
-                        this::shouldIntakeLeftSide),
+                            AutoBuilder.pathfindThenFollowPath(pathLeftHP, hpPathConstraints)
+                                .asProxy(),
+                            AutoBuilder.pathfindThenFollowPath(pathRightHP, hpPathConstraints)
+                                .asProxy(),
+                            this::shouldIntakeLeftSide)
+                        .alongWith(new InstantCommand(() -> isRunningPath = true)),
                     Commands.sequence(
                         Commands.runOnce(() -> preferLeftSide = shouldIntakeLeftSide()),
                         drivetrain
@@ -608,6 +631,8 @@ public class RobotContainer {
                                             : Rotation2d.fromDegrees(55)))
                             .asProxy()),
                     isFullAutoSupplier)));
+
+    oi.intakeCoralButton().whileFalse(Commands.runOnce(() -> isRunningPath = false));
 
     oi.operatorF1()
         .onTrue(
@@ -792,10 +817,11 @@ public class RobotContainer {
     oi.operatorExtendClimber()
         .whileTrue(
             Commands.sequence(
-                intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.CLIMB)),
-                armevator.runOnce(() -> armevator.setTargetPose(ArmevatorPose.CLIMB)),
-                climber.runOnce(() -> climber.disengageWindmill()),
-                climber.run(() -> climber.extendClimber())));
+                    intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.CLIMB)),
+                    armevator.runOnce(() -> armevator.setTargetPose(ArmevatorPose.CLIMB)),
+                    climber.runOnce(() -> climber.disengageWindmill()),
+                    climber.run(() -> climber.extendClimber()))
+                .alongWith(new InstantCommand(() -> isClimbing = true)));
     oi.operatorExtendClimber().onFalse(climber.runOnce(() -> climber.stopClimber()));
 
     oi.operatorRetractClimber()
@@ -908,6 +934,25 @@ public class RobotContainer {
     return drivetrain.getPose().getY() > 4.0; // half the field width in meters
   }
 
+  // returns a value indicating how far off the robot is from its current path, -1 if a path is not
+  // active
+  private int getCurrentPathfindError() {
+    if (!isRunningPath) {
+      return -1;
+    }
+
+    double calc =
+        Math.pow(drivetrain.getPose().getX() - targetPose.getX(), 2)
+            + Math.pow(drivetrain.getPose().getY() - targetPose.getY(), 2);
+
+    int calculatedMode =
+        Math.min(
+            10,
+            (int) (Math.sqrt(calc) * 20)); // TODO: unsure what values this will give, adjust later
+    System.out.println("Calculated Mode: " + calculatedMode);
+    return calculatedMode;
+  }
+
   private boolean isFarEnoughForPathfinding() {
     Pose2d targetPose = getPathStartingPose(scoringPathOption);
     Pose2d currentPose = drivetrain.getPose();
@@ -957,6 +1002,7 @@ public class RobotContainer {
   }
 
   // run on init
+
   private void setupScoringPathMap() {
     scoringPathMap.put(
         ScoringPathOption.PATH_F1,
@@ -1042,5 +1088,9 @@ public class RobotContainer {
     // limelightMeasurement.timestampSeconds,
     // VecBuilder.fill(.6, .6, 9999999));
     // }
+  }
+
+  public void setPathTargetPose(Pose2d pose) {
+    targetPose = pose;
   }
 }

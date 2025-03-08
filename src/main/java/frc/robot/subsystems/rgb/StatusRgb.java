@@ -12,7 +12,8 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.subsystems.armevator.Armevator;
-import frc.robot.subsystems.armevator.ArmevatorPose;
+import java.util.function.BooleanSupplier;
+import java.util.function.IntSupplier;
 
 public class StatusRgb extends SubsystemBase {
   private DigitalOutput out0 = new DigitalOutput(0);
@@ -27,6 +28,11 @@ public class StatusRgb extends SubsystemBase {
   private ScoringLevel scoringLevel;
   private ScoringPosition scoringPosition;
 
+  private BooleanSupplier climbingOrReadyToClimb;
+  private BooleanSupplier canAutoScore;
+
+  private IntSupplier pathFollowError; // calculated in RobotContainer
+
   private NetworkTableInstance table = NetworkTableInstance.getDefault();
   private NetworkTable nt4Table = table.getTable("rgbOperator");
   private StringPublisher publisher = nt4Table.getStringTopic("rgb").publish();
@@ -35,9 +41,17 @@ public class StatusRgb extends SubsystemBase {
 
   private SpecialMode specialMode = SpecialMode.NONE;
 
-  public StatusRgb(Armevator armevator) {
+  public StatusRgb(
+      Armevator armevator,
+      BooleanSupplier climbingOrReadyToClimb,
+      BooleanSupplier canAutoScore,
+      IntSupplier pathFollowError) {
     timer = new Timer();
     this.armevator = armevator;
+
+    this.climbingOrReadyToClimb = climbingOrReadyToClimb;
+    this.canAutoScore = canAutoScore;
+    this.pathFollowError = pathFollowError;
 
     // Set default values
     scoringLevel = ScoringLevel.NONE;
@@ -49,7 +63,25 @@ public class StatusRgb extends SubsystemBase {
     timer.start();
     targetElapsedTimeSeconds = 1.5;
     specialMode = SpecialMode.CORAL_CAPTURED;
-    System.out.println("Started coral special");
+  }
+
+  public void leftSideHP() {
+    timer.start();
+    targetElapsedTimeSeconds = 1.5;
+    specialMode = SpecialMode.LEFT_SIDE_HP;
+  }
+
+  public void rightSideHP() {
+    timer.start();
+    targetElapsedTimeSeconds = 1.5;
+    specialMode = SpecialMode.RIGHT_SIDE_HP;
+  }
+
+  // TODO: add a trigger for this
+  public void failAutomationStart() {
+    timer.start();
+    targetElapsedTimeSeconds = 1.5;
+    specialMode = SpecialMode.AUTO_START_FAIL;
   }
 
   public void setScoringLevel(ScoringLevel scoringLevel) {
@@ -121,6 +153,15 @@ public class StatusRgb extends SubsystemBase {
           case CORAL_CAPTURED: // blue and gold
             setMode(1);
             return;
+          case LEFT_SIDE_HP:
+            setMode(5);
+            return;
+          case RIGHT_SIDE_HP:
+            setMode(6);
+            return;
+          case AUTO_START_FAIL:
+            setMode(2);
+            return;
           default: // do nothing
             break;
         }
@@ -130,20 +171,12 @@ public class StatusRgb extends SubsystemBase {
     if (DriverStation.isDisabled()) {
       setMode(0);
 
-    } else if (armevator.getCurrentPose() == ArmevatorPose.CORAL_HP_LOAD) {
-      setMode(6);
-
-    } else if (armevator.getCurrentPose() == ArmevatorPose.CORAL_L1_SCORE) {
-      setMode(2);
-
-    } else if (armevator.getCurrentPose() == ArmevatorPose.CORAL_L2_SCORE) {
-      setMode(3);
-
-    } else if (armevator.getCurrentPose() == ArmevatorPose.CORAL_L3_SCORE) {
+    } else if (pathFollowError.getAsInt() > 0) {
+      setMode(pathFollowError.getAsInt() + 10);
+    } else if (canAutoScore.getAsBoolean()) { // TODO: add a trigger for this
       setMode(4);
-
-    } else if (armevator.getCurrentPose() == ArmevatorPose.CORAL_L4_SCORE) {
-      setMode(5);
+    } else if (climbingOrReadyToClimb.getAsBoolean()) {
+      setMode(3);
     } else {
       setMode(0);
     }
@@ -151,6 +184,9 @@ public class StatusRgb extends SubsystemBase {
 
   public enum SpecialMode {
     CORAL_CAPTURED,
+    LEFT_SIDE_HP,
+    RIGHT_SIDE_HP,
+    AUTO_START_FAIL,
     NONE;
   }
 }
