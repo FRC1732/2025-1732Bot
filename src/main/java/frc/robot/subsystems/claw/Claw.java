@@ -6,6 +6,7 @@ package frc.robot.subsystems.claw;
 
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkAnalogSensor;
+import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkMax;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
@@ -15,14 +16,14 @@ import org.littletonrobotics.junction.Logger;
 
 public class Claw extends SubsystemBase {
   /** Creates a new Claw. */
-  private SparkMax clawMotor;
+  private SparkFlex clawMotor;
 
   private RelativeEncoder encoder;
   private SparkAnalogSensor beamBreakSensor;
   private ShuffleboardTab tab;
 
   public Claw() {
-    clawMotor = new SparkMax(ClawConstants.CLAW_MOTOR_CAN_ID, SparkMax.MotorType.kBrushless);
+    clawMotor = new SparkFlex(ClawConstants.CLAW_MOTOR_CAN_ID, SparkMax.MotorType.kBrushless);
     Timer.delay(0.050);
     // clawMotor.setInverted(ClawConstants.Claw_MOTOR_INVERTED);
     encoder = clawMotor.getEncoder();

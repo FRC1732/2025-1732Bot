@@ -728,8 +728,8 @@ public class RobotContainer {
     oi.ejectAlgaeButton()
         .whileTrue(
             Commands.sequence(
-                intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.ALGAE_HANDOFF)),
-                armevator.runOnce(() -> armevator.setTargetPose(ArmevatorPose.ALGAE_HANDOFF)),
+                // intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.ALGAE_HANDOFF)),
+                // armevator.runOnce(() -> armevator.setTargetPose(ArmevatorPose.ALGAE_HANDOFF)),
                 Commands.parallel(
                     intake.run(() -> intake.ejectIntake()), claw.run(() -> claw.ejectAlgae()))));
     oi.ejectAlgaeButton()

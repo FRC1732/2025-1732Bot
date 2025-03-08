@@ -141,6 +141,7 @@ public class Armevator extends SubsystemBase {
     SparkMaxConfig rightConfig = new SparkMaxConfig();
     SparkMaxConfig leftConfig = new SparkMaxConfig();
 
+    rightConfig.inverted(true);
     leftConfig.follow(elevatorRightMotor, true);
 
     rightConfig.idleMode(IdleMode.kBrake);
@@ -343,7 +344,7 @@ public class Armevator extends SubsystemBase {
 
   @Override
   public void periodic() {
-    // doConstantChecks();
+    doConstantChecks();
 
     if (DriverStation.isDisabled()) {
       elevatorPID.reset(elevatorEncoder.getPosition());
@@ -375,7 +376,7 @@ public class Armevator extends SubsystemBase {
     }
 
     armMotor.set(
-        MathUtil.clamp(armPID.calculate(armRelativeEncoder.getPosition()), -0.5, 0.5)
+        armPID.calculate(armRelativeEncoder.getPosition())
             + armFeedforward.calculate(
                 MathUtil.angleModulus(
                     Math.toRadians(

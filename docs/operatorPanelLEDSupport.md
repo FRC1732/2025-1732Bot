@@ -21,4 +21,4 @@ Solution:<p>
 
 - **Driver Station Application** can be a simple console application that understands the network tables and Serial USB connection.
 
-- **Arduino** will use the Serial interface to receive text updates from the driver station computer.  Likewise the arduino will be able to use the same Serial interface to return acknowledgement messages.  
+- **Arduino** will use the Serial interface to receive text updates from the driver station computer.  Likewise the arduino will be able to use the same Serial interface to return acknowledgement messages.
