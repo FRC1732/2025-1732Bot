@@ -13,6 +13,9 @@
 #define LVL_3 11
 #define LVL_4 12
 
+int sequenceCount;
+int isConnected;
+
 
 void setup() {
   Serial.begin(9600);
@@ -31,132 +34,41 @@ void setup() {
   pinMode(LVL_3, OUTPUT);
   pinMode(LVL_4, OUTPUT);
 
-  clearAll();
-  lightSingle(1);
-  delay(200);
+  sequenceCount = 0;
 
-  clearAll();
-  lightSingle(2);
-  delay(200);
+}
 
-  clearAll();
-  lightSingle(3);
-  delay(200);
-
-  clearAll();
-  lightSingle(4);
-  delay(200);
-
-  clearAll();
-  lightSingle(5);
-  delay(200);
-
-  clearAll();
-  lightSingle(6);
-  delay(200);
-
-  clearAll();
-  lightSingle(7);
-  delay(200);
-
-  clearAll();
-  lightSingle(8);
-  delay(200);
-
-  clearAll();
-  lightSingle(9);
-  delay(200);
-
-  clearAll();
-  lightSingle(10);
-  delay(200);
-
-  clearAll();
-  lightSingle(11);
-  delay(200);
-
-  clearAll();
-  lightSingle(12);
-  delay(200);
-
-  clearAll();
-  lightSingle(12);
-  delay(200);
-
-  clearAll();
-  lightSingle(11);
-  delay(200);
-
-  clearAll();
-  lightSingle(10);
-  delay(200);
-
-  clearAll();
-  lightSingle(9);
-  delay(200);
-
-  clearAll();
-  lightSingle(8);
-  delay(200);
-
-  clearAll();
-  lightSingle(7);
-  delay(200);
-
-  clearAll();
-  lightSingle(6);
-  delay(200);
-
-  clearAll();
-  lightSingle(5);
-  delay(200);
-
-  clearAll();
-  lightSingle(4);
-  delay(200);
-
-  clearAll();
-  lightSingle(3);
-  delay(200);
-
-  clearAll();
-  lightSingle(2);
-  delay(200);
-
-  clearAll();
-  lightSingle(1);
-  delay(200);
-
-  clearAll();
-
-  lightLevel(1);
-  delay(200);
-
-  lightLevel(2);
-  delay(200);
-
-  lightLevel(3);
-  delay(200);
-
-  lightLevel(4);
-  delay(200);
-
-  offLevel(4);
-  delay(200);
-
-  offLevel(3);
-  delay(200);
-
-  offLevel(2);
-  delay(200);
-
-  offLevel(1);
+void runLightSequence(int state){
+    if(state == 24){
+      clearAll();
+    }
+    if(state < 12){
+        clearAll();
+        lightSingle(state+1);
+    }else if(state >= 12 && state < 24){
+        clearAll();
+        lightSingle(23-state);
+    }else if(state >= 24 && state < 28){
+        lightLevel(abs(23-state));
+    }else if(state < 32){      
+      offLevel(33-state);
+    }else{
+      clearAll();
+    }
 }
 
 char buffer[6];
 
 void loop() {
+  sequenceCount++;
+  if(isConnected == 0){
+    runLightSequence(sequenceCount / 4);
+  }
+  if(sequenceCount >= 4*32){
+    sequenceCount = 0;
+  }
   if (readPosition()) {
+    isConnected = 1;
     Serial.print("Received: ");
     buffer[5] = '\0';
     Serial.println(buffer);
@@ -176,7 +88,7 @@ void loop() {
 bool readPosition() {
   bool started = false;
   int index = 0;
-
+  
   if (Serial.available() < 5) return false;
 
   while (index < 5) {
