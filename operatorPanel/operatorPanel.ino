@@ -39,18 +39,23 @@ void setup() {
 }
 
 void runLightSequence(int state){
+  //Reset all before L states
     if(state == 24){
       clearAll();
     }
+    //Go clockwise around the Positions
     if(state < 12){
         clearAll();
         lightSingle(state+1);
     }else if(state >= 12 && state < 24){
+        //Go counter-clockwise around the Positions
         clearAll();
         lightSingle(23-state);
-    }else if(state >= 24 && state < 28){
+    }else if(state >= 24 && state < 28){      
+      //Go Up the levels
         lightLevel(abs(23-state));
     }else if(state < 32){      
+      //Go down the levels
       offLevel(33-state);
     }else{
       clearAll();
@@ -60,15 +65,15 @@ void runLightSequence(int state){
 char buffer[6];
 
 void loop() {
-  sequenceCount++;
-  if(isConnected == 0){
+  sequenceCount++; //Count every 50ms loop
+  if(isConnected == 0){ //if the driverstation is connected stop sequence
     runLightSequence(sequenceCount / 4);
   }
-  if(sequenceCount >= 4*32){
+  if(sequenceCount >= 4*32){ //If the sequence is done restart
     sequenceCount = 0;
   }
   if (readPosition()) {
-    isConnected = 1;
+    isConnected = 1; //If it receives a message from driver station laptop then stop sequence
     Serial.print("Received: ");
     buffer[5] = '\0';
     Serial.println(buffer);
