@@ -728,8 +728,8 @@ public class RobotContainer {
     oi.ejectAlgaeButton()
         .whileTrue(
             Commands.sequence(
-                // intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.ALGAE_HANDOFF)),
-                // armevator.runOnce(() -> armevator.setTargetPose(ArmevatorPose.ALGAE_HANDOFF)),
+                intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.ALGAE_HANDOFF)),
+                armevator.runOnce(() -> armevator.setTargetPose(ArmevatorPose.ALGAE_HANDOFF)),
                 Commands.parallel(
                     intake.run(() -> intake.ejectIntake()), claw.run(() -> claw.ejectAlgae()))));
     oi.ejectAlgaeButton()
@@ -781,7 +781,36 @@ public class RobotContainer {
                         claw.run(() -> claw.brakeAlgae()))));
 
     oi.aimAtNetButton()
-        .whileTrue(armevator.runOnce(() -> armevator.setTargetPose(ArmevatorPose.ALGAE_NET_SCORE)));
+        .whileTrue(
+            Commands.sequence(
+                armevator.runOnce(() -> armevator.setTargetPose(ArmevatorPose.ALGAE_HANDOFF)),
+                intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.ALGAE_HANDOFF)),
+                Commands.deadline(
+                    Commands.waitUntil(() -> isRobotFacingTargetAngle(Rotation2d.fromDegrees(0.0))),
+                    drivetrain.run(() -> driveFacingAngle(0, 0, Rotation2d.fromDegrees(0)))),
+                Commands.deadline(
+                    Commands.sequence(
+                        Commands.waitUntil(this::isRobotInNetScoringPosition),
+                        Commands.deadline(
+                            Commands.sequence(
+                                Commands.waitUntil(this::isRobotCloseToNet),
+                                armevator
+                                    .runOnce(
+                                        () -> armevator.setTargetPose(ArmevatorPose.ALGAE_HANDOFF))
+                                    .asProxy()),
+                            Commands.sequence( // score net command
+                                armevator.runOnce(
+                                    () -> armevator.setTargetPose(ArmevatorPose.ALGAE_NET_STAGE)),
+                                Commands.waitUntil(armevator::isAtNetScoringHeight),
+                                armevator.runOnce(
+                                    () -> armevator.setTargetPose(ArmevatorPose.ALGAE_NET_SCORE)),
+                                Commands.waitUntil(armevator::isAtNetReleaseAngle),
+                                claw.runOnce(() -> claw.ejectAlgae()),
+                                Commands.waitSeconds(0.3),
+                                claw.runOnce(() -> claw.stopClaw()),
+                                armevator.runOnce(
+                                    () -> armevator.setTargetPose(ArmevatorPose.ALGAE_HANDOFF))))),
+                    drivetrain.run(() -> driveFacingAngle(1.0, 0, Rotation2d.fromDegrees(0))))));
     oi.aimAtNetButton()
         .onFalse(armevator.runOnce(() -> armevator.setTargetPose(ArmevatorPose.ALGAE_HANDOFF)));
 
@@ -906,6 +935,19 @@ public class RobotContainer {
       return false;
     }
     return drivetrain.getPose().getY() > 4.0; // half the field width in meters
+  }
+
+  private boolean isRobotFacingTargetAngle(Rotation2d target) {
+    double difference = Math.abs(drivetrain.getPose().getRotation().minus(target).getDegrees());
+    return difference <= 3.0;
+  }
+
+  private boolean isRobotInNetScoringPosition() {
+    return drivetrain.getPose().getX() >= 4.5;
+  }
+
+  private boolean isRobotCloseToNet() {
+    return drivetrain.getPose().getX() >= 6.0; // 7.5 is hitting
   }
 
   private boolean isFarEnoughForPathfinding() {

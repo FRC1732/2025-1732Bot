@@ -108,7 +108,8 @@ public class Armevator extends SubsystemBase {
     armMap.put(ArmevatorPose.CORAL_POST_SCORE, 55.0);
     armMap.put(ArmevatorPose.ALGAE_INTAKE, 90.0);
     armMap.put(ArmevatorPose.ALGAE_HANDOFF, 90.0);
-    armMap.put(ArmevatorPose.ALGAE_NET_SCORE, -70.0);
+    armMap.put(ArmevatorPose.ALGAE_NET_SCORE, -125.0);
+    armMap.put(ArmevatorPose.ALGAE_NET_STAGE, 90.0);
     armMap.put(ArmevatorPose.ALGAE_L3_PLUCK, 15.0);
     armMap.put(ArmevatorPose.ALGAE_L3_DROP, 5.0);
     armMap.put(ArmevatorPose.ALGAE_L2_PLUCK, 15.0);
@@ -127,6 +128,7 @@ public class Armevator extends SubsystemBase {
     elevatorMap.put(ArmevatorPose.ALGAE_INTAKE, 0.0);
     elevatorMap.put(ArmevatorPose.ALGAE_HANDOFF, 0.0);
     elevatorMap.put(ArmevatorPose.ALGAE_NET_SCORE, 32.0);
+    elevatorMap.put(ArmevatorPose.ALGAE_NET_STAGE, 32.0);
     elevatorMap.put(ArmevatorPose.ALGAE_L3_PLUCK, 18.0);
     elevatorMap.put(ArmevatorPose.ALGAE_L3_DROP, 20.0);
     elevatorMap.put(ArmevatorPose.ALGAE_L2_PLUCK, 3.0);
@@ -270,6 +272,14 @@ public class Armevator extends SubsystemBase {
     return temp > 23.0;
   }
 
+  public boolean isAtNetScoringHeight() {
+    return elevatorEncoder.getPosition() > 8.0;
+  }
+
+  public boolean isAtNetReleaseAngle() {
+    return armRelativeEncoder.getPosition() < 0.0;
+  }
+
   public void resetToAbsoluteEncoder() {
     armRelativeEncoder.setPosition(getAbsoluteDegrees());
   }
@@ -344,7 +354,7 @@ public class Armevator extends SubsystemBase {
 
   @Override
   public void periodic() {
-    doConstantChecks();
+    // doConstantChecks();
 
     if (DriverStation.isDisabled()) {
       elevatorPID.reset(elevatorEncoder.getPosition());
