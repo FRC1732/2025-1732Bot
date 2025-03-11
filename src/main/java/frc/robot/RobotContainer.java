@@ -749,27 +749,40 @@ public class RobotContainer {
             Commands.sequence(
                 intake.runOnce(() -> intake.stopIntake()), claw.runOnce(() -> claw.stopClaw())));
 
+    Command nonAutoPluck =
+        Commands.runOnce(() -> isPlucking = true)
+            .andThen(
+                Commands.deadline(
+                        Commands.sequence(
+                            new WaitCommand(0.25),
+                            intake.runOnce(
+                                () ->
+                                    intake.setTargetPose(
+                                        isPluckTargetHighSupplier.getAsBoolean()
+                                            ? ArmevatorPose.ALGAE_L3_PLUCK
+                                            : ArmevatorPose.ALGAE_L2_PLUCK)),
+                            armevator.runOnce(
+                                () ->
+                                    armevator.setTargetPose(
+                                        isPluckTargetHighSupplier.getAsBoolean()
+                                            ? ArmevatorPose.ALGAE_L3_PLUCK
+                                            : ArmevatorPose.ALGAE_L2_PLUCK))),
+                        claw.run(() -> claw.ejectCoral()))
+                    .andThen(claw.run(() -> claw.intakeAlgae())));
+
+    Command autoPluckCommand =
+        Commands.sequence(
+            new ConditionalCommand(
+                new WaitCommand(0.5), new WaitCommand(0), oi.scoreCoralButton()::getAsBoolean),
+            armevator
+                .runOnce(() -> armevator.setTargetPose(ArmevatorPose.CORAL_L1_SCORE))
+                .asProxy(),
+            getScoringPathCommand(),
+            nonAutoPluck.asProxy());
+
     oi.pluckAlgaeButton()
-        .whileTrue(
-            Commands.runOnce(() -> isPlucking = true)
-                .andThen(
-                    Commands.deadline(
-                            Commands.sequence(
-                                new WaitCommand(0.25),
-                                intake.runOnce(
-                                    () ->
-                                        intake.setTargetPose(
-                                            isPluckTargetHighSupplier.getAsBoolean()
-                                                ? ArmevatorPose.ALGAE_L3_PLUCK
-                                                : ArmevatorPose.ALGAE_L2_PLUCK)),
-                                armevator.runOnce(
-                                    () ->
-                                        armevator.setTargetPose(
-                                            isPluckTargetHighSupplier.getAsBoolean()
-                                                ? ArmevatorPose.ALGAE_L3_PLUCK
-                                                : ArmevatorPose.ALGAE_L2_PLUCK))),
-                            claw.run(() -> claw.ejectCoral()))
-                        .andThen(claw.run(() -> claw.intakeAlgae()))));
+        .whileTrue(new ConditionalCommand(autoPluckCommand, nonAutoPluck, isFullAutoSupplier));
+
     oi.pluckAlgaeButton()
         .onFalse(
             Commands.runOnce(() -> isPlucking = false)
