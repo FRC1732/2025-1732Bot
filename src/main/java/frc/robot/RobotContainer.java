@@ -170,11 +170,10 @@ public class RobotContainer {
 
   PathPlannerPath pathFAlgae;
   PathPlannerPath pathFLAlgae;
-    PathPlannerPath pathFRAlgae;
-    PathPlannerPath pathBLAlgae;
-    PathPlannerPath pathBRAlgae;
-    PathPlannerPath pathBAlgae;
-
+  PathPlannerPath pathFRAlgae;
+  PathPlannerPath pathBLAlgae;
+  PathPlannerPath pathBRAlgae;
+  PathPlannerPath pathBAlgae;
 
   private ScoringPathOption scoringPathOption = ScoringPathOption.PATH_F1;
 
@@ -221,12 +220,12 @@ public class RobotContainer {
       pathLeftHP = PathPlannerPath.fromPathFile("LeftHP");
       pathRightHP = PathPlannerPath.fromPathFile("RightHP");
 
-        pathFAlgae = PathPlannerPath.fromPathFile("F Algae");
-        pathFLAlgae = PathPlannerPath.fromPathFile("FL Algae");
-        pathFRAlgae = PathPlannerPath.fromPathFile("FR Algae");
-        pathBLAlgae = PathPlannerPath.fromPathFile("BL Algae");
-        pathBRAlgae = PathPlannerPath.fromPathFile("BR Algae");
-        pathBAlgae = PathPlannerPath.fromPathFile("B Algae");
+      pathFAlgae = PathPlannerPath.fromPathFile("F Algae");
+      pathFLAlgae = PathPlannerPath.fromPathFile("FL Algae");
+      pathFRAlgae = PathPlannerPath.fromPathFile("FR Algae");
+      pathBLAlgae = PathPlannerPath.fromPathFile("BL Algae");
+      pathBRAlgae = PathPlannerPath.fromPathFile("BR Algae");
+      pathBAlgae = PathPlannerPath.fromPathFile("B Algae");
 
     } catch (Exception e) {
       System.out.println(e.getMessage());
@@ -770,44 +769,41 @@ public class RobotContainer {
         Commands.runOnce(() -> isPlucking = true)
             .andThen(
                 Commands.deadline(
-                        Commands.sequence(
-                            new WaitCommand(0.25),
-                            intake.runOnce(
-                                () ->
-                                    {
-                                        ArmevatorPose setPose = isPluckTargetHighSupplier.getAsBoolean()
-                                        ? ArmevatorPose.ALGAE_L3_PLUCK
-                                        : ArmevatorPose.ALGAE_L2_PLUCK;
+                    Commands.sequence(
+                        new WaitCommand(0.25),
+                        intake.runOnce(
+                            () -> {
+                              ArmevatorPose setPose =
+                                  isPluckTargetHighSupplier.getAsBoolean()
+                                      ? ArmevatorPose.ALGAE_L3_PLUCK
+                                      : ArmevatorPose.ALGAE_L2_PLUCK;
 
-                                        if (isFullAuto) {
-                                            setPose = inferPluckArmevatorPose();
-                                        }
-                                        intake.setTargetPose(setPose);
-                                        }),
-                            armevator.runOnce(
-                                () ->
-                                    {
-                                        ArmevatorPose setPose = isPluckTargetHighSupplier.getAsBoolean()
-                                        ? ArmevatorPose.ALGAE_L3_PLUCK
-                                        : ArmevatorPose.ALGAE_L2_PLUCK;
+                              if (isFullAuto) {
+                                setPose = inferPluckArmevatorPose();
+                              }
+                              intake.setTargetPose(setPose);
+                            }),
+                        armevator.runOnce(
+                            () -> {
+                              ArmevatorPose setPose =
+                                  isPluckTargetHighSupplier.getAsBoolean()
+                                      ? ArmevatorPose.ALGAE_L3_PLUCK
+                                      : ArmevatorPose.ALGAE_L2_PLUCK;
 
-                                        if (isFullAuto) {
-                                            setPose = inferPluckArmevatorPose();
-                                        }
+                              if (isFullAuto) {
+                                setPose = inferPluckArmevatorPose();
+                              }
 
-                                        armevator.setTargetPose(
-                                            setPose);}
-                                            ))),
-                        claw.run(() -> claw.ejectCoral()))
-                    .andThen(claw.run(() -> claw.intakeAlgae()));
+                              armevator.setTargetPose(setPose);
+                            }))),
+                claw.run(() -> claw.ejectCoral()))
+            .andThen(claw.run(() -> claw.intakeAlgae()));
 
     Command autoPluckCommand =
         Commands.sequence(
             new ConditionalCommand(
                 new WaitCommand(0.5), new WaitCommand(0), oi.scoreCoralButton()::getAsBoolean),
-            armevator
-                .runOnce(() -> armevator.setTargetPose(inferPluckArmevatorPose()))
-                .asProxy(),
+            armevator.runOnce(() -> armevator.setTargetPose(inferPluckArmevatorPose())).asProxy(),
             getPluckPathCommand(),
             nonAutoPluck.asProxy());
 
@@ -960,13 +956,13 @@ public class RobotContainer {
 
   private ArmevatorPose inferPluckArmevatorPose() {
     switch (scoringPathOption) {
-        case PATH_F1, PATH_F2, PATH_BR1, PATH_BR2, PATH_BL1, PATH_BL2 -> {
-            return ArmevatorPose.ALGAE_L2_PLUCK;
-        }
+      case PATH_F1, PATH_F2, PATH_BR1, PATH_BR2, PATH_BL1, PATH_BL2 -> {
+        return ArmevatorPose.ALGAE_L2_PLUCK;
+      }
 
-        default -> {
-            return ArmevatorPose.ALGAE_L3_PLUCK;
-        }
+      default -> {
+        return ArmevatorPose.ALGAE_L3_PLUCK;
+      }
     }
   }
 
@@ -1067,7 +1063,6 @@ public class RobotContainer {
     simpleScoringPathMap.put(ScoringPathOption.PATH_BR2, AutoBuilder.followPath(pathBR2));
     simpleScoringPathMap.put(ScoringPathOption.PATH_B1, AutoBuilder.followPath(pathB1));
     simpleScoringPathMap.put(ScoringPathOption.PATH_B2, AutoBuilder.followPath(pathB2));
-
 
     pluckAlgaePathMap.put(
         ScoringPathOption.PATH_F1,
