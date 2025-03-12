@@ -804,6 +804,7 @@ public class RobotContainer {
             new ConditionalCommand(
                 new WaitCommand(0.5), new WaitCommand(0), oi.scoreCoralButton()::getAsBoolean),
             armevator.runOnce(() -> armevator.setTargetPose(inferPluckArmevatorPose())).asProxy(),
+            intake.runOnce(() -> intake.setTargetPose(inferPluckArmevatorPose())).asProxy(),
             getPluckPathCommand(),
             nonAutoPluck.asProxy());
 
