@@ -108,7 +108,8 @@ public class Armevator extends SubsystemBase {
     armMap.put(ArmevatorPose.CORAL_POST_SCORE, 55.0);
     armMap.put(ArmevatorPose.ALGAE_INTAKE, 90.0);
     armMap.put(ArmevatorPose.ALGAE_HANDOFF, 90.0);
-    armMap.put(ArmevatorPose.ALGAE_NET_SCORE, -70.0);
+    armMap.put(ArmevatorPose.ALGAE_NET_SCORE, -125.0);
+    armMap.put(ArmevatorPose.ALGAE_NET_STAGE, 90.0);
     armMap.put(ArmevatorPose.ALGAE_L3_PLUCK, 15.0);
     armMap.put(ArmevatorPose.ALGAE_L3_DROP, 5.0);
     armMap.put(ArmevatorPose.ALGAE_L2_PLUCK, 15.0);
@@ -126,7 +127,8 @@ public class Armevator extends SubsystemBase {
     elevatorMap.put(ArmevatorPose.CORAL_POST_SCORE, 4.0);
     elevatorMap.put(ArmevatorPose.ALGAE_INTAKE, 0.0);
     elevatorMap.put(ArmevatorPose.ALGAE_HANDOFF, 0.0);
-    elevatorMap.put(ArmevatorPose.ALGAE_NET_SCORE, 32.0);
+    elevatorMap.put(ArmevatorPose.ALGAE_NET_SCORE, 7.0);
+    elevatorMap.put(ArmevatorPose.ALGAE_NET_STAGE, 7.0);
     elevatorMap.put(ArmevatorPose.ALGAE_L3_PLUCK, 18.0);
     elevatorMap.put(ArmevatorPose.ALGAE_L3_DROP, 20.0);
     elevatorMap.put(ArmevatorPose.ALGAE_L2_PLUCK, 3.0);
@@ -141,6 +143,7 @@ public class Armevator extends SubsystemBase {
     SparkMaxConfig rightConfig = new SparkMaxConfig();
     SparkMaxConfig leftConfig = new SparkMaxConfig();
 
+    rightConfig.inverted(true);
     leftConfig.follow(elevatorRightMotor, true);
 
     rightConfig.idleMode(IdleMode.kBrake);
@@ -269,6 +272,14 @@ public class Armevator extends SubsystemBase {
     return temp > 23.0;
   }
 
+  public boolean isAtNetScoringHeight() {
+    return elevatorEncoder.getPosition() > 1.0;
+  }
+
+  public boolean isAtNetReleaseAngle() {
+    return armRelativeEncoder.getPosition() < 18.0;
+  }
+
   public void resetToAbsoluteEncoder() {
     armRelativeEncoder.setPosition(getAbsoluteDegrees());
   }
@@ -375,7 +386,7 @@ public class Armevator extends SubsystemBase {
     }
 
     armMotor.set(
-        MathUtil.clamp(armPID.calculate(armRelativeEncoder.getPosition()), -0.5, 0.5)
+        armPID.calculate(armRelativeEncoder.getPosition())
             + armFeedforward.calculate(
                 MathUtil.angleModulus(
                     Math.toRadians(

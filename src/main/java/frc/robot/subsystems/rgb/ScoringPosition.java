@@ -2,18 +2,18 @@ package frc.robot.subsystems.rgb;
 
 public enum ScoringPosition {
   NONE(0),
-  B1(1),
-  B2(2),
-  BR2(3),
-  BR1(4),
-  FR2(5),
-  FR1(6),
-  F2(7),
-  F1(8),
-  FL1(9),
-  FL2(10),
-  BL1(11),
-  BL2(12);
+  B1(12),
+  B2(1),
+  BR2(2),
+  BR1(3),
+  FR2(4),
+  FR1(5),
+  F2(6),
+  F1(7),
+  FL1(8),
+  FL2(9),
+  BL1(10),
+  BL2(11);
 
   private final int position;
 
