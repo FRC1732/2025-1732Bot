@@ -106,8 +106,8 @@ public class Armevator extends SubsystemBase {
     armMap.put(ArmevatorPose.CORAL_L2_SCORE, 72.0);
     armMap.put(ArmevatorPose.CORAL_L1_SCORE, 80.0);
     armMap.put(ArmevatorPose.CORAL_POST_SCORE, 55.0);
-    armMap.put(ArmevatorPose.ALGAE_INTAKE, 90.0);
-    armMap.put(ArmevatorPose.ALGAE_HANDOFF, 90.0);
+    armMap.put(ArmevatorPose.ALGAE_INTAKE, 89.0);
+    armMap.put(ArmevatorPose.ALGAE_HANDOFF, 89.0);
     armMap.put(ArmevatorPose.ALGAE_NET_SCORE, -125.0);
     armMap.put(ArmevatorPose.ALGAE_NET_STAGE, 90.0);
     armMap.put(ArmevatorPose.ALGAE_L3_PLUCK, 15.0);
@@ -119,7 +119,7 @@ public class Armevator extends SubsystemBase {
     elevatorMap.put(ArmevatorPose.STARTING, 0.0);
     elevatorMap.put(ArmevatorPose.CLIMB, 0.0);
     elevatorMap.put(ArmevatorPose.CORAL_AUTO_STAGE, 32.0);
-    elevatorMap.put(ArmevatorPose.CORAL_HP_LOAD, 4.0);
+    elevatorMap.put(ArmevatorPose.CORAL_HP_LOAD, 4.25);
     elevatorMap.put(ArmevatorPose.CORAL_L4_SCORE, 32.0);
     elevatorMap.put(ArmevatorPose.CORAL_L3_SCORE, 4.5);
     elevatorMap.put(ArmevatorPose.CORAL_L2_SCORE, 0.0);
@@ -277,7 +277,7 @@ public class Armevator extends SubsystemBase {
   }
 
   public boolean isAtNetReleaseAngle() {
-    return armRelativeEncoder.getPosition() < 18.0;
+    return armRelativeEncoder.getPosition() < 12.0;
   }
 
   public void resetToAbsoluteEncoder() {
