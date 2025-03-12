@@ -3,6 +3,7 @@
   "robotLength": 0.845,
   "holonomicMode": true,
   "pathFolders": [
+    "Algae Pluck Paths",
     "Pathfinding Paths",
     "Reefscape",
     "Scoring Paths"
