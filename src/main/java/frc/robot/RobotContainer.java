@@ -736,8 +736,10 @@ public class RobotContainer {
     oi.intakeAlgaeButton()
         .onFalse(
             Commands.sequence(
-                intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.ALGAE_HANDOFF)),
+                intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.STARTING)),
                 armevator.runOnce(() -> armevator.setTargetPose(ArmevatorPose.ALGAE_HANDOFF)),
+                Commands.waitSeconds(1.0),
+                intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.ALGAE_HANDOFF)),
                 Commands.parallel(
                     intake.run(() -> intake.stopIntake()), claw.run(() -> claw.brakeAlgae()))));
 
@@ -827,43 +829,23 @@ public class RobotContainer {
                 armevator.runOnce(() -> armevator.setTargetPose(ArmevatorPose.ALGAE_NET_STAGE)),
                 intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.ALGAE_NET_STAGE)),
                 claw.runOnce(() -> claw.intakeAlgae()),
-                Commands.deadline(
-                    Commands.waitUntil(
-                        () -> isRobotFacingTargetAngle(Rotation2d.fromDegrees(180.0))),
-                    drivetrain.run(() -> driveFacingAngle(0, 0, Rotation2d.fromDegrees(180)))),
+                new DriveToPose(
+                    drivetrain,
+                    () -> new Pose2d(7.5, drivetrain.getPose().getY(), Rotation2d.fromDegrees(135)),
+                    driveRequest),
                 Commands.deadline(
                     Commands.sequence(
                         claw.runOnce(() -> claw.brakeAlgae()),
-                        Commands.waitUntil(this::isRobotInNetScoringPosition),
-                        Commands.deadline(
-                            Commands.sequence(
-                                Commands.waitUntil(this::isRobotCloseToNet),
-                                armevator
-                                    .runOnce(
-                                        () -> armevator.setTargetPose(ArmevatorPose.ALGAE_HANDOFF))
-                                    .asProxy()),
-                            Commands.sequence( // score net command
-                                // armevator.runOnce(
-                                //     () ->
-                                // armevator.setTargetPose(ArmevatorPose.ALGAE_NET_STAGE)),
-                                // Commands.waitUntil(armevator::isAtNetScoringHeight),
-                                armevator.runOnce(
-                                    () -> armevator.setTargetPose(ArmevatorPose.ALGAE_NET_SCORE)),
-                                Commands.waitUntil(armevator::isAtNetReleaseAngle),
-                                claw.runOnce(() -> claw.ejectAlgae()),
-                                Commands.waitSeconds(0.2),
-                                claw.runOnce(() -> claw.stopClaw()),
-                                armevator.runOnce(
-                                    () -> armevator.setTargetPose(ArmevatorPose.ALGAE_HANDOFF))))),
-                    drivetrain.run(() -> driveFacingAngle(1.25, 0, Rotation2d.fromDegrees(180))))));
-    // drivetrain.run(
-    //     () ->
-    //         drivetrain.setControl(
-    //             driveWithSpeedsRequest
-    //                 .withDriveRequestType(SwerveModule.DriveRequestType.Velocity)
-    //                 .withSteerRequestType(
-    //                     SwerveModule.SteerRequestType.MotionMagicExpo)
-    //                 .withSpeeds(new ChassisSpeeds(-2.0, 0, 0)))))));
+                        // score net command
+                        armevator.runOnce(
+                            () -> armevator.setTargetPose(ArmevatorPose.ALGAE_NET_SCORE)),
+                        Commands.waitUntil(armevator::isAtNetReleaseAngle),
+                        claw.runOnce(() -> claw.ejectAlgae()),
+                        Commands.waitSeconds(0.2),
+                        claw.runOnce(() -> claw.stopClaw()),
+                        armevator.runOnce(
+                            () -> armevator.setTargetPose(ArmevatorPose.ALGAE_HANDOFF))),
+                    drivetrain.run(() -> driveFacingAngle(0, 0, Rotation2d.fromDegrees(135.0))))));
     oi.aimAtNetButton()
         .onFalse(armevator.runOnce(() -> armevator.setTargetPose(ArmevatorPose.ALGAE_HANDOFF)));
 

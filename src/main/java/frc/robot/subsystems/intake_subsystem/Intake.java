@@ -201,7 +201,7 @@ public class Intake extends SubsystemBase {
     }
 
     intakeMotor.set(
-        MathUtil.clamp(intakePID.calculate(getAngle()), -0.5, 0.5)
+        intakePID.calculate(getAngle())
             + intakeFeedforward.calculate(
                 MathUtil.angleModulus(Math.toRadians(getAngle() + 90.0)), getVelocity()));
 
