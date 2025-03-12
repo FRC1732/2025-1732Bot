@@ -495,7 +495,8 @@ public class RobotContainer {
                   drivetrain.resetPose(new Pose2d(3.203, 4.190, new Rotation2d(0)));
                   questNav.resetPose(new Pose2d(3.203, 4.190, new Rotation2d(0)));
                 }));
-    // oi.resetGyroButton().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
+    // oi.resetGyroButton().onTrue(drivetrain.runOnce(() ->
+    // drivetrain.seedFieldCentric()));
     oi.operatorResetGyroButton()
         .onTrue(
             Commands.runOnce(
@@ -538,37 +539,12 @@ public class RobotContainer {
 
     oi.operatorEjectCoral().whileTrue(new ClawBackwards(claw));
 
-    oi.scoreCoralButton()
+    oi.driverTeleOPAuto()
         .whileTrue(
-            Commands.parallel(
-                Commands.sequence(
-                    new WaitCommand(0.25),
-                    armevator
-                        .runOnce(() -> armevator.setTargetPose(currentScoringLevelSupplier.get()))
-                        .asProxy()),
-                new ConditionalCommand(
-                    Commands.sequence(
-                        new ConditionalCommand(
-                                getScoringPathCommand(),
-                                Commands.sequence(
-                                    new DriveToPose(
-                                        drivetrain,
-                                        () -> getPathStartingPose(scoringPathOption),
-                                        driveRequest),
-                                    new WaitCommand(0.25),
-                                    getSimpleScoringPathCommand()),
-                                this::isFarEnoughForPathfinding)
-                            .asProxy(),
-                        new ClawBackwards(claw).asProxy()),
-                    drivetrain
-                        .run(
-                            () ->
-                                driveFacingAngle(
-                                    -oi.getTranslateX() * MaxSpeed,
-                                    -oi.getTranslateY() * MaxSpeed,
-                                    scoringAngleMap.get(scoringPathOption)))
-                        .asProxy(),
-                    isFullAutoSupplier)));
+            new ConditionalCommand(intakeCoralCommand(), scoreCoralCommand(), () -> claw.hasCoral())
+                .repeatedly());
+
+    oi.scoreCoralButton().whileTrue(scoreCoralCommand());
     oi.scoreCoralButton()
         .onFalse(
             new ConditionalCommand(
@@ -578,36 +554,7 @@ public class RobotContainer {
                     .asProxy(),
                 () -> isPlucking));
 
-    oi.intakeCoralButton()
-        .whileTrue(
-            Commands.deadline(
-                Commands.sequence(
-                    intake
-                        .runOnce(() -> intake.setTargetPose(ArmevatorPose.CORAL_L1_SCORE))
-                        .asProxy(),
-                    armevator
-                        .runOnce(() -> armevator.setTargetPose(ArmevatorPose.CORAL_HP_LOAD))
-                        .asProxy(),
-                    new IntakeCoral(claw, statusRgb)),
-                new ConditionalCommand(
-                    new ConditionalCommand(
-                        AutoBuilder.pathfindThenFollowPath(pathLeftHP, hpPathConstraints).asProxy(),
-                        AutoBuilder.pathfindThenFollowPath(pathRightHP, hpPathConstraints)
-                            .asProxy(),
-                        this::shouldIntakeLeftSide),
-                    Commands.sequence(
-                        Commands.runOnce(() -> preferLeftSide = shouldIntakeLeftSide()),
-                        drivetrain
-                            .run(
-                                () ->
-                                    driveFacingAngle(
-                                        -oi.getTranslateX() * MaxSpeed,
-                                        -oi.getTranslateY() * MaxSpeed,
-                                        preferLeftSide
-                                            ? Rotation2d.fromDegrees(-55)
-                                            : Rotation2d.fromDegrees(55)))
-                            .asProxy()),
-                    isFullAutoSupplier)));
+    oi.intakeCoralButton().whileTrue(intakeCoralCommand());
 
     oi.operatorF1()
         .onTrue(
@@ -810,6 +757,64 @@ public class RobotContainer {
     oi.retractClimberSlowlySwitch().onFalse(climber.runOnce(() -> climber.stopClimber()));
   }
 
+  private Command intakeCoralCommand() {
+    return Commands.deadline(
+        Commands.sequence(
+            intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.CORAL_L1_SCORE)).asProxy(),
+            armevator.runOnce(() -> armevator.setTargetPose(ArmevatorPose.CORAL_HP_LOAD)).asProxy(),
+            new IntakeCoral(claw, statusRgb)),
+        new ConditionalCommand(
+            new ConditionalCommand(
+                AutoBuilder.pathfindThenFollowPath(pathLeftHP, hpPathConstraints).asProxy(),
+                AutoBuilder.pathfindThenFollowPath(pathRightHP, hpPathConstraints).asProxy(),
+                this::shouldIntakeLeftSide),
+            Commands.sequence(
+                Commands.runOnce(() -> preferLeftSide = shouldIntakeLeftSide()),
+                drivetrain
+                    .run(
+                        () ->
+                            driveFacingAngle(
+                                -oi.getTranslateX() * MaxSpeed,
+                                -oi.getTranslateY() * MaxSpeed,
+                                preferLeftSide
+                                    ? Rotation2d.fromDegrees(-55)
+                                    : Rotation2d.fromDegrees(55)))
+                    .asProxy()),
+            isFullAutoSupplier));
+  }
+
+  private Command scoreCoralCommand() {
+    return Commands.parallel(
+        Commands.sequence(
+            new WaitCommand(0.25),
+            armevator
+                .runOnce(() -> armevator.setTargetPose(currentScoringLevelSupplier.get()))
+                .asProxy()),
+        new ConditionalCommand(
+            Commands.sequence(
+                new ConditionalCommand(
+                        getScoringPathCommand(),
+                        Commands.sequence(
+                            new DriveToPose(
+                                drivetrain,
+                                () -> getPathStartingPose(scoringPathOption),
+                                driveRequest),
+                            new WaitCommand(0.25),
+                            getSimpleScoringPathCommand()),
+                        this::isFarEnoughForPathfinding)
+                    .asProxy(),
+                new ClawBackwards(claw).asProxy()),
+            drivetrain
+                .run(
+                    () ->
+                        driveFacingAngle(
+                            -oi.getTranslateX() * MaxSpeed,
+                            -oi.getTranslateY() * MaxSpeed,
+                            scoringAngleMap.get(scoringPathOption)))
+                .asProxy(),
+            isFullAutoSupplier));
+  }
+
   private void configureVisionCommands() {
     // enable/disable vision
     /*
@@ -845,8 +850,8 @@ public class RobotContainer {
 
     // Optional<Alliance> alliance = DriverStation.getAlliance();
     // if (alliance.isPresent() && alliance.get() != lastAlliance) {
-    //   this.lastAlliance = alliance.get();
-    //   Field2d.getInstance().updateAlliance(this.lastAlliance);
+    // this.lastAlliance = alliance.get();
+    // Field2d.getInstance().updateAlliance(this.lastAlliance);
     // }
   }
 

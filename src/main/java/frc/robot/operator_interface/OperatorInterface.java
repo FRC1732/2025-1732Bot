@@ -195,4 +195,8 @@ public interface OperatorInterface {
   public default Trigger operatorFullAutoPlacementSwitch() { // button 26
     return new Trigger(() -> false);
   }
+
+  public default Trigger driverTeleOPAuto() { // button number
+    return new Trigger(() -> false);
+  }
 }
