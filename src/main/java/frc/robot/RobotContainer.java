@@ -799,7 +799,7 @@ public class RobotContainer {
                               armevator.setTargetPose(setPose);
                             }))),
                 claw.runOnce(() -> claw.ejectCoral()))
-            .andThen(claw.run(() -> claw.intakeAlgae()));
+            .andThen(claw.runOnce(() -> claw.intakeAlgae()));
 
     Command autoPluckCommand =
         Commands.sequence(
