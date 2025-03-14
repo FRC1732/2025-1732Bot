@@ -52,16 +52,6 @@ public class DualJoysticksOI implements OperatorInterface {
     return Math.copySign(Math.pow(input, 3), input);
   }
 
-  @Override
-  public Trigger manualModeButton() {
-    return translateJoystickButtons[5];
-  }
-
-  @Override
-  public Trigger fullAutoModeButton() {
-    return translateJoystickButtons[4];
-  }
-
   // Translation Joystick Buttons
 
   @Override
@@ -70,24 +60,24 @@ public class DualJoysticksOI implements OperatorInterface {
   }
 
   @Override
+  public Trigger intakeAlgaeButton() {
+    return translateJoystickButtons[2];
+  }
+
+  @Override
   public Trigger aimAtNetButton() {
     return translateJoystickButtons[3];
   }
 
   @Override
-  public Trigger intakeAlgaeButton() {
-    return translateJoystickButtons[2];
+  public Trigger pluckAlgaeButton() {
+    return translateJoystickButtons[4];
   }
 
-  // @Override
-  // public Trigger operatorExtendClimber() {
-  //   return translateJoystickButtons[5];
-  // }
-
-  // @Override
-  // public Trigger operatorRetractClimber() {
-  //   return translateJoystickButtons[4];
-  // }
+  @Override
+  public Trigger ejectAlgaeButton() {
+    return translateJoystickButtons[5];
+  }
 
   // Rotate Joystick Buttons
 
@@ -102,13 +92,18 @@ public class DualJoysticksOI implements OperatorInterface {
   }
 
   @Override
-  public Trigger ejectAlgaeButton() {
+  public Trigger pullInCoralButton() {
     return rotateJoystickButtons[3];
   }
 
   @Override
-  public Trigger pluckAlgaeButton() {
+  public Trigger intakeCoralLeft() {
     return rotateJoystickButtons[4];
+  }
+
+  @Override
+  public Trigger intakeCoralRight() {
+    return rotateJoystickButtons[5];
   }
 
   @Override
