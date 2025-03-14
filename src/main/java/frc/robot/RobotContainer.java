@@ -543,6 +543,14 @@ public class RobotContainer {
         .whileTrue(
             new ConditionalCommand(intakeCoralCommand(), scoreCoralCommand(), () -> claw.hasCoral())
                 .repeatedly());
+    oi.driverTeleOPAuto()
+        .onFalse(
+            new ConditionalCommand(
+                new InstantCommand(),
+                armevator
+                    .runOnce(() -> armevator.setTargetPose(ArmevatorPose.CORAL_POST_SCORE))
+                    .asProxy(),
+                () -> isPlucking));
 
     oi.scoreCoralButton().whileTrue(scoreCoralCommand());
     oi.scoreCoralButton()
@@ -920,11 +928,11 @@ public class RobotContainer {
   }
 
   private Command getScoringPathCommand() {
-    return new SelectCommand<>(scoringPathMap, () -> scoringPathOption);
+    return new SelectCommand<>(scoringPathMap, () -> scoringPathOption).asProxy();
   }
 
   private Command getSimpleScoringPathCommand() {
-    return new SelectCommand<>(simpleScoringPathMap, () -> scoringPathOption);
+    return new SelectCommand<>(simpleScoringPathMap, () -> scoringPathOption).asProxy();
   }
 
   private Pose2d getPathStartingPose(ScoringPathOption scoringPathOption) {

@@ -62,6 +62,11 @@ public class DualJoysticksOI implements OperatorInterface {
     return translateJoystickButtons[4];
   }
 
+  @Override
+  public Trigger driverTeleOPAuto() {
+    return translateJoystickButtons[3].and(rotateJoystickButtons[3]);
+  }
+
   // Translation Joystick Buttons
 
   @Override

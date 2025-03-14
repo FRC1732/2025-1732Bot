@@ -196,7 +196,7 @@ public interface OperatorInterface {
     return new Trigger(() -> false);
   }
 
-  public default Trigger driverTeleOPAuto() { // button number
+  public default Trigger driverTeleOPAuto() { //
     return new Trigger(() -> false);
   }
 }
