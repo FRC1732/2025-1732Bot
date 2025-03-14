@@ -114,6 +114,8 @@ public class Armevator extends SubsystemBase {
     armMap.put(ArmevatorPose.ALGAE_L3_DROP, 5.0);
     armMap.put(ArmevatorPose.ALGAE_L2_PLUCK, 15.0);
     armMap.put(ArmevatorPose.ALGAE_L2_DROP, 5.0);
+    armMap.put(
+        ArmevatorPose.ALGAE_PRE_PLUCK, -90.0); // TODO I just guessed for this value, check later
 
     elevatorMap = new HashMap<>(); // in inches
     elevatorMap.put(ArmevatorPose.STARTING, 0.0);
@@ -133,6 +135,8 @@ public class Armevator extends SubsystemBase {
     elevatorMap.put(ArmevatorPose.ALGAE_L3_DROP, 20.0);
     elevatorMap.put(ArmevatorPose.ALGAE_L2_PLUCK, 3.0);
     elevatorMap.put(ArmevatorPose.ALGAE_L2_DROP, 4.5);
+    elevatorMap.put(
+        ArmevatorPose.ALGAE_PRE_PLUCK, 15.0); // TODO I just guessed for this value, check later
 
     /////////////////////////
     // setup elevator motors

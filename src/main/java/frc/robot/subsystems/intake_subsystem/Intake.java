@@ -77,6 +77,8 @@ public class Intake extends SubsystemBase {
     intakeMap.put(ArmevatorPose.ALGAE_L3_DROP, 15.0);
     intakeMap.put(ArmevatorPose.ALGAE_L2_PLUCK, 5.0);
     intakeMap.put(ArmevatorPose.ALGAE_L2_DROP, 10.0);
+    intakeMap.put(ArmevatorPose.ALGAE_L2_PLUCK, 5.0);
+    intakeMap.put(ArmevatorPose.ALGAE_PRE_PLUCK, 5.0);
 
     TalonFXConfiguration intakeConfig = new TalonFXConfiguration();
     intakeConfig.MotorOutput.withInverted(InvertedValue.CounterClockwise_Positive);

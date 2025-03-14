@@ -18,4 +18,5 @@ public enum ArmevatorPose {
   ALGAE_L3_DROP,
   ALGAE_L2_PLUCK,
   ALGAE_L2_DROP,
+  ALGAE_PRE_PLUCK,
 }
