@@ -783,7 +783,7 @@ public class RobotContainer {
                                       : ArmevatorPose.ALGAE_L2_PLUCK;
 
                               if (isFullAutoSupplier.getAsBoolean()) {
-                                setPose = inferPluckArmevatorPose();
+                                setPose = inferPluckArmevatorPose(false);
                               }
                               intake.setTargetPose(setPose);
                             }),
@@ -795,7 +795,7 @@ public class RobotContainer {
                                       : ArmevatorPose.ALGAE_L2_PLUCK;
 
                               if (isFullAutoSupplier.getAsBoolean()) {
-                                setPose = inferPluckArmevatorPose();
+                                setPose = inferPluckArmevatorPose(false);
                               }
 
                               armevator.setTargetPose(setPose);
@@ -806,9 +806,9 @@ public class RobotContainer {
     Command autoPluckCommand =
         Commands.sequence(
             armevator
-                .runOnce(() -> armevator.setTargetPose(ArmevatorPose.ALGAE_PRE_PLUCK))
+                .runOnce(() -> armevator.setTargetPose(inferPluckArmevatorPose(true)))
                 .asProxy(),
-            intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.ALGAE_PRE_PLUCK)).asProxy(),
+            intake.runOnce(() -> intake.setTargetPose(inferPluckArmevatorPose(true))).asProxy(),
             getPluckPathCommand(),
             nonAutoPluck.asProxy());
 
@@ -820,9 +820,9 @@ public class RobotContainer {
             Commands.runOnce(() -> isPlucking = false)
                 .andThen(
                     Commands.sequence(
-                        intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.ALGAE_HANDOFF)),
+                        intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.ALGAE_PRE_PLUCK_L2)),
                         armevator.runOnce(
-                            () -> armevator.setTargetPose(ArmevatorPose.ALGAE_HANDOFF)),
+                            () -> armevator.setTargetPose(ArmevatorPose.ALGAE_PRE_PLUCK_L2)),
                         claw.run(() -> claw.brakeAlgae()))));
 
     oi.aimAtNetButton()
@@ -993,13 +993,19 @@ public class RobotContainer {
     return targetPose.getTranslation().getDistance(currentPose.getTranslation()) > 1.1;
   }
 
-  private ArmevatorPose inferPluckArmevatorPose() {
+  private ArmevatorPose inferPluckArmevatorPose(boolean getPrePluck) {
     switch (scoringPathOption) {
       case PATH_F1, PATH_F2, PATH_BR1, PATH_BR2, PATH_BL1, PATH_BL2 -> {
+        if (getPrePluck) {
+          return ArmevatorPose.ALGAE_PRE_PLUCK_L2;
+        }
         return ArmevatorPose.ALGAE_L2_PLUCK;
       }
 
       default -> {
+        if (getPrePluck) {
+          return ArmevatorPose.ALGAE_PRE_PLUCK_L3;
+        }
         return ArmevatorPose.ALGAE_L3_PLUCK;
       }
     }
