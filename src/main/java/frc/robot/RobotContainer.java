@@ -813,12 +813,14 @@ public class RobotContainer {
                 .asProxy(),
             intake.runOnce(() -> intake.setTargetPose(inferPluckArmevatorPose(true))).asProxy(),
             new PrintCommand("Pluck Path Command Started"),
-            getPluckPathCommand(),
+            getPluckPathCommand().asProxy(),
             new PrintCommand("Pluck Path Command Ended"),
             nonAutoPluck.asProxy());
 
     oi.pluckAlgaeButton()
-        .whileTrue(new ConditionalCommand(autoPluckCommand, nonAutoPluck, isFullAutoSupplier));
+        .whileTrue(
+            new ConditionalCommand(
+                autoPluckCommand.asProxy(), nonAutoPluck.asProxy(), isFullAutoSupplier));
 
     oi.pluckAlgaeButton()
         .onFalse(
