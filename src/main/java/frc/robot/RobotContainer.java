@@ -36,6 +36,7 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.SelectCommand;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
@@ -156,7 +157,9 @@ public class RobotContainer {
 
   PathConstraints hpPathConstraints = new PathConstraints(4.0, 3.0, 8.42, 12.8876585);
 
+  PathConstraints pluckPathConstraints = new PathConstraints(2.0, 2.0, 8.0, 10.0);
   PathConstraints scorePathConstraints = new PathConstraints(4.0, 3.0, 8.0, 10.0);
+
   PathPlannerPath pathF1;
   PathPlannerPath pathF2;
   PathPlannerPath pathFL1;
@@ -171,6 +174,13 @@ public class RobotContainer {
   PathPlannerPath pathB2;
   PathPlannerPath pathLeftHP;
   PathPlannerPath pathRightHP;
+
+  PathPlannerPath pathFAlgae;
+  PathPlannerPath pathFLAlgae;
+  PathPlannerPath pathFRAlgae;
+  PathPlannerPath pathBLAlgae;
+  PathPlannerPath pathBRAlgae;
+  PathPlannerPath pathBAlgae;
 
   private ScoringPathOption scoringPathOption = ScoringPathOption.PATH_F1;
 
@@ -191,6 +201,7 @@ public class RobotContainer {
 
   Map<ScoringPathOption, Command> scoringPathMap = new HashMap<>(12);
   Map<ScoringPathOption, Command> simpleScoringPathMap = new HashMap<>(12);
+  Map<ScoringPathOption, Command> pluckAlgaePathMap = new HashMap<>(12);
   Map<ScoringPathOption, Rotation2d> scoringAngleMap = new HashMap<>(12);
   Map<Integer, Command> NetPathMap = new HashMap<>(12);
 
@@ -216,6 +227,14 @@ public class RobotContainer {
       pathB2 = PathPlannerPath.fromPathFile("B2");
       pathLeftHP = PathPlannerPath.fromPathFile("LeftHP");
       pathRightHP = PathPlannerPath.fromPathFile("RightHP");
+
+      pathFAlgae = PathPlannerPath.fromPathFile("F Algae");
+      pathFLAlgae = PathPlannerPath.fromPathFile("FL Algae");
+      pathFRAlgae = PathPlannerPath.fromPathFile("FR Algae");
+      pathBLAlgae = PathPlannerPath.fromPathFile("BL Algae");
+      pathBRAlgae = PathPlannerPath.fromPathFile("BR Algae");
+      pathBAlgae = PathPlannerPath.fromPathFile("B Algae");
+
     } catch (Exception e) {
       System.out.println(e.getMessage());
     }
@@ -836,35 +855,67 @@ public class RobotContainer {
             Commands.sequence(
                 intake.runOnce(() -> intake.stopIntake()), claw.runOnce(() -> claw.stopClaw())));
 
+    Command nonAutoPluck =
+        Commands.runOnce(() -> isPlucking = true)
+            .andThen(new PrintCommand("Non-Auto Command Started"))
+            .andThen(
+                Commands.deadline(
+                    Commands.sequence(
+                        new WaitCommand(0.25), // TODO remove once testing is finished
+                        intake.runOnce(
+                            () -> {
+                              ArmevatorPose setPose =
+                                  isPluckTargetHighSupplier.getAsBoolean()
+                                      ? ArmevatorPose.ALGAE_L3_PLUCK
+                                      : ArmevatorPose.ALGAE_L2_PLUCK;
+
+                              if (isFullAutoSupplier.getAsBoolean()) {
+                                setPose = inferPluckArmevatorPose(false);
+                              }
+                              intake.setTargetPose(setPose);
+                            }),
+                        armevator.runOnce(
+                            () -> {
+                              ArmevatorPose setPose =
+                                  isPluckTargetHighSupplier.getAsBoolean()
+                                      ? ArmevatorPose.ALGAE_L3_PLUCK
+                                      : ArmevatorPose.ALGAE_L2_PLUCK;
+
+                              if (isFullAutoSupplier.getAsBoolean()) {
+                                setPose = inferPluckArmevatorPose(false);
+                              }
+
+                              armevator.setTargetPose(setPose);
+                            }))),
+                claw.runOnce(() -> claw.ejectCoral()))
+            .andThen(claw.runOnce(() -> claw.intakeAlgae()));
+
+    Command autoPluckCommand =
+        Commands.sequence(
+            new PrintCommand("Auto Command Started"),
+            armevator
+                .runOnce(() -> armevator.setTargetPose(inferPluckArmevatorPose(true)))
+                .asProxy(),
+            intake.runOnce(() -> intake.setTargetPose(inferPluckArmevatorPose(true))).asProxy(),
+            new PrintCommand("Pluck Path Command Started"),
+            getPluckPathCommand().asProxy(),
+            new PrintCommand("Pluck Path Command Ended"),
+            nonAutoPluck.asProxy());
+
     oi.pluckAlgaeButton()
         .whileTrue(
-            Commands.runOnce(() -> isPlucking = true)
-                .andThen(
-                    Commands.deadline(
-                            Commands.sequence(
-                                new WaitCommand(0.25),
-                                intake.runOnce(
-                                    () ->
-                                        intake.setTargetPose(
-                                            isPluckTargetHighSupplier.getAsBoolean()
-                                                ? ArmevatorPose.ALGAE_L3_PLUCK
-                                                : ArmevatorPose.ALGAE_L2_PLUCK)),
-                                armevator.runOnce(
-                                    () ->
-                                        armevator.setTargetPose(
-                                            isPluckTargetHighSupplier.getAsBoolean()
-                                                ? ArmevatorPose.ALGAE_L3_PLUCK
-                                                : ArmevatorPose.ALGAE_L2_PLUCK))),
-                            claw.run(() -> claw.ejectCoral()))
-                        .andThen(claw.run(() -> claw.intakeAlgae()))));
+            new ConditionalCommand(
+                autoPluckCommand.asProxy(), nonAutoPluck.asProxy(), isFullAutoSupplier));
+
     oi.pluckAlgaeButton()
         .onFalse(
             Commands.runOnce(() -> isPlucking = false)
                 .andThen(
                     Commands.sequence(
-                        intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.ALGAE_HANDOFF)),
+                        intake.runOnce(
+                            () -> intake.setTargetPose(ArmevatorPose.ALGAE_PRE_PLUCK_L2)),
                         armevator.runOnce(
-                            () -> armevator.setTargetPose(ArmevatorPose.ALGAE_HANDOFF)),
+                            () -> armevator.setTargetPose(ArmevatorPose.ALGAE_PRE_PLUCK_L2)),
                         claw.run(() -> claw.brakeAlgae()))));
 
     oi.aimAtNetButton()
@@ -1059,6 +1110,28 @@ public class RobotContainer {
     return targetPose.getTranslation().getDistance(currentPose.getTranslation());
   }
 
+  private ArmevatorPose inferPluckArmevatorPose(boolean getPrePluck) {
+    switch (scoringPathOption) {
+      case PATH_F1, PATH_F2, PATH_BR1, PATH_BR2, PATH_BL1, PATH_BL2 -> {
+        if (getPrePluck) {
+          return ArmevatorPose.ALGAE_PRE_PLUCK_L2;
+        }
+        return ArmevatorPose.ALGAE_L2_PLUCK;
+      }
+
+      default -> {
+        if (getPrePluck) {
+          return ArmevatorPose.ALGAE_PRE_PLUCK_L3;
+        }
+        return ArmevatorPose.ALGAE_L3_PLUCK;
+      }
+    }
+  }
+
+  private Command getPluckPathCommand() {
+    return new SelectCommand<>(pluckAlgaePathMap, () -> scoringPathOption);
+  }
+
   private Command getScoringPathCommand() {
     return new SelectCommand<>(scoringPathMap, () -> scoringPathOption);
   }
@@ -1156,6 +1229,43 @@ public class RobotContainer {
     simpleScoringPathMap.put(ScoringPathOption.PATH_BR2, AutoBuilder.followPath(pathBR2));
     simpleScoringPathMap.put(ScoringPathOption.PATH_B1, AutoBuilder.followPath(pathB1));
     simpleScoringPathMap.put(ScoringPathOption.PATH_B2, AutoBuilder.followPath(pathB2));
+
+    pluckAlgaePathMap.put(
+        ScoringPathOption.PATH_F1,
+        AutoBuilder.pathfindThenFollowPath(pathFAlgae, pluckPathConstraints));
+    pluckAlgaePathMap.put(
+        ScoringPathOption.PATH_F2,
+        AutoBuilder.pathfindThenFollowPath(pathFAlgae, pluckPathConstraints));
+    pluckAlgaePathMap.put(
+        ScoringPathOption.PATH_FL1,
+        AutoBuilder.pathfindThenFollowPath(pathFLAlgae, pluckPathConstraints));
+    pluckAlgaePathMap.put(
+        ScoringPathOption.PATH_FL2,
+        AutoBuilder.pathfindThenFollowPath(pathFLAlgae, pluckPathConstraints));
+    pluckAlgaePathMap.put(
+        ScoringPathOption.PATH_FR1,
+        AutoBuilder.pathfindThenFollowPath(pathFRAlgae, pluckPathConstraints));
+    pluckAlgaePathMap.put(
+        ScoringPathOption.PATH_FR2,
+        AutoBuilder.pathfindThenFollowPath(pathFRAlgae, pluckPathConstraints));
+    pluckAlgaePathMap.put(
+        ScoringPathOption.PATH_BL1,
+        AutoBuilder.pathfindThenFollowPath(pathBLAlgae, pluckPathConstraints));
+    pluckAlgaePathMap.put(
+        ScoringPathOption.PATH_BL2,
+        AutoBuilder.pathfindThenFollowPath(pathBLAlgae, pluckPathConstraints));
+    pluckAlgaePathMap.put(
+        ScoringPathOption.PATH_BR1,
+        AutoBuilder.pathfindThenFollowPath(pathBRAlgae, pluckPathConstraints));
+    pluckAlgaePathMap.put(
+        ScoringPathOption.PATH_BR2,
+        AutoBuilder.pathfindThenFollowPath(pathBRAlgae, pluckPathConstraints));
+    pluckAlgaePathMap.put(
+        ScoringPathOption.PATH_B1,
+        AutoBuilder.pathfindThenFollowPath(pathBAlgae, pluckPathConstraints));
+    pluckAlgaePathMap.put(
+        ScoringPathOption.PATH_B2,
+        AutoBuilder.pathfindThenFollowPath(pathBAlgae, pluckPathConstraints));
 
     scoringAngleMap.put(ScoringPathOption.PATH_F1, Rotation2d.fromDegrees(0.0));
     scoringAngleMap.put(ScoringPathOption.PATH_F2, Rotation2d.fromDegrees(0.0));
