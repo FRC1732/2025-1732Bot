@@ -36,6 +36,7 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.SelectCommand;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.commands.DriveToPose;
@@ -771,6 +772,7 @@ public class RobotContainer {
 
     Command nonAutoPluck =
         Commands.runOnce(() -> isPlucking = true)
+            .andThen(new PrintCommand("Non-Auto Command Started"))
             .andThen(
                 Commands.deadline(
                     Commands.sequence(
@@ -805,11 +807,14 @@ public class RobotContainer {
 
     Command autoPluckCommand =
         Commands.sequence(
+            new PrintCommand("Auto Command Started"),
             armevator
                 .runOnce(() -> armevator.setTargetPose(inferPluckArmevatorPose(true)))
                 .asProxy(),
             intake.runOnce(() -> intake.setTargetPose(inferPluckArmevatorPose(true))).asProxy(),
+            new PrintCommand("Pluck Path Command Started"),
             getPluckPathCommand(),
+            new PrintCommand("Pluck Path Command Ended"),
             nonAutoPluck.asProxy());
 
     oi.pluckAlgaeButton()
@@ -820,7 +825,8 @@ public class RobotContainer {
             Commands.runOnce(() -> isPlucking = false)
                 .andThen(
                     Commands.sequence(
-                        intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.ALGAE_PRE_PLUCK_L2)),
+                        intake.runOnce(
+                            () -> intake.setTargetPose(ArmevatorPose.ALGAE_PRE_PLUCK_L2)),
                         armevator.runOnce(
                             () -> armevator.setTargetPose(ArmevatorPose.ALGAE_PRE_PLUCK_L2)),
                         claw.run(() -> claw.brakeAlgae()))));
