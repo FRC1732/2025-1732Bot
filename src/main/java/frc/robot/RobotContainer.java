@@ -18,6 +18,8 @@ import com.pathplanner.lib.commands.PathPlannerAuto;
 import com.pathplanner.lib.events.EventTrigger;
 import com.pathplanner.lib.path.PathConstraints;
 import com.pathplanner.lib.path.PathPlannerPath;
+import com.pathplanner.lib.path.PathPoint;
+
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -62,7 +64,10 @@ import frc.robot.subsystems.intake_subsystem.Intake;
 import frc.robot.subsystems.rgb.ScoringLevel;
 import frc.robot.subsystems.rgb.ScoringPosition;
 import frc.robot.subsystems.rgb.StatusRgb;
+
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
@@ -566,6 +571,9 @@ public class RobotContainer {
 
     oi.operatorEjectCoral().whileTrue(new ClawBackwards(claw));
 
+    Command limelightVerify = new ConditionalCommand(new DriveToPose(drivetrain, this::getPoseEndOfCurrentPath, driveFacingAngleRequest), new InstantCommand(), 
+    () -> (Math.abs(limelightErrorFromPose()) > 0.05));
+
     oi.scoreCoralButton()
         .whileTrue(
             new ConditionalCommand(
@@ -598,6 +606,7 @@ public class RobotContainer {
                             () -> driveSlowlyDirection(scoringAngleMap.get(scoringPathOption))),
                         new WaitCommand(0.25),
                         // @todo veify we are limelight aligned, move over if not
+                        limelightVerify,
                         new ClawBackwards(claw).asProxy())),
                 // Manual
                 Commands.parallel(
@@ -1274,5 +1283,25 @@ public class RobotContainer {
           limelightMeasurement.timestampSeconds,
           VecBuilder.fill(.6, .6, 9999999));
     }
+  }
+
+  public double limelightErrorFromPose() {
+    Pose2d limelightPose = extractLimelightPose();
+    if (limelightPose == null) {
+      return 0;
+    }
+
+    Pose2d targetPose = getPoseEndOfCurrentPath();
+
+    double error = Math.sqrt(Math.pow(limelightPose.getX() - targetPose.getX(), 2) + Math.pow(limelightPose.getY() - targetPose.getY(), 2));
+    return error;
+  }
+
+  public Pose2d getPoseEndOfCurrentPath() {
+    List<PathPoint> points = getCurrentScoringPath(scoringPathOption).getAllPathPoints(); 
+
+    PathPoint finalPoint = points.get(points.size() - 1);
+    Pose2d targetPose = new Pose2d(finalPoint.position, finalPoint.rotationTarget.rotation());
+    return targetPose;
   }
 }
