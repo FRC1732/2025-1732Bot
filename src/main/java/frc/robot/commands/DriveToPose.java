@@ -36,24 +36,19 @@ import org.littletonrobotics.junction.Logger;
  */
 public class DriveToPose extends Command {
   public final CommandSwerveDrivetrain drivetrain;
-  public final SwerveRequest.FieldCentric driveRequest;
+  public final SwerveRequest.FieldCentricFacingAngle driveRequest;
   private final Supplier<Pose2d> poseSupplier;
   private Pose2d targetPose;
 
   private boolean running = false;
   private Timer timer;
 
-  private static final double driveKp = 10.0;
+  private static final double driveKp = 7.5;
   private static final double driveKd = 0.0;
   private static final double driveKi = 0.0;
-  private static final double thetaKp = 7.0;
-  private static final double thetaKd = 0.0;
-  private static final double thetaKi = 0.0;
-  private static final double driveMaxVelocity = 3.0;
-  private static final double driveMaxAcceleration = 2.5;
-  private static final double thetaMaxVelocity = 8.0;
-  private static final double thetaMaxAcceleration = 10.0;
-  private static final double driveTolerance = 0.5;
+  private static final double driveMaxVelocity = 3.5;
+  private static final double driveMaxAcceleration = 3.0;
+  private static final double driveTolerance = 0.04;
   private static final double thetaTolerance = 5.0;
   private static final double timeout = 5.0;
 
@@ -71,13 +66,6 @@ public class DriveToPose extends Command {
           driveKd,
           new TrapezoidProfile.Constraints(driveMaxVelocity, driveMaxAcceleration),
           LOOP_PERIOD_SECS);
-  private final ProfiledPIDController thetaController =
-      new ProfiledPIDController(
-          thetaKp,
-          thetaKi,
-          thetaKd,
-          new TrapezoidProfile.Constraints(thetaMaxVelocity, thetaMaxAcceleration),
-          LOOP_PERIOD_SECS);
 
   /**
    * Constructs a new DriveToPose command that drives the robot in a straight line to the specified
@@ -90,13 +78,12 @@ public class DriveToPose extends Command {
   public DriveToPose(
       CommandSwerveDrivetrain drivetrain,
       Supplier<Pose2d> poseSupplier,
-      SwerveRequest.FieldCentric driveRequest) {
+      SwerveRequest.FieldCentricFacingAngle driveRequest) {
     this.driveRequest = driveRequest;
     this.drivetrain = drivetrain;
     this.poseSupplier = poseSupplier;
     this.timer = new Timer();
     addRequirements(drivetrain);
-    thetaController.enableContinuousInput(-Math.PI, Math.PI);
   }
 
   /**
@@ -112,11 +99,11 @@ public class DriveToPose extends Command {
     Pose2d currentPose = drivetrain.getPose();
     xController.reset(currentPose.getX());
     yController.reset(currentPose.getY());
-    thetaController.reset(currentPose.getRotation().getRadians());
     xController.setTolerance(driveTolerance);
     yController.setTolerance(driveTolerance);
-    thetaController.setTolerance(thetaTolerance);
     this.targetPose = poseSupplier.get();
+    xController.setGoal(this.targetPose.getX());
+    yController.setGoal(this.targetPose.getY());
 
     Logger.recordOutput("DriveToPose/targetPose", targetPose);
 
@@ -137,14 +124,10 @@ public class DriveToPose extends Command {
 
     Pose2d currentPose = drivetrain.getPose();
 
-    double xVelocity = xController.calculate(currentPose.getX(), this.targetPose.getX());
-    double yVelocity = yController.calculate(currentPose.getY(), this.targetPose.getY());
-    double thetaVelocity =
-        thetaController.calculate(
-            currentPose.getRotation().getRadians(), this.targetPose.getRotation().getRadians());
+    double xVelocity = xController.calculate(currentPose.getX());
+    double yVelocity = yController.calculate(currentPose.getY());
     if (xController.atGoal()) xVelocity = 0.0;
     if (yController.atGoal()) yVelocity = 0.0;
-    if (thetaController.atGoal()) thetaVelocity = 0.0;
 
     // int allianceMultiplier = Field2d.getInstance().getAlliance() == Alliance.Blue ? 1 : -1;
 
@@ -152,9 +135,7 @@ public class DriveToPose extends Command {
         driveRequest
             .withVelocityX(xVelocity) // Drive forward with negative Y (forward)
             .withVelocityY(yVelocity) // Drive left with negative X (left)
-            .withRotationalRate(thetaVelocity) // Drive counterclockwise with negative X
-        // (left)
-        );
+            .withTargetDirection(targetPose.getRotation()));
   }
 
   /**
@@ -169,13 +150,18 @@ public class DriveToPose extends Command {
   public boolean isFinished() {
     Logger.recordOutput("DriveToPose/xErr", xController.atGoal());
     Logger.recordOutput("DriveToPose/yErr", yController.atGoal());
-    Logger.recordOutput("DriveToPose/tErr", thetaController.atGoal());
+    Logger.recordOutput("DriveToPose/tErr", isThetaAtGoal());
 
     // check that running is true (i.e., the calculate method has been invoked on the PID
     // controllers) and that each of the controllers is at their goal. This is important since these
     // controllers will return true for atGoal if the calculate method has not yet been invoked.
     return this.timer.hasElapsed(timeout)
-        || (running && xController.atGoal() && yController.atGoal() && thetaController.atGoal());
+        || (running && xController.atGoal() && yController.atGoal() && isThetaAtGoal());
+  }
+
+  private boolean isThetaAtGoal() {
+    return Math.abs(targetPose.getRotation().minus(drivetrain.getPose().getRotation()).getDegrees())
+        < thetaTolerance;
   }
 
   /**
@@ -190,7 +176,7 @@ public class DriveToPose extends Command {
         driveRequest
             .withVelocityX(0) // Drive forward with negative Y (forward)
             .withVelocityY(0) // Drive left with negative X (left)
-            .withRotationalRate(0));
+            .withTargetDirection(drivetrain.getPose().getRotation()));
     running = false;
   }
 }
