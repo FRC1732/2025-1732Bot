@@ -47,6 +47,7 @@ import frc.robot.field.Field2d;
 import frc.robot.field.FieldObject;
 import frc.robot.field.Region2d;
 import frc.robot.generated.TunerConstants;
+import frc.robot.limelightVision.ApriltagVision.VisionApriltagConstants.Pipelines;
 import frc.robot.limelightVision.ApriltagVision.VisionApriltagSubsystem;
 import frc.robot.limelightVision.LimelightHelpers;
 import frc.robot.operator_interface.OISelector;
@@ -245,7 +246,7 @@ public class RobotContainer {
     climber = new Climber();
 
     visionApriltagSubsystem =
-        new VisionApriltagSubsystem(() -> drivetrain.getPigeon2().getRotation2d().getDegrees());
+        new VisionApriltagSubsystem(() -> drivetrain.getPose().getRotation().getDegrees());
   }
 
   /**
@@ -445,6 +446,14 @@ public class RobotContainer {
             .withTargetDirection(targetDirection));
   }
 
+  private void driveSlowlyDirection(Rotation2d targetDirection) {
+    drivetrain.setControl(
+        driveRequest
+            .withVelocityX(0.2 * Math.cos(scoringAngleMap.get(scoringPathOption).getRadians()))
+            .withVelocityY(0.2 * Math.sin(scoringAngleMap.get(scoringPathOption).getRadians()))
+            .withRotationalRate(0.0));
+  }
+
   private void configureDrivetrainCommands() {
     /*
      * Set up the default command for the drivetrain. The joysticks' values map to
@@ -492,12 +501,29 @@ public class RobotContainer {
     // reset gyro to 0 degrees
     oi.resetGyroButton()
         .onTrue(
-            Commands.runOnce(
-                () -> {
-                  drivetrain.resetPose(new Pose2d(3.203, 4.190, new Rotation2d(0)));
-                  questNav.resetPose(new Pose2d(3.203, 4.190, new Rotation2d(0)));
-                }));
-    // oi.resetGyroButton().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
+            Commands.sequence(
+                Commands.runOnce(
+                    () -> {
+                      drivetrain.resetPose(new Pose2d(3.203, 4.190, new Rotation2d(0)));
+                      questNav.resetPose(new Pose2d(3.203, 4.190, new Rotation2d(0)));
+                      visionApriltagSubsystem.setPipeline(Pipelines.LOCALIZATION);
+                    }),
+                new ConditionalCommand(
+                    Commands.sequence(
+                        new WaitCommand(0.25), // @todo this time should be longer than ll latency
+                        Commands.runOnce(
+                            () -> {
+                              Pose2d visionPose = visionApriltagSubsystem.getPoseEstimate().pose;
+                              drivetrain.resetPose(
+                                  new Pose2d(
+                                      visionPose.getX(), visionPose.getY(), new Rotation2d(0)));
+                              questNav.resetPose(
+                                  new Pose2d(
+                                      visionPose.getX(), visionPose.getY(), new Rotation2d(0)));
+                            })),
+                    new InstantCommand(),
+                    visionApriltagSubsystem::hasReefTarget)));
+
     oi.operatorResetGyroButton()
         .onTrue(
             Commands.runOnce(
@@ -543,16 +569,21 @@ public class RobotContainer {
     oi.scoreCoralButton()
         .whileTrue(
             new ConditionalCommand(
+                // Full Auto
                 Commands.parallel(
+                    // Raise Piece to scoring level
                     Commands.sequence(
                         new WaitUntilCommand(this::isRobotCloseToScoringPosition),
                         armevator
                             .runOnce(
                                 () -> armevator.setTargetPose(currentScoringLevelSupplier.get()))
                             .asProxy()),
+                    // Drive to scoring location
                     Commands.sequence(
                         new ConditionalCommand(
+                                // Pathfind
                                 getScoringPathCommand(),
+                                // Drive directly to pose
                                 Commands.sequence(
                                     new DriveToPose(
                                         drivetrain,
@@ -562,7 +593,13 @@ public class RobotContainer {
                                     getSimpleScoringPathCommand()),
                                 this::isFarEnoughForPathfinding)
                             .asProxy(),
+                        // Safe Score Command
+                        drivetrain.run(
+                            () -> driveSlowlyDirection(scoringAngleMap.get(scoringPathOption))),
+                        new WaitCommand(0.25),
+                        // @todo veify we are limelight aligned, move over if not
                         new ClawBackwards(claw).asProxy())),
+                // Manual
                 Commands.parallel(
                         Commands.sequence(
                             new WaitCommand(0.5),
@@ -641,10 +678,21 @@ public class RobotContainer {
                         .runOnce(() -> armevator.setTargetPose(ArmevatorPose.CORAL_HP_LOAD))
                         .asProxy(),
                     new IntakeCoral(claw, statusRgb)),
-                new ConditionalCommand(
-                    AutoBuilder.pathfindThenFollowPath(pathLeftHP, hpPathConstraints).asProxy(),
-                    AutoBuilder.pathfindThenFollowPath(pathRightHP, hpPathConstraints).asProxy(),
-                    this::shouldIntakeLeftSide)));
+                Commands.sequence(
+                    new ConditionalCommand(
+                        Commands.sequence(
+                            AutoBuilder.pathfindThenFollowPath(pathLeftHP, hpPathConstraints)
+                                .asProxy(),
+                            drivetrain.run(
+                                () -> driveSlowlyDirection(Rotation2d.fromDegrees(-55.0)))),
+                        Commands.sequence(
+                            AutoBuilder.pathfindThenFollowPath(pathRightHP, hpPathConstraints)
+                                .asProxy(),
+                            drivetrain.run(
+                                () -> driveSlowlyDirection(Rotation2d.fromDegrees(55.0)))),
+                        this::shouldIntakeLeftSide),
+                    drivetrain.run(
+                        () -> driveSlowlyDirection(scoringAngleMap.get(scoringPathOption))))));
 
     oi.operatorF1()
         .onTrue(
@@ -842,9 +890,7 @@ public class RobotContainer {
                             () ->
                                 new Pose2d(
                                     7.65, drivetrain.getPose().getY(), Rotation2d.fromDegrees(135)),
-                            driveFacingAngleRequest),
-                        new WaitCommand(0.2),
-                        getSimpleScoringPathCommand()),
+                            driveFacingAngleRequest)),
                     this::isFarEnoughFromNetForPathfinding),
                 Commands.deadline(
                     Commands.sequence(
@@ -1220,15 +1266,13 @@ public class RobotContainer {
       return;
     }
 
-    // LimelightHelpers.PoseEstimate limelightMeasurement =
-    // visionApriltagSubsystem.getPoseEstimate();
-    // if (limelightMeasurement.tagCount >= 2
-    // || (limelightMeasurement.tagCount == 1 && limelightMeasurement.avgTagDist <
-    // 1.25)) {
-    // drivetrain.addVisionMeasurement(
-    // limelightMeasurement.pose,
-    // limelightMeasurement.timestampSeconds,
-    // VecBuilder.fill(.6, .6, 9999999));
-    // }
+    LimelightHelpers.PoseEstimate limelightMeasurement = visionApriltagSubsystem.getPoseEstimate();
+    if (limelightMeasurement.tagCount >= 2
+        || (limelightMeasurement.tagCount == 1 && limelightMeasurement.avgTagDist < 1.25)) {
+      drivetrain.addVisionMeasurement(
+          limelightMeasurement.pose,
+          limelightMeasurement.timestampSeconds,
+          VecBuilder.fill(.6, .6, 9999999));
+    }
   }
 }

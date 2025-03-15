@@ -3,8 +3,8 @@ package frc.robot.limelightVision.ApriltagVision;
 public class VisionApriltagConstants {
 
   public enum Pipelines {
-    SPEAKER,
-    STAGE
+    LOCALIZATION,
+    ALIGNEMENT
   };
 
   // public static final String LIMELIGHT_NAME = "limelight-tooth"; // LL3
