@@ -13,7 +13,7 @@ public class ClawConstants {
 
   public static final int CLAW_MOTOR_CAN_ID = 52;
 
-  public static final Double CLAW_MOTOR_SPEED = .5;
+  public static final Double CLAW_MOTOR_SPEED = .75;
   public static final Double CLAW_BRAKE_SPEED = 0.035;
 
   public static final boolean CLAW_LOGGING = true;

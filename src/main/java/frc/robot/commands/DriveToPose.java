@@ -39,6 +39,7 @@ public class DriveToPose extends Command {
   public final SwerveRequest.FieldCentricFacingAngle driveRequest;
   private final Supplier<Pose2d> poseSupplier;
   private Pose2d targetPose;
+  private int atTargetCount = 0;
 
   private boolean running = false;
   private Timer timer;
@@ -152,11 +153,18 @@ public class DriveToPose extends Command {
     Logger.recordOutput("DriveToPose/yErr", yController.atGoal());
     Logger.recordOutput("DriveToPose/tErr", isThetaAtGoal());
 
+    boolean isAtTarget =
+        (running && xController.atGoal() && yController.atGoal() && isThetaAtGoal());
+    if (isAtTarget) {
+      atTargetCount++;
+    } else {
+      atTargetCount = 0;
+    }
+
     // check that running is true (i.e., the calculate method has been invoked on the PID
     // controllers) and that each of the controllers is at their goal. This is important since these
     // controllers will return true for atGoal if the calculate method has not yet been invoked.
-    return this.timer.hasElapsed(timeout)
-        || (running && xController.atGoal() && yController.atGoal() && isThetaAtGoal());
+    return this.timer.hasElapsed(timeout) || atTargetCount >= 15;
   }
 
   private boolean isThetaAtGoal() {
