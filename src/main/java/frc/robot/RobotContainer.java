@@ -88,6 +88,8 @@ public class RobotContainer {
   private Intake intake;
   private Climber climber;
 
+  private static final double NET_SCORE_LOCATION = 7.4;
+
   private Alliance lastAlliance = Alliance.Blue; // Field2d.getInstance().getAlliance();
 
   public final CommandSwerveDrivetrain drivetrain =
@@ -101,7 +103,7 @@ public class RobotContainer {
   private double MaxSlowSpeed = 0.25 * MaxSpeed; // 25% of max speed
   private double MaxSlowAngularRate = 0.25 * MaxAngularRate; // 25% of max angular rate
   private boolean isSlowMode = false;
-  private boolean isFullAuto = false;
+  private boolean isFullAuto = true;
   private boolean isPlucking = false;
   private boolean isVisionEnabled = true;
   private boolean isPluckTargetHigh = false;
@@ -153,10 +155,10 @@ public class RobotContainer {
   StructPublisher<Pose2d> questPosePublisher =
       NetworkTableInstance.getDefault().getStructTopic("questPose", Pose2d.struct).publish();
 
-  PathConstraints hpPathConstraints = new PathConstraints(4.0, 3.5, 8.42, 12.8876585);
+  PathConstraints hpPathConstraints = new PathConstraints(4.0, 3.0, 8.42, 12.8876585);
 
-  PathConstraints scorePathConstraints = new PathConstraints(3.0, 2.5, 8.0, 10.0);
   PathConstraints pluckPathConstraints = new PathConstraints(2.0, 2.0, 8.0, 10.0);
+  PathConstraints scorePathConstraints = new PathConstraints(4.0, 3.0, 8.0, 10.0);
 
   PathPlannerPath pathF1;
   PathPlannerPath pathF2;
@@ -468,8 +470,8 @@ public class RobotContainer {
   private void driveSlowlyDirection(Rotation2d targetDirection) {
     drivetrain.setControl(
         driveRequest
-            .withVelocityX(0.2 * Math.cos(scoringAngleMap.get(scoringPathOption).getRadians()))
-            .withVelocityY(0.2 * Math.sin(scoringAngleMap.get(scoringPathOption).getRadians()))
+            .withVelocityX(0.25 * Math.cos(targetDirection.getRadians()))
+            .withVelocityY(0.25 * Math.sin(targetDirection.getRadians()))
             .withRotationalRate(0.0));
   }
 
@@ -593,47 +595,40 @@ public class RobotContainer {
                     // Raise Piece to scoring level
                     Commands.sequence(
                         new WaitUntilCommand(this::isRobotCloseToScoringPosition),
-                        armevator
-                            .runOnce(
-                                () -> armevator.setTargetPose(currentScoringLevelSupplier.get()))
-                            .asProxy()),
+                        armevator.runOnce(
+                            () -> armevator.setTargetPose(currentScoringLevelSupplier.get()))),
                     // Drive to scoring location
                     Commands.sequence(
                         new ConditionalCommand(
-                                // Pathfind
-                                getScoringPathCommand(),
-                                // Drive directly to pose
-                                Commands.sequence(
-                                    new DriveToPose(
-                                        drivetrain,
-                                        () -> getPathStartingPose(scoringPathOption),
-                                        driveFacingAngleRequest),
-                                    new WaitCommand(0.2),
-                                    getSimpleScoringPathCommand()),
-                                this::isFarEnoughForPathfinding)
-                            .asProxy(),
+                            // Pathfind
+                            getScoringPathCommand(),
+                            // Drive directly to pose
+                            Commands.sequence(
+                                new DriveToPose(
+                                    drivetrain,
+                                    () -> getPathStartingPose(scoringPathOption),
+                                    driveFacingAngleRequest),
+                                new WaitCommand(0.2),
+                                getSimpleScoringPathCommand()),
+                            this::isFarEnoughForPathfinding),
                         // Safe Score Command
                         drivetrain.run(
                             () -> driveSlowlyDirection(scoringAngleMap.get(scoringPathOption))),
                         new WaitCommand(0.25),
                         // @todo veify we are limelight aligned, move over if not
-                        new ClawBackwards(claw).asProxy())),
+                        new ClawBackwards(claw))),
                 // Manual
                 Commands.parallel(
-                        Commands.sequence(
-                            new WaitCommand(0.5),
-                            armevator
-                                .runOnce(
-                                    () ->
-                                        armevator.setTargetPose(currentScoringLevelSupplier.get()))
-                                .asProxy()),
-                        drivetrain.run(
-                            () ->
-                                driveFacingAngle(
-                                    -oi.getTranslateX() * MaxSpeed,
-                                    -oi.getTranslateY() * MaxSpeed,
-                                    scoringAngleMap.get(scoringPathOption))))
-                    .asProxy(),
+                    Commands.sequence(
+                        new WaitCommand(0.5),
+                        armevator.runOnce(
+                            () -> armevator.setTargetPose(currentScoringLevelSupplier.get()))),
+                    drivetrain.run(
+                        () ->
+                            driveFacingAngle(
+                                -oi.getTranslateX() * MaxSpeed,
+                                -oi.getTranslateY() * MaxSpeed,
+                                scoringAngleMap.get(scoringPathOption)))),
                 isFullAutoSupplier));
     oi.scoreCoralButton()
         .onFalse(
@@ -700,18 +695,14 @@ public class RobotContainer {
                 Commands.sequence(
                     new ConditionalCommand(
                         Commands.sequence(
-                            AutoBuilder.pathfindThenFollowPath(pathLeftHP, hpPathConstraints)
-                                .asProxy(),
+                            AutoBuilder.pathfindThenFollowPath(pathLeftHP, hpPathConstraints),
                             drivetrain.run(
-                                () -> driveSlowlyDirection(Rotation2d.fromDegrees(-55.0)))),
+                                () -> driveSlowlyDirection(Rotation2d.fromDegrees(125.0)))),
                         Commands.sequence(
-                            AutoBuilder.pathfindThenFollowPath(pathRightHP, hpPathConstraints)
-                                .asProxy(),
+                            AutoBuilder.pathfindThenFollowPath(pathRightHP, hpPathConstraints),
                             drivetrain.run(
-                                () -> driveSlowlyDirection(Rotation2d.fromDegrees(55.0)))),
-                        this::shouldIntakeLeftSide),
-                    drivetrain.run(
-                        () -> driveSlowlyDirection(scoringAngleMap.get(scoringPathOption))))));
+                                () -> driveSlowlyDirection(Rotation2d.fromDegrees(-125.0)))),
+                        this::shouldIntakeLeftSide))));
 
     oi.operatorF1()
         .onTrue(
@@ -935,14 +926,13 @@ public class RobotContainer {
                 claw.runOnce(() -> claw.intakeAlgae()),
                 new ConditionalCommand(
                     getNetPathCommand(),
-                    Commands.sequence(
-                        new DriveToPose(
-                            drivetrain,
-                            () ->
-                                new Pose2d(
-                                    7.65, drivetrain.getPose().getY(), Rotation2d.fromDegrees(135)),
-                            driveFacingAngleRequest)),
+                    new InstantCommand(),
                     this::isFarEnoughFromNetForPathfinding),
+                new DriveToPose(
+                    drivetrain,
+                    () ->
+                        new Pose2d(7.65, drivetrain.getPose().getY(), Rotation2d.fromDegrees(135)),
+                    driveFacingAngleRequest),
                 Commands.deadline(
                     Commands.sequence(
                         claw.runOnce(() -> claw.brakeAlgae()),
@@ -1114,7 +1104,8 @@ public class RobotContainer {
   }
 
   private double getDistanceFromNet() {
-    Pose2d targetPose = new Pose2d(7.5, drivetrain.getPose().getY(), Rotation2d.fromDegrees(135));
+    Pose2d targetPose =
+        new Pose2d(NET_SCORE_LOCATION, drivetrain.getPose().getY(), Rotation2d.fromDegrees(135));
     Pose2d currentPose = drivetrain.getPose();
     return targetPose.getTranslation().getDistance(currentPose.getTranslation());
   }
@@ -1292,62 +1283,98 @@ public class RobotContainer {
     NetPathMap.put(
         0,
         AutoBuilder.pathfindToPose(
-            new Pose2d(7.5, 4.7 + (7.5 / 4.7 / 11.0 * 0), Rotation2d.fromDegrees(135.0)),
+            new Pose2d(
+                NET_SCORE_LOCATION,
+                4.7 + (NET_SCORE_LOCATION / 4.7 / 11.0 * 0),
+                Rotation2d.fromDegrees(135.0)),
             hpPathConstraints));
     NetPathMap.put(
         1,
         AutoBuilder.pathfindToPose(
-            new Pose2d(7.5, 4.7 + (7.5 / 4.7 / 11.0 * 1), Rotation2d.fromDegrees(135.0)),
+            new Pose2d(
+                NET_SCORE_LOCATION,
+                4.7 + (NET_SCORE_LOCATION / 4.7 / 11.0 * 1),
+                Rotation2d.fromDegrees(135.0)),
             hpPathConstraints));
     NetPathMap.put(
         2,
         AutoBuilder.pathfindToPose(
-            new Pose2d(7.5, 4.7 + (7.5 / 4.7 / 11.0 * 2), Rotation2d.fromDegrees(135.0)),
+            new Pose2d(
+                NET_SCORE_LOCATION,
+                4.7 + (NET_SCORE_LOCATION / 4.7 / 11.0 * 2),
+                Rotation2d.fromDegrees(135.0)),
             hpPathConstraints));
     NetPathMap.put(
         3,
         AutoBuilder.pathfindToPose(
-            new Pose2d(7.5, 4.7 + (7.5 / 4.7 / 11.0 * 3), Rotation2d.fromDegrees(135.0)),
+            new Pose2d(
+                NET_SCORE_LOCATION,
+                4.7 + (NET_SCORE_LOCATION / 4.7 / 11.0 * 3),
+                Rotation2d.fromDegrees(135.0)),
             hpPathConstraints));
     NetPathMap.put(
         4,
         AutoBuilder.pathfindToPose(
-            new Pose2d(7.5, 4.7 + (7.5 / 4.7 / 11.0 * 4), Rotation2d.fromDegrees(135.0)),
+            new Pose2d(
+                NET_SCORE_LOCATION,
+                4.7 + (NET_SCORE_LOCATION / 4.7 / 11.0 * 4),
+                Rotation2d.fromDegrees(135.0)),
             hpPathConstraints));
     NetPathMap.put(
         5,
         AutoBuilder.pathfindToPose(
-            new Pose2d(7.5, 4.7 + (7.5 / 4.7 / 11.0 * 5), Rotation2d.fromDegrees(135.0)),
+            new Pose2d(
+                NET_SCORE_LOCATION,
+                4.7 + (NET_SCORE_LOCATION / 4.7 / 11.0 * 5),
+                Rotation2d.fromDegrees(135.0)),
             hpPathConstraints));
     NetPathMap.put(
         6,
         AutoBuilder.pathfindToPose(
-            new Pose2d(7.5, 4.7 + (7.5 / 4.7 / 11.0 * 6), Rotation2d.fromDegrees(135.0)),
+            new Pose2d(
+                NET_SCORE_LOCATION,
+                4.7 + (NET_SCORE_LOCATION / 4.7 / 11.0 * 6),
+                Rotation2d.fromDegrees(135.0)),
             hpPathConstraints));
     NetPathMap.put(
         7,
         AutoBuilder.pathfindToPose(
-            new Pose2d(7.5, 4.7 + (7.5 / 4.7 / 11.0 * 7), Rotation2d.fromDegrees(135.0)),
+            new Pose2d(
+                NET_SCORE_LOCATION,
+                4.7 + (NET_SCORE_LOCATION / 4.7 / 11.0 * 7),
+                Rotation2d.fromDegrees(135.0)),
             hpPathConstraints));
     NetPathMap.put(
         8,
         AutoBuilder.pathfindToPose(
-            new Pose2d(7.5, 4.7 + (7.5 / 4.7 / 11.0 * 8), Rotation2d.fromDegrees(135.0)),
+            new Pose2d(
+                NET_SCORE_LOCATION,
+                4.7 + (NET_SCORE_LOCATION / 4.7 / 11.0 * 8),
+                Rotation2d.fromDegrees(135.0)),
             hpPathConstraints));
     NetPathMap.put(
         9,
         AutoBuilder.pathfindToPose(
-            new Pose2d(7.5, 4.7 + (7.5 / 4.7 / 11.0 * 9), Rotation2d.fromDegrees(135.0)),
+            new Pose2d(
+                NET_SCORE_LOCATION,
+                4.7 + (NET_SCORE_LOCATION / 4.7 / 11.0 * 9),
+                Rotation2d.fromDegrees(135.0)),
             hpPathConstraints));
     NetPathMap.put(
         10,
         AutoBuilder.pathfindToPose(
-            new Pose2d(7.5, 4.7 + (7.5 / 4.7 / 11.0 * 10), Rotation2d.fromDegrees(135.0)),
+            new Pose2d(
+                NET_SCORE_LOCATION,
+                4.7 + (NET_SCORE_LOCATION / 4.7 / 11.0 * 10),
+                Rotation2d.fromDegrees(135.0)),
             hpPathConstraints));
     NetPathMap.put(
         11,
         AutoBuilder.pathfindToPose(
-            new Pose2d(7.5, 4.7 + (7.5 / 4.7 / 11.0 * 111), Rotation2d.fromDegrees(135.0)),
+            new Pose2d(
+                NET_SCORE_LOCATION,
+                4.7 + (NET_SCORE_LOCATION / 4.7 / 11.0 * 111),
+                Rotation2d.fromDegrees(135.0)),
             hpPathConstraints));
   }
 
@@ -1355,7 +1382,10 @@ public class RobotContainer {
     Pose2d currentPose = drivetrain.getPose();
     double y = currentPose.getY();
 
-    int index = (int) ((y - (4.7 - 7.5 / 4.7 / 11.0 / 2.0)) / ((7.5 - 4.7) / 12.0));
+    int index =
+        (int)
+            ((y - (4.7 - NET_SCORE_LOCATION / 4.7 / 11.0 / 2.0))
+                / ((NET_SCORE_LOCATION - 4.7) / 12.0));
 
     if (index < 0) {
       return 0;
@@ -1376,13 +1406,14 @@ public class RobotContainer {
       return;
     }
 
-    LimelightHelpers.PoseEstimate limelightMeasurement = visionApriltagSubsystem.getPoseEstimate();
-    if (limelightMeasurement.tagCount >= 2
-        || (limelightMeasurement.tagCount == 1 && limelightMeasurement.avgTagDist < 1.25)) {
-      drivetrain.addVisionMeasurement(
-          limelightMeasurement.pose,
-          limelightMeasurement.timestampSeconds,
-          VecBuilder.fill(.6, .6, 9999999));
-    }
+    // LimelightHelpers.PoseEstimate limelightMeasurement =
+    // visionApriltagSubsystem.getPoseEstimate();
+    // if (limelightMeasurement != null && (limelightMeasurement.tagCount >= 2
+    //     || (limelightMeasurement.tagCount == 1 && limelightMeasurement.avgTagDist < 1.25))) {
+    //   drivetrain.addVisionMeasurement(
+    //       limelightMeasurement.pose,
+    //       limelightMeasurement.timestampSeconds,
+    //       VecBuilder.fill(.6, .6, 9999999));
+    // }
   }
 }

@@ -281,7 +281,7 @@ public class Armevator extends SubsystemBase {
   }
 
   public boolean isAtNetReleaseAngle() {
-    return armRelativeEncoder.getPosition() < 12.0;
+    return armRelativeEncoder.getPosition() < 15.0;
   }
 
   public void resetToAbsoluteEncoder() {
