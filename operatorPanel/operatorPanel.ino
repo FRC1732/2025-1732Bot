@@ -15,7 +15,7 @@
 
 
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(115200);
 
   pinMode(ROW_A, OUTPUT);
   pinMode(ROW_B, OUTPUT);

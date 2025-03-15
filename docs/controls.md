@@ -44,17 +44,20 @@ In certain circumstances, the robot automatically handles orientation or alignme
 ### Joystick 1 (Left Joystick)
 - **Axis X**: Translate Robot (horizontal)
 - **Axis Y**: Translate Robot (vertical)
-- **Button 1 (Trigger)**: Hold to intake coral (orients to the HP station the stick is pointing towards)
-- **Button 2 (down)**: Hold to intake algae
-- **Button 3 (up)**: Hold to aim at net
+- **Button 1 (Trigger)**: Hold to auto intake coral (drives to the HP station the stick is pointing towards)
+- **Button 2 (down)**: Hold to intake algae, tap to run algae intake for 1 second
+- **Button 3 (up)**: Hold to drive to net and score
+- **Button 4 (left)**: Hold to drive to and pluck algae from reef based on selected scoring location
+- **Button 5 (right)**: Hold to eject algae
 
 ### Joystick 2 (Right Joystick)
 - **Axis X**: Rotate Robot
 - **Axis Y**: (Not specifically used in rotation mode)
-- **Button 1 (Trigger)**: Hold to aim at selected branch for coral scoring - returns to HP pose on release
+- **Button 1 (Trigger)**: Hold to drive to selected location for coral scoring and score once in position
 - **Button 2 (down)**: Hold to eject coral
-- **Button 3 (up)**: Hold to eject algae
-- **Button 4 (left)**: Hold to clear/remove algae from reef
+- **Button 3 (up)**: Hold to pull in coral/eject algae
+- **Button 4 (left)**: Hold to intake coral and align to left HP station
+- **Button 5 (right)**: Hold to intake coral and align to right HP station
 - **Button 8**: Press to reset gyro and robot pose to F1
 
 ### Operator Panel

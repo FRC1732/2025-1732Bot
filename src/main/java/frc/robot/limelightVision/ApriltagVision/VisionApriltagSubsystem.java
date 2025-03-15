@@ -80,6 +80,10 @@ public class VisionApriltagSubsystem extends SubsystemBase {
     return LimelightHelpers.getTV(getLimelightName());
   }
 
+  public boolean hasReefTarget() {
+    return LimelightHelpers.getTV(getLimelightName());
+  }
+
   public boolean hasStageTarget() {
     return LimelightHelpers.getTV(getLimelightName())
         && getAprilTagId() >= 11
