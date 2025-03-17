@@ -201,6 +201,7 @@ public class RobotContainer {
 
   Map<ScoringPathOption, Command> scoringPathMap = new HashMap<>(12);
   Map<ScoringPathOption, Command> simpleScoringPathMap = new HashMap<>(12);
+  Map<ScoringPathOption, Command> simplePluckScoringMap = new HashMap<>(12);
   Map<ScoringPathOption, Command> pluckAlgaePathMap = new HashMap<>(12);
   Map<ScoringPathOption, Rotation2d> scoringAngleMap = new HashMap<>(12);
   Map<Integer, Command> NetPathMap = new HashMap<>(12);
@@ -876,11 +877,18 @@ public class RobotContainer {
 
     Command autoPluckCommand =
         Commands.sequence(
-            new PrintCommand("Auto Command Started"),
             armevator.runOnce(() -> armevator.setTargetPose(inferPluckArmevatorPose(true))),
             intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.ALGAE_PRE_PLUCK_L2)),
-            new PrintCommand("Pluck Path Command Started"),
-            getPluckPathCommand(),
+            new ConditionalCommand(
+                getPluckPathCommand(),
+                Commands.sequence(
+                    new DriveToPose(
+                        drivetrain,
+                        () -> getPluckPathStartingPose(scoringPathOption),
+                        driveFacingAngleRequest),
+                    new WaitCommand(0.2),
+                    getSimplePluckPathCommand()),
+                this::isFarEnoughForPathfindingPluck),
             Commands.deadline(
                 nonAutoPluck,
                 drivetrain.run(
@@ -1082,12 +1090,22 @@ public class RobotContainer {
     return getDistanceFromTarget() > 2.0;
   }
 
+  private boolean isFarEnoughForPathfindingPluck() {
+    return getPluckDistanceFromTarget() > 2.0;
+  }
+
   private boolean isRobotCloseToScoringPosition() {
     return getDistanceFromTarget() < 0.4;
   }
 
   private double getDistanceFromTarget() {
     Pose2d targetPose = getPathStartingPose(scoringPathOption);
+    Pose2d currentPose = drivetrain.getPose();
+    return targetPose.getTranslation().getDistance(currentPose.getTranslation());
+  }
+
+  private double getPluckDistanceFromTarget() {
+    Pose2d targetPose = getPluckPathStartingPose(scoringPathOption);
     Pose2d currentPose = drivetrain.getPose();
     return targetPose.getTranslation().getDistance(currentPose.getTranslation());
   }
@@ -1133,8 +1151,16 @@ public class RobotContainer {
     return new SelectCommand<>(simpleScoringPathMap, () -> scoringPathOption);
   }
 
+  private Command getSimplePluckPathCommand() {
+    return new SelectCommand<>(simplePluckScoringMap, () -> scoringPathOption);
+  }
+
   private Pose2d getPathStartingPose(ScoringPathOption scoringPathOption) {
     return getCurrentScoringPath(scoringPathOption).getStartingHolonomicPose().get();
+  }
+
+  private Pose2d getPluckPathStartingPose(ScoringPathOption scoringPathOption) {
+    return getCurrentScoringPluckPath(scoringPathOption).getStartingHolonomicPose().get();
   }
 
   private PathPlannerPath getCurrentScoringPath(ScoringPathOption scoringPathOption) {
@@ -1166,6 +1192,31 @@ public class RobotContainer {
     }
     return pathF1;
   }
+
+  private PathPlannerPath getCurrentScoringPluckPath(ScoringPathOption scoringPathOption) {
+    switch (scoringPathOption) {
+      case PATH_F1, PATH_F2 -> {
+        return pathFAlgae;
+      }
+        case PATH_FL1, PATH_FL2 -> {
+            return pathFLAlgae;
+        }
+        case PATH_FR1, PATH_FR2 -> {
+            return pathFRAlgae;
+        }
+        case PATH_BL1, PATH_BL2 -> {
+            return pathBLAlgae;
+        }
+        case PATH_BR1, PATH_BR2 -> {
+            return pathBRAlgae;
+        }
+        case PATH_B1, PATH_B2 -> {
+            return pathBAlgae;
+        }
+    }
+    return pathFAlgae;
+  }
+
 
   // run on init
   private void setupScoringPathMap() {
@@ -1218,6 +1269,19 @@ public class RobotContainer {
     simpleScoringPathMap.put(ScoringPathOption.PATH_BR2, AutoBuilder.followPath(pathBR2));
     simpleScoringPathMap.put(ScoringPathOption.PATH_B1, AutoBuilder.followPath(pathB1));
     simpleScoringPathMap.put(ScoringPathOption.PATH_B2, AutoBuilder.followPath(pathB2));
+
+    simplePluckScoringMap.put(ScoringPathOption.PATH_F1, AutoBuilder.followPath(pathFAlgae));
+    simplePluckScoringMap.put(ScoringPathOption.PATH_F2, AutoBuilder.followPath(pathFAlgae));
+    simplePluckScoringMap.put(ScoringPathOption.PATH_FL1, AutoBuilder.followPath(pathFLAlgae));
+    simplePluckScoringMap.put(ScoringPathOption.PATH_FL2, AutoBuilder.followPath(pathFLAlgae));
+    simplePluckScoringMap.put(ScoringPathOption.PATH_FR1, AutoBuilder.followPath(pathFRAlgae));
+    simplePluckScoringMap.put(ScoringPathOption.PATH_FR2, AutoBuilder.followPath(pathFRAlgae));
+    simplePluckScoringMap.put(ScoringPathOption.PATH_BL1, AutoBuilder.followPath(pathBLAlgae));
+    simplePluckScoringMap.put(ScoringPathOption.PATH_BL2, AutoBuilder.followPath(pathBLAlgae));
+    simplePluckScoringMap.put(ScoringPathOption.PATH_BR1, AutoBuilder.followPath(pathBRAlgae));
+    simplePluckScoringMap.put(ScoringPathOption.PATH_BR2, AutoBuilder.followPath(pathBRAlgae));
+    simplePluckScoringMap.put(ScoringPathOption.PATH_B1, AutoBuilder.followPath(pathBAlgae));
+    simplePluckScoringMap.put(ScoringPathOption.PATH_B2, AutoBuilder.followPath(pathBAlgae));
 
     pluckAlgaePathMap.put(
         ScoringPathOption.PATH_F1,
