@@ -136,7 +136,7 @@ public class Armevator extends SubsystemBase {
     elevatorMap.put(ArmevatorPose.ALGAE_L2_PLUCK, 3.0);
     elevatorMap.put(ArmevatorPose.ALGAE_L2_DROP, 4.5);
     elevatorMap.put(ArmevatorPose.ALGAE_PRE_PLUCK_L2, 0.0);
-    elevatorMap.put(ArmevatorPose.ALGAE_PRE_PLUCK_L3, 10.0);
+    elevatorMap.put(ArmevatorPose.ALGAE_PRE_PLUCK_L3, 8.0);
 
     /////////////////////////
     // setup elevator motors

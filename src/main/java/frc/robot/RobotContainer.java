@@ -856,67 +856,56 @@ public class RobotContainer {
                 intake.runOnce(() -> intake.stopIntake()), claw.runOnce(() -> claw.stopClaw())));
 
     Command nonAutoPluck =
-        Commands.runOnce(() -> isPlucking = true)
-            .andThen(new PrintCommand("Non-Auto Command Started"))
-            .andThen(
-                Commands.deadline(
-                    Commands.sequence(
-                        new WaitCommand(0.25), // TODO remove once testing is finished
-                        intake.runOnce(
-                            () -> {
-                              ArmevatorPose setPose =
-                                  isPluckTargetHighSupplier.getAsBoolean()
-                                      ? ArmevatorPose.ALGAE_L3_PLUCK
-                                      : ArmevatorPose.ALGAE_L2_PLUCK;
+        Commands.sequence(
+            Commands.runOnce(() -> isPlucking = true),
+            new PrintCommand("Non-Auto Command Started"),
+            claw.runOnce(() -> claw.intakeAlgae()),
+            intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.ALGAE_PRE_PLUCK_L2)),
+            armevator.runOnce(
+                () -> {
+                  ArmevatorPose setPose =
+                      isPluckTargetHighSupplier.getAsBoolean()
+                          ? ArmevatorPose.ALGAE_L3_PLUCK
+                          : ArmevatorPose.ALGAE_L2_PLUCK;
 
-                              if (isFullAutoSupplier.getAsBoolean()) {
-                                setPose = inferPluckArmevatorPose(false);
-                              }
-                              intake.setTargetPose(setPose);
-                            }),
-                        armevator.runOnce(
-                            () -> {
-                              ArmevatorPose setPose =
-                                  isPluckTargetHighSupplier.getAsBoolean()
-                                      ? ArmevatorPose.ALGAE_L3_PLUCK
-                                      : ArmevatorPose.ALGAE_L2_PLUCK;
-
-                              if (isFullAutoSupplier.getAsBoolean()) {
-                                setPose = inferPluckArmevatorPose(false);
-                              }
-
-                              armevator.setTargetPose(setPose);
-                            }))),
-                claw.runOnce(() -> claw.ejectCoral()))
-            .andThen(claw.runOnce(() -> claw.intakeAlgae()));
+                  if (isFullAutoSupplier.getAsBoolean()) {
+                    setPose = inferPluckArmevatorPose(false);
+                  }
+                  armevator.setTargetPose(setPose);
+                }));
 
     Command autoPluckCommand =
         Commands.sequence(
             new PrintCommand("Auto Command Started"),
-            armevator
-                .runOnce(() -> armevator.setTargetPose(inferPluckArmevatorPose(true)))
-                .asProxy(),
-            intake.runOnce(() -> intake.setTargetPose(inferPluckArmevatorPose(true))).asProxy(),
+            armevator.runOnce(() -> armevator.setTargetPose(inferPluckArmevatorPose(true))),
+            intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.ALGAE_PRE_PLUCK_L2)),
             new PrintCommand("Pluck Path Command Started"),
-            getPluckPathCommand().asProxy(),
-            new PrintCommand("Pluck Path Command Ended"),
-            nonAutoPluck.asProxy());
+            getPluckPathCommand(),
+            Commands.deadline(
+                nonAutoPluck,
+                drivetrain.run(
+                    () -> driveSlowlyDirection(scoringAngleMap.get(scoringPathOption)))));
 
     oi.pluckAlgaeButton()
-        .whileTrue(
-            new ConditionalCommand(
-                autoPluckCommand.asProxy(), nonAutoPluck.asProxy(), isFullAutoSupplier));
+        .whileTrue(new ConditionalCommand(autoPluckCommand, nonAutoPluck, isFullAutoSupplier));
 
     oi.pluckAlgaeButton()
         .onFalse(
-            Commands.runOnce(() -> isPlucking = false)
-                .andThen(
-                    Commands.sequence(
-                        intake.runOnce(
-                            () -> intake.setTargetPose(ArmevatorPose.ALGAE_PRE_PLUCK_L2)),
-                        armevator.runOnce(
-                            () -> armevator.setTargetPose(ArmevatorPose.ALGAE_PRE_PLUCK_L2)),
-                        claw.run(() -> claw.brakeAlgae()))));
+            Commands.sequence(
+                Commands.runOnce(() -> isPlucking = false),
+                intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.ALGAE_HANDOFF)),
+                armevator.runOnce(
+                    () -> {
+                      if (isFullAutoSupplier.getAsBoolean()) {
+                        armevator.setTargetPose(ArmevatorPose.ALGAE_HANDOFF);
+                      } else {
+                        armevator.setTargetPose(
+                            isPluckTargetHighSupplier.getAsBoolean()
+                                ? ArmevatorPose.ALGAE_L3_PLUCK
+                                : ArmevatorPose.ALGAE_L2_PLUCK);
+                      }
+                    }),
+                claw.run(() -> claw.brakeAlgae())));
 
     oi.aimAtNetButton()
         .whileTrue(
@@ -1114,16 +1103,16 @@ public class RobotContainer {
     switch (scoringPathOption) {
       case PATH_F1, PATH_F2, PATH_BR1, PATH_BR2, PATH_BL1, PATH_BL2 -> {
         if (getPrePluck) {
-          return ArmevatorPose.ALGAE_PRE_PLUCK_L2;
+          return ArmevatorPose.ALGAE_PRE_PLUCK_L3;
         }
-        return ArmevatorPose.ALGAE_L2_PLUCK;
+        return ArmevatorPose.ALGAE_L3_PLUCK;
       }
 
       default -> {
         if (getPrePluck) {
-          return ArmevatorPose.ALGAE_PRE_PLUCK_L3;
+          return ArmevatorPose.ALGAE_PRE_PLUCK_L2;
         }
-        return ArmevatorPose.ALGAE_L3_PLUCK;
+        return ArmevatorPose.ALGAE_L2_PLUCK;
       }
     }
   }

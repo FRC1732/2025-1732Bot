@@ -214,7 +214,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
               setControl(
                   m_pathApplyRobotSpeeds
                       .withDriveRequestType(SwerveModule.DriveRequestType.Velocity)
-                      .withSteerRequestType(SwerveModule.SteerRequestType.MotionMagicExpo)
+                      // .withSteerRequestType(SwerveModule.SteerRequestType.MotionMagicExpo)
                       .withSpeeds(speeds)
                       .withWheelForceFeedforwardsX(feedforwards.robotRelativeForcesXNewtons())
                       .withWheelForceFeedforwardsY(feedforwards.robotRelativeForcesYNewtons())),
@@ -236,8 +236,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
   }
 
   private void resetQuestPose(Pose2d pose) {
-    m_questPoseResetConsumer.accept(pose);
     resetPose(pose);
+    m_questPoseResetConsumer.accept(pose);
   }
 
   /**
