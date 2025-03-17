@@ -1198,25 +1198,24 @@ public class RobotContainer {
       case PATH_F1, PATH_F2 -> {
         return pathFAlgae;
       }
-        case PATH_FL1, PATH_FL2 -> {
-            return pathFLAlgae;
-        }
-        case PATH_FR1, PATH_FR2 -> {
-            return pathFRAlgae;
-        }
-        case PATH_BL1, PATH_BL2 -> {
-            return pathBLAlgae;
-        }
-        case PATH_BR1, PATH_BR2 -> {
-            return pathBRAlgae;
-        }
-        case PATH_B1, PATH_B2 -> {
-            return pathBAlgae;
-        }
+      case PATH_FL1, PATH_FL2 -> {
+        return pathFLAlgae;
+      }
+      case PATH_FR1, PATH_FR2 -> {
+        return pathFRAlgae;
+      }
+      case PATH_BL1, PATH_BL2 -> {
+        return pathBLAlgae;
+      }
+      case PATH_BR1, PATH_BR2 -> {
+        return pathBRAlgae;
+      }
+      case PATH_B1, PATH_B2 -> {
+        return pathBAlgae;
+      }
     }
     return pathFAlgae;
   }
-
 
   // run on init
   private void setupScoringPathMap() {
