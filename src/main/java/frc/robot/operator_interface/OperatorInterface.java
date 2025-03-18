@@ -64,6 +64,14 @@ public interface OperatorInterface {
     return new Trigger(() -> false);
   }
 
+  public default Trigger intakeCoralLeft() {
+    return new Trigger(() -> false);
+  }
+
+  public default Trigger intakeCoralRight() {
+    return new Trigger(() -> false);
+  }
+
   public default Trigger scoreCoralButton() {
     return new Trigger(() -> false);
   }
@@ -81,6 +89,10 @@ public interface OperatorInterface {
   }
 
   public default Trigger ejectAlgaeButton() {
+    return new Trigger(() -> false);
+  }
+
+  public default Trigger pullInCoralButton() {
     return new Trigger(() -> false);
   }
 

@@ -105,32 +105,38 @@ public class Armevator extends SubsystemBase {
     armMap.put(ArmevatorPose.CORAL_L3_SCORE, 45.0);
     armMap.put(ArmevatorPose.CORAL_L2_SCORE, 72.0);
     armMap.put(ArmevatorPose.CORAL_L1_SCORE, 80.0);
-    armMap.put(ArmevatorPose.CORAL_POST_SCORE, 55.0);
-    armMap.put(ArmevatorPose.ALGAE_INTAKE, 90.0);
-    armMap.put(ArmevatorPose.ALGAE_HANDOFF, 90.0);
-    armMap.put(ArmevatorPose.ALGAE_NET_SCORE, -70.0);
+    armMap.put(ArmevatorPose.CORAL_POST_SCORE, 40.0);
+    armMap.put(ArmevatorPose.ALGAE_INTAKE, 89.0);
+    armMap.put(ArmevatorPose.ALGAE_HANDOFF, 89.0);
+    armMap.put(ArmevatorPose.ALGAE_NET_SCORE, -125.0);
+    armMap.put(ArmevatorPose.ALGAE_NET_STAGE, 90.0);
     armMap.put(ArmevatorPose.ALGAE_L3_PLUCK, 15.0);
     armMap.put(ArmevatorPose.ALGAE_L3_DROP, 5.0);
     armMap.put(ArmevatorPose.ALGAE_L2_PLUCK, 15.0);
     armMap.put(ArmevatorPose.ALGAE_L2_DROP, 5.0);
+    armMap.put(ArmevatorPose.ALGAE_PRE_PLUCK_L2, 45.0);
+    armMap.put(ArmevatorPose.ALGAE_PRE_PLUCK_L3, 15.0);
 
     elevatorMap = new HashMap<>(); // in inches
     elevatorMap.put(ArmevatorPose.STARTING, 0.0);
     elevatorMap.put(ArmevatorPose.CLIMB, 0.0);
     elevatorMap.put(ArmevatorPose.CORAL_AUTO_STAGE, 32.0);
-    elevatorMap.put(ArmevatorPose.CORAL_HP_LOAD, 4.0);
+    elevatorMap.put(ArmevatorPose.CORAL_HP_LOAD, 4.5);
     elevatorMap.put(ArmevatorPose.CORAL_L4_SCORE, 32.0);
     elevatorMap.put(ArmevatorPose.CORAL_L3_SCORE, 4.5);
     elevatorMap.put(ArmevatorPose.CORAL_L2_SCORE, 0.0);
     elevatorMap.put(ArmevatorPose.CORAL_L1_SCORE, 0.0);
-    elevatorMap.put(ArmevatorPose.CORAL_POST_SCORE, 4.0);
+    elevatorMap.put(ArmevatorPose.CORAL_POST_SCORE, 4.25);
     elevatorMap.put(ArmevatorPose.ALGAE_INTAKE, 0.0);
     elevatorMap.put(ArmevatorPose.ALGAE_HANDOFF, 0.0);
-    elevatorMap.put(ArmevatorPose.ALGAE_NET_SCORE, 32.0);
+    elevatorMap.put(ArmevatorPose.ALGAE_NET_SCORE, 7.0);
+    elevatorMap.put(ArmevatorPose.ALGAE_NET_STAGE, 7.0);
     elevatorMap.put(ArmevatorPose.ALGAE_L3_PLUCK, 18.0);
     elevatorMap.put(ArmevatorPose.ALGAE_L3_DROP, 20.0);
     elevatorMap.put(ArmevatorPose.ALGAE_L2_PLUCK, 3.0);
     elevatorMap.put(ArmevatorPose.ALGAE_L2_DROP, 4.5);
+    elevatorMap.put(ArmevatorPose.ALGAE_PRE_PLUCK_L2, 0.0);
+    elevatorMap.put(ArmevatorPose.ALGAE_PRE_PLUCK_L3, 8.0);
 
     /////////////////////////
     // setup elevator motors
@@ -141,6 +147,7 @@ public class Armevator extends SubsystemBase {
     SparkMaxConfig rightConfig = new SparkMaxConfig();
     SparkMaxConfig leftConfig = new SparkMaxConfig();
 
+    rightConfig.inverted(true);
     leftConfig.follow(elevatorRightMotor, true);
 
     rightConfig.idleMode(IdleMode.kBrake);
@@ -269,6 +276,14 @@ public class Armevator extends SubsystemBase {
     return temp > 23.0;
   }
 
+  public boolean isAtNetScoringHeight() {
+    return elevatorEncoder.getPosition() > 1.0;
+  }
+
+  public boolean isAtNetReleaseAngle() {
+    return armRelativeEncoder.getPosition() < 15.0;
+  }
+
   public void resetToAbsoluteEncoder() {
     armRelativeEncoder.setPosition(getAbsoluteDegrees());
   }
@@ -375,7 +390,7 @@ public class Armevator extends SubsystemBase {
     }
 
     armMotor.set(
-        MathUtil.clamp(armPID.calculate(armRelativeEncoder.getPosition()), -0.5, 0.5)
+        armPID.calculate(armRelativeEncoder.getPosition())
             + armFeedforward.calculate(
                 MathUtil.angleModulus(
                     Math.toRadians(

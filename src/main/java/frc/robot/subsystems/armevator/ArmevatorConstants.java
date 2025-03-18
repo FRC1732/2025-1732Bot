@@ -29,19 +29,19 @@ public class ArmevatorConstants {
   public static final double ANGLE_GOAL_TOLERANCE_DEGREES = 2.0;
   public static final double ANGLE_COG_OFFSET = 54.3;
 
-  public static final double ELEVATOR_MAX_VELOCITY = 28; // in/s 35.17 last year
-  public static final double ELEVATOR_MAX_ACCELERATION = 150; // in/s^2 100 last year
-  public static final double ELEVATOR_KP = 0.25; // 0.1 last year
+  public static final double ELEVATOR_MAX_VELOCITY = 55; // in/s 35.17 last year
+  public static final double ELEVATOR_MAX_ACCELERATION = 200; // in/s^2 100 last year
+  public static final double ELEVATOR_KP = 0.22; // 0.1 last year
   public static final double ELEVATOR_KI = 0;
   public static final double ELEVATOR_KD = 0;
-  public static final double ELEVATOR_KG = 0.0075; // V 0.184 / 12 last year
+  public static final double ELEVATOR_KG = 0.011; // V 0.184 / 12 last year
   public static final double ELEVATOR_KV = 0; // 0.334010 / 12 * .8; // V*s/in
   public static final double ELEVATOR_KA = 0; // 0.000762 / 12 * .8; // V*s^2/in
   public static final double ELEVATOR_KS = 0;
 
-  public static final double ARM_MAX_VELOCITY = 300; // deg/s 300 last year
-  public static final double ARM_MAX_ACCELERATION = 850; // deg/s^2 600 last year
-  public static final double ARM_KP = 0.0093; // 0.04 last year
+  public static final double ARM_MAX_VELOCITY = 400; // deg/s 300 last year
+  public static final double ARM_MAX_ACCELERATION = 1800; // deg/s^2 600 last year
+  public static final double ARM_KP = 0.009; // 0.04 last year
   public static final double ARM_KI = 0;
   public static final double ARM_KD = 0;
   public static final double ARM_KG = 0.022; // V 0.3465 / 12 last year
@@ -54,7 +54,7 @@ public class ArmevatorConstants {
   public static final double ARM_RPM_TO_DEGREES_PER_SECOND =
       0.15; // RPM to deg/sec (360 / reduction / 60 = 360 / 40 / 60)
   public static final double ELEVATOR_INCHES_PER_ROTATION =
-      0.3333576; // inches per motor revolution (spool diam * 3.14 / reduction = 0.955 * 3.14 / 9)
+      0.59974; // inches per motor revolution (spool diam * 3.14 / reduction = 0.955 * 3.14 / 5)
   public static final double ELEVATOR_RPM_TO_INCHES_PER_SECOND =
-      0.00555596; // RPM to inch/sec (spool diam * 3.14 / reduction / 60 = 0.955 * 3.14 / 9 / 60)
+      0.0099956667; // RPM to inch/sec (spool diam * 3.14 / reduction / 60 = 0.955 * 3.14 / 5 / 60)
 }

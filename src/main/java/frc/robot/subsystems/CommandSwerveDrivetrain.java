@@ -69,8 +69,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
   private final SysIdRoutine m_sysIdRoutineTranslation =
       new SysIdRoutine(
           new SysIdRoutine.Config(
-              null, // Use default ramp rate (1 V/s)
-              Volts.of(4), // Reduce dynamic step voltage to 4 V to prevent brownout
+              Volts.of(2).per(Seconds), // Use default ramp rate (1 V/s)
+              Volts.of(7), // Reduce dynamic step voltage to 4 V to prevent brownout
               null, // Use default timeout (10 s)
               // Log state with SignalLogger class
               state -> SignalLogger.writeString("SysIdTranslation_State", state.toString())),
@@ -214,7 +214,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
               setControl(
                   m_pathApplyRobotSpeeds
                       .withDriveRequestType(SwerveModule.DriveRequestType.Velocity)
-                      .withSteerRequestType(SwerveModule.SteerRequestType.MotionMagicExpo)
+                      // .withSteerRequestType(SwerveModule.SteerRequestType.MotionMagicExpo)
                       .withSpeeds(speeds)
                       .withWheelForceFeedforwardsX(feedforwards.robotRelativeForcesXNewtons())
                       .withWheelForceFeedforwardsY(feedforwards.robotRelativeForcesYNewtons())),
@@ -236,8 +236,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
   }
 
   private void resetQuestPose(Pose2d pose) {
-    m_questPoseResetConsumer.accept(pose);
     resetPose(pose);
+    m_questPoseResetConsumer.accept(pose);
   }
 
   /**
