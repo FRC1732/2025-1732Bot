@@ -100,6 +100,10 @@ public class KinematicFilter {
     return new Pose2d(newPosition, newRotation);
   }
 
+  public Pose2d getCurrentPose() {
+    return new Pose2d(previousPosition, previousRotation);
+  }
+
   public void reset(Pose2d curPose, double curTime) {
     previousPosition = curPose.getTranslation();
     previousRotation = curPose.getRotation();

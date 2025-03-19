@@ -188,7 +188,7 @@ public interface OperatorInterface {
     return new Trigger(() -> false);
   }
 
-  public default Trigger operatorCoralSideSwitch() { // button 22
+  public default Trigger operatorNetSideSwitch() { // button 22
     return new Trigger(() -> false);
   }
 

@@ -64,8 +64,8 @@ public class Intake extends SubsystemBase {
     intakeMap.put(ArmevatorPose.CLIMB, 15.0);
     intakeMap.put(ArmevatorPose.CORAL_AUTO_STAGE, 5.0);
     intakeMap.put(ArmevatorPose.CORAL_HP_LOAD, 5.0);
-    intakeMap.put(ArmevatorPose.CORAL_L4_SCORE, 5.0);
-    intakeMap.put(ArmevatorPose.CORAL_L3_SCORE, 5.0);
+    intakeMap.put(ArmevatorPose.CORAL_L4_SCORE, -5.0);
+    intakeMap.put(ArmevatorPose.CORAL_L3_SCORE, -5.0);
     intakeMap.put(ArmevatorPose.CORAL_L2_SCORE, 5.0);
     intakeMap.put(ArmevatorPose.CORAL_L1_SCORE, 5.0);
     intakeMap.put(ArmevatorPose.CORAL_POST_SCORE, 5.0);
@@ -73,9 +73,9 @@ public class Intake extends SubsystemBase {
     intakeMap.put(ArmevatorPose.ALGAE_HANDOFF, 10.0);
     intakeMap.put(ArmevatorPose.ALGAE_NET_SCORE, 5.0);
     intakeMap.put(ArmevatorPose.ALGAE_NET_STAGE, 10.0);
-    intakeMap.put(ArmevatorPose.ALGAE_L3_PLUCK, 5.0);
+    intakeMap.put(ArmevatorPose.ALGAE_L3_PLUCK, 0.0);
     intakeMap.put(ArmevatorPose.ALGAE_L3_DROP, 15.0);
-    intakeMap.put(ArmevatorPose.ALGAE_L2_PLUCK, 5.0);
+    intakeMap.put(ArmevatorPose.ALGAE_L2_PLUCK, 0.0);
     intakeMap.put(ArmevatorPose.ALGAE_L2_DROP, 10.0);
     intakeMap.put(ArmevatorPose.ALGAE_L2_PLUCK, 5.0);
     intakeMap.put(ArmevatorPose.ALGAE_PRE_PLUCK_L2, 5.0);

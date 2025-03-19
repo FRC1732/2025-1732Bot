@@ -373,7 +373,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
   public void addVisionMeasurement(
       Pose2d visionRobotPoseMeters, Matrix<N3, N1> visionMeasurementStdDevs) {
     addVisionMeasurement(
-        visionRobotPoseMeters, Utils.getCurrentTimeSeconds() - 0.02, visionMeasurementStdDevs);
+        visionRobotPoseMeters, Utils.getCurrentTimeSeconds(), visionMeasurementStdDevs);
   }
 
   private void setupShuffleboard() {
