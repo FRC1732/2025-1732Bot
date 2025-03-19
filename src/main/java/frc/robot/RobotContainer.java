@@ -107,8 +107,10 @@ public class RobotContainer {
   private boolean isPlucking = false;
   private boolean isVisionEnabled = true;
   private boolean isPluckTargetHigh = false;
-  private boolean isClimbing = false;
   private boolean isRunningPath = false;
+
+  private boolean driveSlowlyDirectionAlert =
+      false; // do drive slowly cyan flash when bot is stopped
 
   private BooleanSupplier slowModeSupplier = () -> isSlowMode;
   private BooleanSupplier isFullAutoSupplier = () -> isFullAuto;
@@ -116,7 +118,7 @@ public class RobotContainer {
   private BooleanSupplier isVisionEnabledSupplier = () -> isVisionEnabled;
   private BooleanSupplier isPluckTargetHighSupplier = () -> isPluckTargetHigh;
 
-  private Pose2d targetPose = new Pose2d();
+  private Pose2d currentPathPose = new Pose2d();
 
   private ArmevatorPose currentScoringLevel = ArmevatorPose.CORAL_L4_SCORE;
   private Supplier<ArmevatorPose> currentScoringLevelSupplier = () -> currentScoringLevel;
@@ -270,7 +272,7 @@ public class RobotContainer {
     claw = new Claw();
     armevator = new Armevator();
     statusRgb =
-        new StatusRgb(armevator, () -> isClimbing, () -> false, this::getCurrentPathfindError);
+        new StatusRgb(armevator, () -> false, this::getCurrentPathfindError, isFullAutoSupplier);
     intake = new Intake();
     climber = new Climber();
 
@@ -481,6 +483,8 @@ public class RobotContainer {
             .withVelocityX(0.25 * Math.cos(targetDirection.getRadians()))
             .withVelocityY(0.25 * Math.sin(targetDirection.getRadians()))
             .withRotationalRate(0.0));
+
+    driveSlowlyDirectionAlert = true;
   }
 
   private void configureDrivetrainCommands() {
@@ -591,20 +595,9 @@ public class RobotContainer {
     // Coral Commands
     //////////////////
 
-    Command setHPLeds =
-        new WaitCommand(0.25)
-            .andThen(
-                new InstantCommand(
-                    () -> {
-                      if (shouldIntakeLeftSide()) {
-                        statusRgb.leftSideHP();
-                      } else {
-                        statusRgb.rightSideHP();
-                      }
-                    }));
-    oi.ejectCoralButton().whileTrue(new ClawBackwards(claw).alongWith(setHPLeds));
+    oi.ejectCoralButton().whileTrue(new ClawBackwards(claw));
 
-    oi.operatorEjectCoral().whileTrue(new ClawBackwards(claw).alongWith(setHPLeds));
+    oi.operatorEjectCoral().whileTrue(new ClawBackwards(claw));
 
     oi.scoreCoralButton()
         .whileTrue(
@@ -613,6 +606,7 @@ public class RobotContainer {
                 Commands.parallel(
                     // Raise Piece to scoring level
                     Commands.sequence(
+                        new InstantCommand(() -> isRunningPath = true),
                         new WaitUntilCommand(this::isRobotCloseToScoringPosition),
                         armevator.runOnce(
                             () -> armevator.setTargetPose(currentScoringLevelSupplier.get()))),
@@ -626,7 +620,7 @@ public class RobotContainer {
                                 new DriveToPose(
                                     drivetrain,
                                     () -> getPathStartingPose(scoringPathOption),
-                                    driveFacingAngleRequest),
+                                    driveFacingAngleRequest), //
                                 new WaitCommand(0.2),
                                 getSimpleScoringPathCommand()),
                             this::isFarEnoughForPathfinding),
@@ -705,6 +699,7 @@ public class RobotContainer {
         .whileTrue(
             Commands.deadline(
                 Commands.sequence(
+                    new InstantCommand(() -> isRunningPath = true),
                     intake
                         .runOnce(() -> intake.setTargetPose(ArmevatorPose.CORAL_L1_SCORE))
                         .asProxy(),
@@ -898,22 +893,25 @@ public class RobotContainer {
 
     Command autoPluckCommand =
         Commands.sequence(
-            armevator.runOnce(() -> armevator.setTargetPose(inferPluckArmevatorPose(true))),
-            intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.ALGAE_PRE_PLUCK_L2)),
-            new ConditionalCommand(
-                getPluckPathCommand(),
-                Commands.sequence(
-                    new DriveToPose(
-                        drivetrain,
-                        () -> getPluckPathStartingPose(scoringPathOption),
-                        driveFacingAngleRequest),
-                    new WaitCommand(0.2),
-                    getSimplePluckPathCommand()),
-                this::isFarEnoughForPathfindingPluck),
-            Commands.deadline(
-                nonAutoPluck,
-                drivetrain.run(
-                    () -> driveSlowlyDirection(scoringAngleMap.get(scoringPathOption)))));
+                armevator.runOnce(() -> armevator.setTargetPose(inferPluckArmevatorPose(true))),
+                intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.ALGAE_PRE_PLUCK_L2)),
+                new InstantCommand(() -> isRunningPath = true),
+                new ConditionalCommand(
+                    getPluckPathCommand(),
+                    Commands.sequence(
+                        new DriveToPose(
+                            drivetrain,
+                            () -> getPluckPathStartingPose(scoringPathOption),
+                            driveFacingAngleRequest),
+                        new WaitCommand(0.2),
+                        getSimplePluckPathCommand()),
+                    this::isFarEnoughForPathfindingPluck),
+                new InstantCommand(() -> isRunningPath = false),
+                Commands.deadline(
+                    nonAutoPluck,
+                    drivetrain.run(
+                        () -> driveSlowlyDirection(scoringAngleMap.get(scoringPathOption)))))
+            .finallyDo(() -> isRunningPath = false);
 
     oi.pluckAlgaeButton()
         .whileTrue(new ConditionalCommand(autoPluckCommand, nonAutoPluck, isFullAutoSupplier));
@@ -974,11 +972,10 @@ public class RobotContainer {
     oi.operatorExtendClimber()
         .whileTrue(
             Commands.sequence(
-                    intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.CLIMB)),
-                    armevator.runOnce(() -> armevator.setTargetPose(ArmevatorPose.CLIMB)),
-                    climber.runOnce(() -> climber.disengageWindmill()),
-                    climber.run(() -> climber.extendClimber()))
-                .alongWith(new InstantCommand(() -> isClimbing = true)));
+                intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.CLIMB)),
+                armevator.runOnce(() -> armevator.setTargetPose(ArmevatorPose.CLIMB)),
+                climber.runOnce(() -> climber.disengageWindmill()),
+                climber.run(() -> climber.extendClimber())));
     oi.operatorExtendClimber().onFalse(climber.runOnce(() -> climber.stopClimber()));
 
     oi.operatorRetractClimber()
@@ -1047,6 +1044,16 @@ public class RobotContainer {
     Pose2d llPose2d = extractLimelightPose();
     if (llPose2d != null) {
       field2d.setPose(FieldObject.LIMELIGHT_POSE, llPose2d);
+    }
+
+    double botSpeed =
+        Math.abs(drivetrain.getState().Speeds.vxMetersPerSecond)
+            + Math.abs(drivetrain.getState().Speeds.vyMetersPerSecond);
+
+    // TODO, 0.05 is a guess on minimum speed, this needs testing
+    if (botSpeed < 0.05 && driveSlowlyDirectionAlert) {
+      driveSlowlyDirectionAlert = false;
+      statusRgb.driveSlowlyTrigger();
     }
   }
 
@@ -1121,9 +1128,9 @@ public class RobotContainer {
   }
 
   private double getDistanceFromTarget() {
-    Pose2d targetPose = getPathStartingPose(scoringPathOption);
+    Pose2d currentPathPose = getPathStartingPose(scoringPathOption);
     Pose2d currentPose = drivetrain.getPose();
-    return targetPose.getTranslation().getDistance(currentPose.getTranslation());
+    return currentPathPose.getTranslation().getDistance(currentPose.getTranslation());
   }
 
   private double getPluckDistanceFromTarget() {
@@ -1492,7 +1499,23 @@ public class RobotContainer {
     // }
   }
 
-  public void setPathTargetPose(Pose2d pose) {
-    targetPose = pose;
+  public void setCurrentPathPose(Pose2d pose) {
+    currentPathPose = pose;
+  }
+
+  private int getCurrentPathfindError() {
+    if (!isRunningPath) {
+      return -1;
+    }
+
+    double calc =
+        Math.pow(drivetrain.getPose().getX() - currentPathPose.getX(), 2)
+            + Math.pow(drivetrain.getPose().getY() - currentPathPose.getY(), 2);
+
+    int calculatedMode =
+        Math.min(
+            10,
+            (int) (Math.sqrt(calc) * 20)); // TODO: unsure what values this will give, adjust later
+    return calculatedMode;
   }
 }

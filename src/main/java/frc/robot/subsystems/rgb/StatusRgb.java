@@ -28,8 +28,8 @@ public class StatusRgb extends SubsystemBase {
   private ScoringLevel scoringLevel;
   private ScoringPosition scoringPosition;
 
-  private BooleanSupplier climbingOrReadyToClimb;
   private BooleanSupplier canAutoScore;
+  private BooleanSupplier inFullAuto;
 
   private IntSupplier pathFollowError; // calculated in RobotContainer
 
@@ -43,13 +43,13 @@ public class StatusRgb extends SubsystemBase {
 
   public StatusRgb(
       Armevator armevator,
-      BooleanSupplier climbingOrReadyToClimb,
       BooleanSupplier canAutoScore,
-      IntSupplier pathFollowError) {
+      IntSupplier pathFollowError,
+      BooleanSupplier inFullAuto) {
     timer = new Timer();
     this.armevator = armevator;
 
-    this.climbingOrReadyToClimb = climbingOrReadyToClimb;
+    this.inFullAuto = inFullAuto;
     this.canAutoScore = canAutoScore;
     this.pathFollowError = pathFollowError;
 
@@ -65,23 +65,11 @@ public class StatusRgb extends SubsystemBase {
     specialMode = SpecialMode.CORAL_CAPTURED;
   }
 
-  public void leftSideHP() {
-    timer.start();
-    targetElapsedTimeSeconds = 1.5;
-    specialMode = SpecialMode.LEFT_SIDE_HP;
-  }
-
-  public void rightSideHP() {
-    timer.start();
-    targetElapsedTimeSeconds = 1.5;
-    specialMode = SpecialMode.RIGHT_SIDE_HP;
-  }
-
   // TODO: add a trigger for this
-  public void failAutomationStart() {
+  public void driveSlowlyTrigger() {
     timer.start();
     targetElapsedTimeSeconds = 1.5;
-    specialMode = SpecialMode.AUTO_START_FAIL;
+    specialMode = SpecialMode.DRIVE_SLOWLY_TRIGGER;
   }
 
   public void setScoringLevel(ScoringLevel scoringLevel) {
@@ -150,17 +138,11 @@ public class StatusRgb extends SubsystemBase {
         timer.reset();
       } else {
         switch (specialMode) {
+          case DRIVE_SLOWLY_TRIGGER: // cyan flash
+            setMode(2);
+            return;
           case CORAL_CAPTURED: // blue and gold
             setMode(1);
-            return;
-          case LEFT_SIDE_HP:
-            setMode(5);
-            return;
-          case RIGHT_SIDE_HP:
-            setMode(6);
-            return;
-          case AUTO_START_FAIL:
-            setMode(2);
             return;
           default: // do nothing
             break;
@@ -175,7 +157,7 @@ public class StatusRgb extends SubsystemBase {
       setMode(pathFollowError.getAsInt() + 10);
     } else if (canAutoScore.getAsBoolean()) { // TODO: add a trigger for this
       setMode(4);
-    } else if (climbingOrReadyToClimb.getAsBoolean()) {
+    } else if (inFullAuto.getAsBoolean()) {
       setMode(3);
     } else {
       setMode(0);
@@ -184,9 +166,8 @@ public class StatusRgb extends SubsystemBase {
 
   public enum SpecialMode {
     CORAL_CAPTURED,
-    LEFT_SIDE_HP,
-    RIGHT_SIDE_HP,
     AUTO_START_FAIL,
+    DRIVE_SLOWLY_TRIGGER,
     NONE;
   }
 }

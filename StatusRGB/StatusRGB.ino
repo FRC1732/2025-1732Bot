@@ -32,9 +32,10 @@ uint32_t highBlue = pixelsFront.Color(0, 0, INTENSITY);
 uint32_t lowGold = pixelsFront.Color(INTENSITY / 3, INTENSITY / 6, 0);
 uint32_t highGold = pixelsFront.Color(INTENSITY, INTENSITY / 2, 0);
 uint32_t fullRed = pixelsFront.Color(255, 0, 0);
-uint32_t fullGreen = pixelsFront.Color(0, 255, 0);
+uint32_t fullGreen = pixelsFront.Color(0, 255, 0);  
 uint32_t fullBlue = pixelsFront.Color(0, 0, 255);
 uint32_t purple = pixelsFront.Color(128, 0, 128);
+uint32_t cyan = pixelsFront.Color(0, 255, 255);
 
 int mode = 0;
 int timer = 0;
@@ -114,14 +115,14 @@ void loop() {
         flashFast(false, true, false, &pixelsSides, NUMPIXELS_SIDES);
         break;
 
-      case 2:  // can't start auto routine
-        rapidFlash(fullRed, &pixelsFront, NUMPIXELS_FRONT, timer);
-        rapidFlash(fullRed, &pixelsSides, NUMPIXELS_SIDES, timer);
+      case 2:  // drive slowly trigger
+        rapidFlash(cyan, &pixelsFront, NUMPIXELS_FRONT, timer);
+        rapidFlash(cyan, &pixelsSides, NUMPIXELS_SIDES, timer);
         break;
 
-      case 3:  // ready to climb/climbing
-        climberGradient(&pixelsFront, NUMPIXELS_FRONT, timer);
-        climberGradient(&pixelsSides, NUMPIXELS_SIDES, timer);
+      case 3:  // full auto mode
+        fullAutoGradient(&pixelsFront, NUMPIXELS_FRONT, timer);
+        fullAutoGradient(&pixelsSides, NUMPIXELS_SIDES, timer);
 
         break;
 
@@ -130,25 +131,11 @@ void loop() {
         setFullColor(fullGreen, &pixelsSides, NUMPIXELS_SIDES);
         break;
 
-      case 5: // left hp station
-        pixelsSides.clear();
-        pixelsFront.clear();
-
-        pixelsFront.fill(fullBlue, 0);
-
-        pixelsSides.show();
-        pixelsFront.show();
+      case 5:
 
         break;
 
-      case 6: // right hp station
-        pixelsSides.clear();
-        pixelsFront.clear();
-
-        pixelsSides.fill(fullBlue, 0);
-
-        pixelsSides.show();
-        pixelsFront.show();
+      case 6:
 
         break;
 
@@ -228,9 +215,9 @@ void rapidFlash(uint32_t setColor, Adafruit_NeoPixel *pixels, int size, int time
 
 // distance goes from 0 to 10, 0 being spot on, 10 being off
 void farOffGradient(Adafruit_NeoPixel *pixels, int size, int distance) {
-  int red = (int) (255 * (distance / 10.0));
-  int green = 0;
-  int blue = (int) (255 * (1.0 - distance / 10.0));
+  int red = (int) (255 * (distance / 10.0) + 255 * (1.0 - distance / 10.0));
+  int green = 255 * (1.0 - distance / 10.0);
+  int blue = (int) (255 * (distance / 10.0) + 255 * (1.0 - distance / 10.0));
 
   uint32_t setColor = pixels->Color(red, green, blue);
 
@@ -239,7 +226,7 @@ void farOffGradient(Adafruit_NeoPixel *pixels, int size, int distance) {
   pixels->show();
 }
 
-void climberGradient(Adafruit_NeoPixel *pixels, int size, int time) {
+void fullAutoGradient(Adafruit_NeoPixel *pixels, int size, int time) {
     double progress = 0.0;
 
     int redFirst = 0;
