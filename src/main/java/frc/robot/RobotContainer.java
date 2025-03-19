@@ -486,7 +486,7 @@ public class RobotContainer {
             new WaitUntilCommand(
                 () ->
                     !visionApriltagSubsystem.hasReefTarget()
-                        || Math.abs(visionApriltagSubsystem.getTX()) < 2.5),
+                        || Math.abs(visionApriltagSubsystem.getTX()) < 3.0),
             drivetrain.run(
                 () ->
                     driveSlowlyDirection(
@@ -551,7 +551,7 @@ public class RobotContainer {
                 new WaitCommand(0.25),
                 armevator.runOnce(() -> armevator.setTargetPose(ArmevatorPose.CORAL_L3_SCORE)),
                 intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.CORAL_L3_SCORE)),
-                new WaitCommand(0.5),
+                new WaitCommand(0.75),
                 Commands.runOnce(
                     () -> {
                       drivetrain.resetPose(new Pose2d(3.203, 4.190, new Rotation2d(0)));
@@ -654,9 +654,12 @@ public class RobotContainer {
                                     getSimpleScoringPathCommand()),
                                 this::isFarEnoughForPathfinding),
                             getAdjustSlowlyCommand(() -> scoringAngleMap.get(scoringPathOption)),
-                            drivetrain.run(
-                                () ->
-                                    driveSlowlyDirection(scoringAngleMap.get(scoringPathOption))))),
+                            Commands.parallel(
+                                Commands.sequence(new WaitCommand(0.25), new ClawBackwards(claw)),
+                                drivetrain.run(
+                                    () ->
+                                        driveSlowlyDirection(
+                                            scoringAngleMap.get(scoringPathOption)))))),
                     // Manual
                     Commands.parallel(
                         Commands.sequence(
@@ -915,17 +918,20 @@ public class RobotContainer {
             new InstantCommand(
                 () -> visionApriltagSubsystem.setPipeline(Pipelines.TRACKING_CENTER)),
             armevator.runOnce(() -> armevator.setTargetPose(inferPluckArmevatorPose(true))),
-            intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.ALGAE_PRE_PLUCK_L2)),
-            new ConditionalCommand(
-                getPluckPathCommand(),
+            intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.ALGAE_HANDOFF)),
+            Commands.deadline(
+                new ConditionalCommand(
+                    getPluckPathCommand(),
+                    Commands.sequence(
+                        new DriveToPose(
+                            drivetrain,
+                            () -> getPluckPathStartingPose(scoringPathOption),
+                            driveFacingAngleRequest),
+                        getSimplePluckPathCommand()),
+                    this::isFarEnoughForPathfindingPluck),
                 Commands.sequence(
-                    new DriveToPose(
-                        drivetrain,
-                        () -> getPluckPathStartingPose(scoringPathOption),
-                        driveFacingAngleRequest),
-                    new WaitCommand(0.2),
-                    getSimplePluckPathCommand()),
-                this::isFarEnoughForPathfindingPluck),
+                    new WaitCommand(0.25),
+                    intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.ALGAE_PRE_PLUCK_L2)))),
             getAdjustSlowlyCommand(() -> scoringAngleMap.get(scoringPathOption)),
             Commands.parallel(
                 nonAutoPluck,
