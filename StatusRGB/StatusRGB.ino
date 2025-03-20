@@ -126,17 +126,14 @@ void loop() {
 
         break;
 
-      case 4: // close to target orientation
+      case 5: // close to reef target
         setFullColor(fullGreen, &pixelsFront, NUMPIXELS_FRONT);
         setFullColor(fullGreen, &pixelsSides, NUMPIXELS_SIDES);
         break;
 
-      case 5:
-
-        break;
-
-      case 6:
-
+      case 6: // not close to reef target
+        setFullColor(fullRed, &pixelsFront, NUMPIXELS_FRONT);
+        setFullColor(fullRed, &pixelsSides, NUMPIXELS_SIDES);
         break;
 
       default:
