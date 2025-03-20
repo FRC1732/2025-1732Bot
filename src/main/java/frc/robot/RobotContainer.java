@@ -18,6 +18,8 @@ import com.pathplanner.lib.commands.PathPlannerAuto;
 import com.pathplanner.lib.events.EventTrigger;
 import com.pathplanner.lib.path.PathConstraints;
 import com.pathplanner.lib.path.PathPlannerPath;
+
+import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -117,6 +119,15 @@ public class RobotContainer {
   private BooleanSupplier isPluckingSupplier = () -> isPlucking;
   private BooleanSupplier isVisionEnabledSupplier = () -> isVisionEnabled;
   private BooleanSupplier isPluckTargetHighSupplier = () -> isPluckTargetHigh;
+
+  public enum AprilTagStatus {
+    REEF_TARGET_IN_RANGE,
+    REEF_TARGET_OUTSIDE_RANGE,
+    NO_TARGET,
+  }
+
+  public AprilTagStatus apriltagStatus = AprilTagStatus.NO_TARGET;
+  public Supplier<AprilTagStatus> apriltagStatusSupplier = () -> apriltagStatus;
 
   private Pose2d currentPathPose = new Pose2d();
 
@@ -272,7 +283,7 @@ public class RobotContainer {
     claw = new Claw();
     armevator = new Armevator();
     statusRgb =
-        new StatusRgb(armevator, () -> false, this::getCurrentPathfindError, isFullAutoSupplier);
+        new StatusRgb(armevator, () -> false, this::getCurrentPathfindError, isFullAutoSupplier, apriltagStatusSupplier);
     intake = new Intake();
     climber = new Climber();
 
@@ -1055,6 +1066,18 @@ public class RobotContainer {
       driveSlowlyDirectionAlert = false;
       statusRgb.driveSlowlyTrigger();
     }
+
+
+    if (visionApriltagSubsystem.hasReefTarget()) {    
+        if (visionApriltagSubsystem.getDistanceToTarget() > 0.25) {
+            apriltagStatus = AprilTagStatus.REEF_TARGET_OUTSIDE_RANGE;
+        } else {
+            apriltagStatus = AprilTagStatus.REEF_TARGET_IN_RANGE;
+        }
+    } else {
+        apriltagStatus = AprilTagStatus.NO_TARGET;
+    }
+
   }
 
   private Pose2d extractLimelightPose() {

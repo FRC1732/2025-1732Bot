@@ -11,9 +11,11 @@ import edu.wpi.first.wpilibj.DigitalOutput;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.RobotContainer.AprilTagStatus;
 import frc.robot.subsystems.armevator.Armevator;
 import java.util.function.BooleanSupplier;
 import java.util.function.IntSupplier;
+import java.util.function.Supplier;
 
 public class StatusRgb extends SubsystemBase {
   private DigitalOutput out0 = new DigitalOutput(0);
@@ -32,6 +34,7 @@ public class StatusRgb extends SubsystemBase {
   private BooleanSupplier inFullAuto;
 
   private IntSupplier pathFollowError; // calculated in RobotContainer
+  private Supplier<AprilTagStatus> apriltagStatusSupplier;
 
   private NetworkTableInstance table = NetworkTableInstance.getDefault();
   private NetworkTable nt4Table = table.getTable("rgbOperator");
@@ -45,7 +48,8 @@ public class StatusRgb extends SubsystemBase {
       Armevator armevator,
       BooleanSupplier canAutoScore,
       IntSupplier pathFollowError,
-      BooleanSupplier inFullAuto) {
+      BooleanSupplier inFullAuto,
+      Supplier<AprilTagStatus> apriltagStatusSupplier) {
     timer = new Timer();
     this.armevator = armevator;
 
@@ -152,7 +156,10 @@ public class StatusRgb extends SubsystemBase {
     // add more modes once more parts of the robot are added
     if (DriverStation.isDisabled()) {
       setMode(0);
-
+    } else if (apriltagStatusSupplier.get() == AprilTagStatus.REEF_TARGET_IN_RANGE) {
+      setMode(5);
+    } else if (apriltagStatusSupplier.get() == AprilTagStatus.REEF_TARGET_OUTSIDE_RANGE) {
+      setMode(6);
     } else if (pathFollowError.getAsInt() > 0) {
       setMode(pathFollowError.getAsInt() + 10);
     } else if (canAutoScore.getAsBoolean()) { // TODO: add a trigger for this
