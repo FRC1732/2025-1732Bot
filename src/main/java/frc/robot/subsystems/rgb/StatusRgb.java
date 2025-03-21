@@ -98,6 +98,8 @@ public class StatusRgb extends SubsystemBase {
   }
 
   public void setMode(int modeToSet) {
+
+    System.out.println("Sending LED mode: " + modeToSet);
     if (modeToSet % 2 == 1) {
       out0.set(!true);
     } else {
@@ -163,7 +165,7 @@ public class StatusRgb extends SubsystemBase {
     } else if (pathFollowError.getAsInt() > 0) {
       setMode(pathFollowError.getAsInt() + 10);
     } else if (canAutoScore.getAsBoolean()) { // TODO: add a trigger for this
-      setMode(4);
+      // setMode(4); currently unused
     } else if (inFullAuto.getAsBoolean()) {
       setMode(3);
     } else {

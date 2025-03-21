@@ -18,8 +18,6 @@ import com.pathplanner.lib.commands.PathPlannerAuto;
 import com.pathplanner.lib.events.EventTrigger;
 import com.pathplanner.lib.path.PathConstraints;
 import com.pathplanner.lib.path.PathPlannerPath;
-
-import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -283,7 +281,12 @@ public class RobotContainer {
     claw = new Claw();
     armevator = new Armevator();
     statusRgb =
-        new StatusRgb(armevator, () -> false, this::getCurrentPathfindError, isFullAutoSupplier, apriltagStatusSupplier);
+        new StatusRgb(
+            armevator,
+            () -> false,
+            this::getCurrentPathfindError,
+            isFullAutoSupplier,
+            apriltagStatusSupplier);
     intake = new Intake();
     climber = new Climber();
 
@@ -1067,17 +1070,15 @@ public class RobotContainer {
       statusRgb.driveSlowlyTrigger();
     }
 
-
-    if (visionApriltagSubsystem.hasReefTarget()) {    
-        if (visionApriltagSubsystem.getDistanceToTarget() > 0.25) {
-            apriltagStatus = AprilTagStatus.REEF_TARGET_OUTSIDE_RANGE;
-        } else {
-            apriltagStatus = AprilTagStatus.REEF_TARGET_IN_RANGE;
-        }
+    if (visionApriltagSubsystem.hasReefTarget()) {
+      if (visionApriltagSubsystem.getDistanceToTarget() > 0.25) {
+        apriltagStatus = AprilTagStatus.REEF_TARGET_OUTSIDE_RANGE;
+      } else {
+        apriltagStatus = AprilTagStatus.REEF_TARGET_IN_RANGE;
+      }
     } else {
-        apriltagStatus = AprilTagStatus.NO_TARGET;
+      apriltagStatus = AprilTagStatus.NO_TARGET;
     }
-
   }
 
   private Pose2d extractLimelightPose() {
