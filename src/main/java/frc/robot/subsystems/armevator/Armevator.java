@@ -114,7 +114,7 @@ public class Armevator extends SubsystemBase {
     armMap.put(ArmevatorPose.ALGAE_L3_DROP, 5.0);
     armMap.put(ArmevatorPose.ALGAE_L2_PLUCK, 15.0);
     armMap.put(ArmevatorPose.ALGAE_L2_DROP, 5.0);
-    armMap.put(ArmevatorPose.ALGAE_PRE_PLUCK_L2, 45.0);
+    armMap.put(ArmevatorPose.ALGAE_PRE_PLUCK_L2, 30.0);
     armMap.put(ArmevatorPose.ALGAE_PRE_PLUCK_L3, 15.0);
 
     elevatorMap = new HashMap<>(); // in inches

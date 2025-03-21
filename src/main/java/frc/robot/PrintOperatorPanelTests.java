@@ -33,7 +33,7 @@ public class PrintOperatorPanelTests {
     oi.operatorBL2().whileTrue(new PrintCommand("BL2"));
     oi.operatorB1().whileTrue(new PrintCommand("B1"));
     oi.operatorB2().whileTrue(new PrintCommand("B2"));
-    oi.operatorCoralSideSwitch().whileTrue(new PrintCommand("Side Switch"));
+    oi.operatorNetSideSwitch().whileTrue(new PrintCommand("Side Switch"));
     oi.retractClimberSlowlySwitch().whileTrue(new PrintCommand("Height Switch"));
     oi.operatorEjectCoral().whileTrue(new PrintCommand("Clear Algae"));
     oi.operatorAlgaePluckHeightSwitch().whileTrue(new PrintCommand("Target Switch"));

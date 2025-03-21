@@ -138,7 +138,7 @@ public class FullOperatorConsoleOI extends DualJoysticksOI {
   }
 
   @Override
-  public Trigger operatorCoralSideSwitch() {
+  public Trigger operatorNetSideSwitch() {
     return operatorPanelButtonsOne[4];
   }
 

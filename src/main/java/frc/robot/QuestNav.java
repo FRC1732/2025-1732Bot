@@ -14,9 +14,10 @@ import edu.wpi.first.networktables.IntegerPublisher;
 import edu.wpi.first.networktables.IntegerSubscriber;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
+import frc.robot.util.KinematicFilter;
 import frc.robot.util.RollingAveragePose2d;
 
 /**
@@ -41,6 +42,9 @@ public class QuestNav {
   private DoubleSubscriber questBatteryPercent =
       nt4Table.getDoubleTopic("batteryPercent").subscribe(0.0f);
 
+  private Pose2d lastPose = new Pose2d();
+  private boolean poseUpdated = false;
+
   // Pose of the Quest when the pose was reset
   private Pose2d resetPoseOculus = new Pose2d();
 
@@ -52,6 +56,7 @@ public class QuestNav {
           inchesToMeters(-10.6271 + 1.25), inchesToMeters(0.0), Rotation2d.fromDegrees(180));
 
   private final RollingAveragePose2d rollingAvg;
+  private final KinematicFilter kinematicFilter;
 
   /* Constructor */
   public QuestNav(int windowSize) {
@@ -60,6 +65,7 @@ public class QuestNav {
       questMosi.set(1);
     }
 
+    kinematicFilter = new KinematicFilter();
     rollingAvg = new RollingAveragePose2d(windowSize);
     setupShuffleboard();
   }
@@ -69,11 +75,17 @@ public class QuestNav {
   }
 
   public void updateAverageRobotPose() {
+    Pose2d curPose = getRobotPose();
     rollingAvg.addPose(getRobotPose());
+
+    poseUpdated = !curPose.equals(lastPose);
+    lastPose = curPose;
+    // kinematicFilter.update(getRobotPose(), Timer.getFPGATimestamp());
   }
 
   public Pose2d getAverageRobotPose() {
     return rollingAvg.getAveragePose();
+    // return kinematicFilter.getCurrentPose();
   }
 
   /**
@@ -121,7 +133,21 @@ public class QuestNav {
     // System.out.println(
     //     "Diff: " + (RobotController.getFPGATime() - questBatteryPercent.getLastChange()) /
     // 1000.0);
-    return ((RobotController.getFPGATime() - questPosition.getLastChange()) / 1000.0) < 30.0;
+    // return ((RobotController.getFPGATime() - questPosition.getLastChange()) / 1000.0) < 30.0;
+
+    // System.out.println("first: " + !lastPose.equals(curPose));
+    // System.out.println(
+    //     "second: "
+    //         + (Math.abs(curPose.getTranslation().getX()) > 0.05
+    //             || Math.abs(curPose.getTranslation().getY()) > 0.05));
+    // System.out.println("third: " + curPose.getTranslation().getX());
+    // System.out.println("third: " + curPose.getTranslation().getY());
+    Pose2d curPose = getUncorrectedOculusPose();
+    boolean isConnected =
+        poseUpdated
+            && (Math.abs(curPose.getTranslation().getX()) > 0.05
+                || Math.abs(curPose.getTranslation().getY()) > 0.05);
+    return poseUpdated;
   }
 
   /**
@@ -151,6 +177,7 @@ public class QuestNav {
    */
   public void resetPose(Pose2d newPose) {
     rollingAvg.reset();
+    kinematicFilter.reset(newPose, Timer.getFPGATimestamp());
     resetPoseOculus = getUncorrectedOculusPose();
     resetPoseRobot = newPose;
   }
