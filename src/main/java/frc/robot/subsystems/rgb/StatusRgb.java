@@ -56,7 +56,7 @@ public class StatusRgb extends SubsystemBase {
     this.inFullAuto = inFullAuto;
     this.canAutoScore = canAutoScore;
     this.pathFollowError = pathFollowError;
-
+    this.apriltagStatusSupplier = apriltagStatusSupplier;
     // Set default values
     scoringLevel = ScoringLevel.NONE;
     scoringPosition = ScoringPosition.NONE;

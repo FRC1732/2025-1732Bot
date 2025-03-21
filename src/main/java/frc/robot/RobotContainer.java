@@ -129,8 +129,8 @@ public class RobotContainer {
     NO_TARGET,
   }
 
-  public AprilTagStatus apriltagStatus = AprilTagStatus.NO_TARGET;
-  public Supplier<AprilTagStatus> apriltagStatusSupplier = () -> apriltagStatus;
+  private AprilTagStatus apriltagStatus = AprilTagStatus.NO_TARGET;
+  private Supplier<AprilTagStatus> apriltagStatusSupplier = () -> apriltagStatus;
 
   private Pose2d currentPathPose = new Pose2d();
 
@@ -524,25 +524,6 @@ public class RobotContainer {
         visionApriltagSubsystem::hasReefTarget);
   }
 
-  private Command getAdjustSlowlyCommand(Supplier<Rotation2d> targetDirectionSupplier) {
-    return new ConditionalCommand(
-        Commands.deadline(
-            new WaitUntilCommand(
-                () ->
-                    !visionApriltagSubsystem.hasReefTarget()
-                        || Math.abs(visionApriltagSubsystem.getTX()) < 3.0),
-            drivetrain.run(
-                () ->
-                    driveSlowlyDirection(
-                        targetDirectionSupplier
-                            .get()
-                            .plus(
-                                Rotation2d.kCW_90deg.times(
-                                    Math.signum(visionApriltagSubsystem.getTX())))))),
-        new InstantCommand(),
-        visionApriltagSubsystem::hasReefTarget);
-  }
-
   private void configureDrivetrainCommands() {
     /*
      * Set up the default command for the drivetrain. The joysticks' values map to
@@ -681,7 +662,7 @@ public class RobotContainer {
                         // Raise Piece to scoring level
                         Commands.sequence(
                             new InstantCommand(() -> isRunningPath = true),
-                        new WaitUntilCommand(this::isRobotCloseToScoringPosition),
+                            new WaitUntilCommand(this::isRobotCloseToScoringPosition),
                             armevator.runOnce(
                                 () -> armevator.setTargetPose(currentScoringLevelSupplier.get()))),
                         // Drive to scoring location
@@ -964,27 +945,28 @@ public class RobotContainer {
 
     Command autoPluckCommand =
         Commands.sequence(
-            new InstantCommand(
-                () -> visionApriltagSubsystem.setPipeline(Pipelines.TRACKING_CENTER)),
+                new InstantCommand(
+                    () -> visionApriltagSubsystem.setPipeline(Pipelines.TRACKING_CENTER)),
                 armevator.runOnce(() -> armevator.setTargetPose(inferPluckArmevatorPose(true))),
                 intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.ALGAE_HANDOFF)),
-            Commands.deadline(
+                Commands.deadline(
                     new InstantCommand(() -> isRunningPath = true),
-                new ConditionalCommand(
+                    new ConditionalCommand(
                         getPluckPathCommand(),
                         Commands.sequence(
                             new DriveToPose(
                                 drivetrain,
                                 () -> getPluckPathStartingPose(scoringPathOption),
                                 driveFacingAngleRequest),
-                                getSimplePluckPathCommand()),
+                            getSimplePluckPathCommand()),
                         this::isFarEnoughForPathfindingPluck),
                     new InstantCommand(() -> isRunningPath = false),
-                Commands.sequence(
-                    new WaitCommand(0.25),
-                    intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.ALGAE_PRE_PLUCK_L2)))),
-            getAdjustSlowlyCommand(() -> scoringAngleMap.get(scoringPathOption)),
-            Commands.parallel(
+                    Commands.sequence(
+                        new WaitCommand(0.25),
+                        intake.runOnce(
+                            () -> intake.setTargetPose(ArmevatorPose.ALGAE_PRE_PLUCK_L2)))),
+                getAdjustSlowlyCommand(() -> scoringAngleMap.get(scoringPathOption)),
+                Commands.parallel(
                     nonAutoPluck,
                     drivetrain.run(
                         () -> driveSlowlyDirection(scoringAngleMap.get(scoringPathOption)))))

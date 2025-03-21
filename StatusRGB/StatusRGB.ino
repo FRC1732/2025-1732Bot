@@ -235,10 +235,10 @@ void fullAutoGradient(Adafruit_NeoPixel *pixels, int size, int time) {
     int blueSecond = 0;
 
   for (int i = 0; i < size; i++) {
-    time %= 510;
+    time %= 5100;
 
-    if (time <= 255) {  // lerp from pink to blue
-      progress = time / 255.0;
+    if (time <= 2550) {  // lerp from pink to blue
+      progress = time / 2550.0;
 
       redFirst = 255;
       greenFirst = 192;
@@ -250,7 +250,7 @@ void fullAutoGradient(Adafruit_NeoPixel *pixels, int size, int time) {
 
 
     } else {  // lerp from blue to pink
-      progress = (time - 255) / 255.0;
+      progress = (time - 2550) / 2550.0;
 
       redSecond = 255;
       greenSecond = 192;
