@@ -141,11 +141,11 @@ public class Intake extends SubsystemBase {
   }
 
   public void tiltForward() {
-    intakeMotor.set(-tiltSpeed.getDouble(IntakeConstants.INTAKE_TILT_SPEED));
+    intakeMotor.set(tiltSpeed.getDouble(IntakeConstants.INTAKE_TILT_SPEED));
   }
 
   public void tiltBackwards() {
-    intakeMotor.set(tiltSpeed.getDouble(IntakeConstants.INTAKE_TILT_SPEED));
+    intakeMotor.set(-tiltSpeed.getDouble(IntakeConstants.INTAKE_TILT_SPEED));
   }
 
   public void stopTilt() {
@@ -213,10 +213,9 @@ public class Intake extends SubsystemBase {
                 + intakeFeedforward.calculate(
                     MathUtil.angleModulus(Math.toRadians(getAngle() + 90.0)), getVelocity()));
     */
-    if (targetSetpoint > getAngle() && Math.abs(targetSetpoint - tiltEncoder.getPosition()) < 2) {
+    if (targetSetpoint > getAngle() && Math.abs(targetSetpoint - getAngle()) > 2) {
       tiltForward();
-    } else if (targetSetpoint < getAngle()
-        && Math.abs(targetSetpoint - tiltEncoder.getPosition()) < 2) {
+    } else if (targetSetpoint < getAngle() && Math.abs(targetSetpoint - getAngle()) > 2) {
       tiltBackwards();
     } else {
       stopTilt();
@@ -258,6 +257,7 @@ public class Intake extends SubsystemBase {
 
     tab.addDouble("Tilt Position", this::getAngle);
     tab.addDouble("Tilt Velocity", this::getVelocity);
+    tab.addDouble("Tilt Setpoint", () -> targetSetpoint);
     tiltSpeed = tab.add("Tilt Speed Set", IntakeConstants.INTAKE_TILT_SPEED).getEntry();
 
     tab.add("Tilt PID", intakePID);

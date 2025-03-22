@@ -484,7 +484,7 @@ public class RobotContainer {
   private Command getAdjustSlowlyCommand(Supplier<Rotation2d> targetDirectionSupplier) {
     return new ConditionalCommand(
         Commands.sequence(
-            armevator.runOnce(
+            Commands.runOnce(
                 () -> {
                   if (armevator.getCurrentPose() == ArmevatorPose.CORAL_L4_SCORE)
                     armevator.setTargetPose(ArmevatorPose.CORAL_L4_STAGE);
@@ -502,7 +502,7 @@ public class RobotContainer {
                                 .plus(
                                     Rotation2d.kCW_90deg.times(
                                         Math.signum(visionApriltagSubsystem.getTX())))))),
-            armevator.runOnce(
+            Commands.runOnce(
                 () -> {
                   if (armevator.getCurrentPose() == ArmevatorPose.CORAL_L4_STAGE)
                     armevator.setTargetPose(ArmevatorPose.CORAL_L4_SCORE);
