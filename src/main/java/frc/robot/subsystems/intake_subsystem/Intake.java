@@ -9,7 +9,6 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.revrobotics.RelativeEncoder;
-import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -39,6 +38,9 @@ public class Intake extends SubsystemBase {
   private TalonFX intakeMotor;
 
   private ArmevatorPose pose;
+
+  private double targetSetpoint;
+  private GenericEntry tiltSpeed;
 
   private NetworkTableInstance table = NetworkTableInstance.getDefault();
 
@@ -139,11 +141,11 @@ public class Intake extends SubsystemBase {
   }
 
   public void tiltForward() {
-    intakeMotor.set(-0.3);
+    intakeMotor.set(-tiltSpeed.getDouble(IntakeConstants.INTAKE_TILT_SPEED));
   }
 
   public void tiltBackwards() {
-    intakeMotor.set(0.3);
+    intakeMotor.set(tiltSpeed.getDouble(IntakeConstants.INTAKE_TILT_SPEED));
   }
 
   public void stopTilt() {
@@ -206,11 +208,19 @@ public class Intake extends SubsystemBase {
       intakePID.reset(getAngle());
     }
 
-    intakeMotor.set(
-        intakePID.calculate(getAngle())
-            + intakeFeedforward.calculate(
-                MathUtil.angleModulus(Math.toRadians(getAngle() + 90.0)), getVelocity()));
-
+    /*intakeMotor.set(
+            intakePID.calculate(getAngle())
+                + intakeFeedforward.calculate(
+                    MathUtil.angleModulus(Math.toRadians(getAngle() + 90.0)), getVelocity()));
+    */
+    if (targetSetpoint > getAngle() && Math.abs(targetSetpoint - tiltEncoder.getPosition()) < 2) {
+      tiltForward();
+    } else if (targetSetpoint < getAngle()
+        && Math.abs(targetSetpoint - tiltEncoder.getPosition()) < 2) {
+      tiltBackwards();
+    } else {
+      stopTilt();
+    }
     doLogging();
   }
 
@@ -227,6 +237,7 @@ public class Intake extends SubsystemBase {
 
   public void setTargetPose(ArmevatorPose pose) {
     this.pose = pose;
+    targetSetpoint = intakeMap.get(pose);
     intakePID.setGoal(intakeMap.get(pose));
   }
 
@@ -247,6 +258,8 @@ public class Intake extends SubsystemBase {
 
     tab.addDouble("Tilt Position", this::getAngle);
     tab.addDouble("Tilt Velocity", this::getVelocity);
+    tiltSpeed = tab.add("Tilt Speed Set", IntakeConstants.INTAKE_TILT_SPEED).getEntry();
+
     tab.add("Tilt PID", intakePID);
   }
 }
