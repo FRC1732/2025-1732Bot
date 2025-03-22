@@ -41,6 +41,7 @@ import edu.wpi.first.wpilibj2.command.SelectCommand;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import frc.robot.commands.DriveToPose;
+import frc.robot.commands.DriveToPoseSlew;
 import frc.robot.commands.DynamicCommand;
 // import frc.lib.team3061.leds.LEDs;
 import frc.robot.commands.clawcommands.ClawBackwards;
@@ -342,8 +343,8 @@ public class RobotContainer {
     NamedCommands.registerCommand(
         "setPoseStage",
         Commands.sequence(
-            intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.CORAL_AUTO_STAGE)),
-            armevator.runOnce(() -> armevator.setTargetPose(ArmevatorPose.CORAL_AUTO_STAGE))));
+            intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.CORAL_L4_STAGE)),
+            armevator.runOnce(() -> armevator.setTargetPose(ArmevatorPose.CORAL_L4_STAGE))));
 
     // Event Markers
     new EventTrigger("Marker").onTrue(Commands.print("reached event marker"));
@@ -482,19 +483,31 @@ public class RobotContainer {
 
   private Command getAdjustSlowlyCommand(Supplier<Rotation2d> targetDirectionSupplier) {
     return new ConditionalCommand(
-        Commands.deadline(
-            new WaitUntilCommand(
-                () ->
-                    !visionApriltagSubsystem.hasReefTarget()
-                        || Math.abs(visionApriltagSubsystem.getTX()) < 1.0),
-            drivetrain.run(
-                () ->
-                    driveSlowlyDirection(
-                        targetDirectionSupplier
-                            .get()
-                            .plus(
-                                Rotation2d.kCW_90deg.times(
-                                    Math.signum(visionApriltagSubsystem.getTX())))))),
+        Commands.sequence(
+            armevator.runOnce(
+                () -> {
+                  if (armevator.getCurrentPose() == ArmevatorPose.CORAL_L4_SCORE)
+                    armevator.setTargetPose(ArmevatorPose.CORAL_L4_STAGE);
+                }),
+            Commands.deadline(
+                new WaitUntilCommand(
+                    () ->
+                        !visionApriltagSubsystem.hasReefTarget()
+                            || Math.abs(visionApriltagSubsystem.getTX()) < 1.0),
+                drivetrain.run(
+                    () ->
+                        driveSlowlyDirection(
+                            targetDirectionSupplier
+                                .get()
+                                .plus(
+                                    Rotation2d.kCW_90deg.times(
+                                        Math.signum(visionApriltagSubsystem.getTX())))))),
+            armevator.runOnce(
+                () -> {
+                  if (armevator.getCurrentPose() == ArmevatorPose.CORAL_L4_STAGE)
+                    armevator.setTargetPose(ArmevatorPose.CORAL_L4_SCORE);
+                }),
+            Commands.waitSeconds(0.2)),
         new InstantCommand(),
         visionApriltagSubsystem::hasReefTarget);
   }
@@ -820,25 +833,25 @@ public class RobotContainer {
             Commands.sequence(
                 Commands.runOnce(() -> currentScoringLevel = ArmevatorPose.CORAL_L1_SCORE),
                 Commands.runOnce(() -> statusRgb.setScoringLevel(ScoringLevel.LEVEL_1)),
-                armevator.runOnce(() -> armevator.updateScoringLevel(currentScoringLevel))));
+                Commands.runOnce(() -> armevator.updateScoringLevel(currentScoringLevel))));
     oi.operatorL2()
         .onTrue(
             Commands.sequence(
                 Commands.runOnce(() -> currentScoringLevel = ArmevatorPose.CORAL_L2_SCORE),
                 Commands.runOnce(() -> statusRgb.setScoringLevel(ScoringLevel.LEVEL_2)),
-                armevator.runOnce(() -> armevator.updateScoringLevel(currentScoringLevel))));
+                Commands.runOnce(() -> armevator.updateScoringLevel(currentScoringLevel))));
     oi.operatorL3()
         .onTrue(
             Commands.sequence(
                 Commands.runOnce(() -> currentScoringLevel = ArmevatorPose.CORAL_L3_SCORE),
                 Commands.runOnce(() -> statusRgb.setScoringLevel(ScoringLevel.LEVEL_3)),
-                armevator.runOnce(() -> armevator.updateScoringLevel(currentScoringLevel))));
+                Commands.runOnce(() -> armevator.updateScoringLevel(currentScoringLevel))));
     oi.operatorL4()
         .onTrue(
             Commands.sequence(
                 Commands.runOnce(() -> currentScoringLevel = ArmevatorPose.CORAL_L4_SCORE),
                 Commands.runOnce(() -> statusRgb.setScoringLevel(ScoringLevel.LEVEL_4)),
-                armevator.runOnce(() -> armevator.updateScoringLevel(currentScoringLevel))));
+                Commands.runOnce(() -> armevator.updateScoringLevel(currentScoringLevel))));
 
     //////////////////
     // Algae Commands
@@ -989,8 +1002,8 @@ public class RobotContainer {
                 new ConditionalCommand(
                     getDynamicNetPathCommand(),
                     new InstantCommand(),
-                    this::isFarEnoughFromNetForPathfinding),
-                new DriveToPose(
+                    () -> false), // this::isFarEnoughFromNetForPathfinding),
+                new DriveToPoseSlew(
                     drivetrain,
                     () ->
                         new Pose2d(
