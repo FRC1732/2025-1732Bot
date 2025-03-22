@@ -96,7 +96,7 @@ void loop() {
 
 
   // bits 3 and 4 reversed
-  mode = ((int)b0 << 0) + ((int)b1 << 1) + ((int)b2 << 2) + ((int)b3 << 4) + ((int)b4 << 3);
+  mode = ((int)b0 << 0) + ((int)b1 << 1) + ((int)b2 << 2) + ((int)b3 << 3) + ((int)b4 << 4);
   Serial.print("Mode: ");
   Serial.println(mode);
 
@@ -235,43 +235,45 @@ void fullAutoGradient(Adafruit_NeoPixel *pixels, int size, int time) {
     int blueSecond = 0;
 
   for (int i = 0; i < size; i++) {
-    time %= 5100;
+    time += 10;
+    time %= 300;
 
-    if (time <= 2550) {  // lerp from pink to blue
-      progress = time / 2550.0;
+    if (time <= 150) {  // lerp from pink to blue
+      progress = time / 150.0;
 
-      redFirst = 255;
-      greenFirst = 192;
-      blueFirst = 225;
+      redFirst = 255 * 0.8;
+      greenFirst = 192 * 0.5;
+      blueFirst = 225 * 0.5;
 
-      redSecond = 112;
+      redSecond = 112 * 0;
       greenSecond = 59;
       blueSecond = 231;
-
+      progress = sqrt(progress);
 
     } else {  // lerp from blue to pink
-      progress = (time - 2550) / 2550.0;
+      progress = (time - 150) / 150.0;
+      progress = progress * progress;
 
-      redSecond = 255;
-      greenSecond = 192;
-      blueSecond = 225;
+      redSecond = 255 * 0.8;
+      greenSecond = 192 * 0.5;
+      blueSecond = 225 * 0.5;
 
-      redFirst = 112;
+      redFirst = 112 * 0;
       greenFirst = 59;
       blueFirst = 231;
     }
 
 
-    int redAdjusted = (int)(redFirst * time + redSecond * (1.0 - time));
-    int greenAdjusted = (int)(greenFirst * time + greenSecond * (1.0 - time));
-    int blueAdjusted = (int)(blueFirst * time + blueSecond * (1.0 - time));
+
+    int redAdjusted = (int)(redFirst * progress + redSecond * (1.0 - progress));
+    int greenAdjusted = (int)(greenFirst * progress + greenSecond * (1.0 - progress));
+    int blueAdjusted = (int)(blueFirst * progress + blueSecond * (1.0 - progress));
 
     uint32_t setColor = pixels->Color(redAdjusted, greenAdjusted, blueAdjusted);
+    uint32_t correctedColor = pixels ->gamma32(setColor);
 
-    pixels->setPixelColor(i, setColor);
+    pixels->setPixelColor(i, correctedColor);
 
-    time++;
+    // time++;
   }
-
-  pixels->show();
 }
