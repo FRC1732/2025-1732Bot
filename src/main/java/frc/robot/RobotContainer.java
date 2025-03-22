@@ -483,31 +483,19 @@ public class RobotContainer {
 
   private Command getAdjustSlowlyCommand(Supplier<Rotation2d> targetDirectionSupplier) {
     return new ConditionalCommand(
-        Commands.sequence(
-            armevator.runOnce(
-                () -> {
-                  if (armevator.getCurrentPose() == ArmevatorPose.CORAL_L4_SCORE)
-                    armevator.setTargetPose(ArmevatorPose.CORAL_L4_STAGE);
-                }),
-            Commands.deadline(
-                new WaitUntilCommand(
-                    () ->
-                        !visionApriltagSubsystem.hasReefTarget()
-                            || Math.abs(visionApriltagSubsystem.getTX()) < 1.0),
-                drivetrain.run(
-                    () ->
-                        driveSlowlyDirection(
-                            targetDirectionSupplier
-                                .get()
-                                .plus(
-                                    Rotation2d.kCW_90deg.times(
-                                        Math.signum(visionApriltagSubsystem.getTX())))))),
-            armevator.runOnce(
-                () -> {
-                  if (armevator.getCurrentPose() == ArmevatorPose.CORAL_L4_STAGE)
-                    armevator.setTargetPose(ArmevatorPose.CORAL_L4_SCORE);
-                }),
-            Commands.waitSeconds(0.2)),
+        Commands.deadline(
+            new WaitUntilCommand(
+                () ->
+                    !visionApriltagSubsystem.hasReefTarget()
+                        || Math.abs(visionApriltagSubsystem.getTX()) < 3.0),
+            drivetrain.run(
+                () ->
+                    driveSlowlyDirection(
+                        targetDirectionSupplier
+                            .get()
+                            .plus(
+                                Rotation2d.kCW_90deg.times(
+                                    Math.signum(visionApriltagSubsystem.getTX())))))),
         new InstantCommand(),
         visionApriltagSubsystem::hasReefTarget);
   }
