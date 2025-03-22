@@ -475,8 +475,8 @@ public class RobotContainer {
   private void driveSlowlyDirection(Rotation2d targetDirection) {
     drivetrain.setControl(
         driveRequest
-            .withVelocityX(0.25 * Math.cos(targetDirection.getRadians()))
-            .withVelocityY(0.25 * Math.sin(targetDirection.getRadians()))
+            .withVelocityX(0.3 * Math.cos(targetDirection.getRadians()))
+            .withVelocityY(0.3 * Math.sin(targetDirection.getRadians()))
             .withRotationalRate(0.0));
   }
 
@@ -486,7 +486,7 @@ public class RobotContainer {
             new WaitUntilCommand(
                 () ->
                     !visionApriltagSubsystem.hasReefTarget()
-                        || Math.abs(visionApriltagSubsystem.getTX()) < 3.0),
+                        || Math.abs(visionApriltagSubsystem.getTX()) < 1.0),
             drivetrain.run(
                 () ->
                     driveSlowlyDirection(
@@ -966,6 +966,7 @@ public class RobotContainer {
             Commands.sequence(
                 Commands.runOnce(() -> isPlucking = false),
                 intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.ALGAE_HANDOFF)),
+                Commands.waitSeconds(0.25),
                 armevator.runOnce(
                     () -> {
                       if (isFullAutoSupplier.getAsBoolean()) {
@@ -1252,7 +1253,7 @@ public class RobotContainer {
                   preferNetRightSideSupplier.getAsBoolean()
                       ? Rotation2d.fromDegrees(135)
                       : Rotation2d.fromDegrees(-135));
-          return AutoBuilder.pathfindToPose(targetPose, hpPathConstraints, 0.3);
+          return AutoBuilder.pathfindToPose(targetPose, hpPathConstraints);
         });
   }
 
