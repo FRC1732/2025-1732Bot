@@ -8,13 +8,13 @@ public class IntakeConstants {
 
   public static final double PID_PERIOD_SEC = 0.02;
 
-  public static final double MIN_ANGLE_DEGREES = -5.0;
-  public static final double MAX_ANGLE_DEGREES = 57.0;
-  public static final double ANGLE_GOAL_TOLERANCE_DEGREES = 2.0;
+  public static final double MIN_ANGLE_DEGREES = -9.0;
+  public static final double MAX_ANGLE_DEGREES = 66.0;
+  public static final double ANGLE_GOAL_TOLERANCE_DEGREES = 1.5;
 
-  public static final double INTAKE_MAX_VELOCITY = 60; // deg/s
-  public static final double INTAKE_MAX_ACCELERATION = 200; // deg/s^2
-  public static final double INTAKE_KP = 0.01;
+  public static final double INTAKE_MAX_VELOCITY = 350; // deg/s (PID TUNING YOUSEF)
+  public static final double INTAKE_MAX_ACCELERATION = 300; // deg/s^2 (PID TUNING YOUSEF)
+  public static final double INTAKE_KP = 0.02001; // (PID TUNING YOUSEF)
   public static final double INTAKE_KI = 0;
   public static final double INTAKE_KD = 0;
   public static final double INTAKE_KG = 0.025; // V

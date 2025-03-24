@@ -41,6 +41,7 @@ import edu.wpi.first.wpilibj2.command.SelectCommand;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import frc.robot.commands.DriveToPose;
+import frc.robot.commands.DriveToPoseSlew;
 import frc.robot.commands.DynamicCommand;
 // import frc.lib.team3061.leds.LEDs;
 import frc.robot.commands.clawcommands.ClawBackwards;
@@ -177,9 +178,9 @@ public class RobotContainer {
   StructPublisher<Pose2d> questPosePublisher =
       NetworkTableInstance.getDefault().getStructTopic("questPose", Pose2d.struct).publish();
 
-  PathConstraints hpPathConstraints = new PathConstraints(4.0, 3.0, 8.42, 12.8876585);
-  PathConstraints pluckPathConstraints = new PathConstraints(4.0, 3.0, 8.0, 10.0);
-  PathConstraints scorePathConstraints = new PathConstraints(4.0, 3.0, 8.0, 10.0);
+  PathConstraints hpPathConstraints = new PathConstraints(4.5, 3.2, 8.42, 12.8876585);
+  PathConstraints pluckPathConstraints = new PathConstraints(4.5, 3.2, 8.0, 10.0);
+  PathConstraints scorePathConstraints = new PathConstraints(4.5, 3.2, 8.0, 10.0);
 
   PathPlannerPath pathF1;
   PathPlannerPath pathF2;
@@ -365,8 +366,8 @@ public class RobotContainer {
     NamedCommands.registerCommand(
         "setPoseStage",
         Commands.sequence(
-            intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.CORAL_AUTO_STAGE)),
-            armevator.runOnce(() -> armevator.setTargetPose(ArmevatorPose.CORAL_AUTO_STAGE))));
+            intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.CORAL_L4_STAGE)),
+            armevator.runOnce(() -> armevator.setTargetPose(ArmevatorPose.CORAL_L4_STAGE))));
 
     // Event Markers
     new EventTrigger("Marker").onTrue(Commands.print("reached event marker"));
@@ -498,8 +499,8 @@ public class RobotContainer {
   private void driveSlowlyDirection(Rotation2d targetDirection) {
     drivetrain.setControl(
         driveRequest
-            .withVelocityX(0.25 * Math.cos(targetDirection.getRadians()))
-            .withVelocityY(0.25 * Math.sin(targetDirection.getRadians()))
+            .withVelocityX(0.3 * Math.cos(targetDirection.getRadians()))
+            .withVelocityY(0.3 * Math.sin(targetDirection.getRadians()))
             .withRotationalRate(0.0));
 
     driveSlowlyDirectionAlert = true;
@@ -586,7 +587,7 @@ public class RobotContainer {
                 new ConditionalCommand(
                     Commands.deadline(
                         Commands.sequence(
-                            new WaitCommand(0.5),
+                            new WaitCommand(0.75),
                             Commands.runOnce(
                                 () -> {
                                   Pose2d visionPose =
@@ -600,8 +601,7 @@ public class RobotContainer {
                                       new Pose2d(
                                           visionPose.getX(), visionPose.getY(), new Rotation2d(0)));
                                 })),
-                        drivetrain.run(
-                            () -> driveSlowlyDirection(scoringAngleMap.get(scoringPathOption)))),
+                        drivetrain.run(() -> driveSlowlyDirection(Rotation2d.fromDegrees(0)))),
                     new InstantCommand(),
                     () -> true)));
 
@@ -850,25 +850,25 @@ public class RobotContainer {
             Commands.sequence(
                 Commands.runOnce(() -> currentScoringLevel = ArmevatorPose.CORAL_L1_SCORE),
                 Commands.runOnce(() -> statusRgb.setScoringLevel(ScoringLevel.LEVEL_1)),
-                armevator.runOnce(() -> armevator.updateScoringLevel(currentScoringLevel))));
+                Commands.runOnce(() -> armevator.updateScoringLevel(currentScoringLevel))));
     oi.operatorL2()
         .onTrue(
             Commands.sequence(
                 Commands.runOnce(() -> currentScoringLevel = ArmevatorPose.CORAL_L2_SCORE),
                 Commands.runOnce(() -> statusRgb.setScoringLevel(ScoringLevel.LEVEL_2)),
-                armevator.runOnce(() -> armevator.updateScoringLevel(currentScoringLevel))));
+                Commands.runOnce(() -> armevator.updateScoringLevel(currentScoringLevel))));
     oi.operatorL3()
         .onTrue(
             Commands.sequence(
                 Commands.runOnce(() -> currentScoringLevel = ArmevatorPose.CORAL_L3_SCORE),
                 Commands.runOnce(() -> statusRgb.setScoringLevel(ScoringLevel.LEVEL_3)),
-                armevator.runOnce(() -> armevator.updateScoringLevel(currentScoringLevel))));
+                Commands.runOnce(() -> armevator.updateScoringLevel(currentScoringLevel))));
     oi.operatorL4()
         .onTrue(
             Commands.sequence(
                 Commands.runOnce(() -> currentScoringLevel = ArmevatorPose.CORAL_L4_SCORE),
                 Commands.runOnce(() -> statusRgb.setScoringLevel(ScoringLevel.LEVEL_4)),
-                armevator.runOnce(() -> armevator.updateScoringLevel(currentScoringLevel))));
+                Commands.runOnce(() -> armevator.updateScoringLevel(currentScoringLevel))));
 
     //////////////////
     // Algae Commands
@@ -976,23 +976,33 @@ public class RobotContainer {
         .whileTrue(
             new ConditionalCommand(
                 autoPluckCommand,
-                Commands.sequence(
-                    Commands.runOnce(() -> isPlucking = true),
-                    new PrintCommand("Non-Auto Command Started"),
-                    claw.runOnce(() -> claw.intakeAlgae()),
-                    intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.ALGAE_PRE_PLUCK_L2)),
-                    armevator.runOnce(
-                        () -> {
-                          ArmevatorPose setPose =
-                              isPluckTargetHighSupplier.getAsBoolean()
-                                  ? ArmevatorPose.ALGAE_L3_PLUCK
-                                  : ArmevatorPose.ALGAE_L2_PLUCK;
+                Commands.deadline(
+                    Commands.sequence(
+                        Commands.runOnce(() -> isPlucking = true),
+                        new PrintCommand("Non-Auto Command Started"),
+                        claw.runOnce(() -> claw.intakeAlgae()),
+                        intake.runOnce(
+                            () -> intake.setTargetPose(ArmevatorPose.ALGAE_PRE_PLUCK_L2)),
+                        armevator.runOnce(
+                            () -> {
+                              ArmevatorPose setPose =
+                                  isPluckTargetHighSupplier.getAsBoolean()
+                                      ? ArmevatorPose.ALGAE_L3_PLUCK
+                                      : ArmevatorPose.ALGAE_L2_PLUCK;
 
-                          if (isFullAutoSupplier.getAsBoolean()) {
-                            setPose = inferPluckArmevatorPose(false);
-                          }
-                          armevator.setTargetPose(setPose);
-                        })),
+                              if (isFullAutoSupplier.getAsBoolean()) {
+                                setPose = inferPluckArmevatorPose(false);
+                              }
+                              armevator.setTargetPose(setPose);
+                            }),
+                        drivetrain
+                            .run(
+                                () ->
+                                    driveFacingAngle(
+                                        -oi.getTranslateX() * MaxSpeed,
+                                        -oi.getTranslateY() * MaxSpeed,
+                                        scoringAngleMap.get(scoringPathOption)))
+                            .asProxy())),
                 isFullAutoSupplier));
 
     oi.pluckAlgaeButton()
@@ -1000,6 +1010,7 @@ public class RobotContainer {
             Commands.sequence(
                 Commands.runOnce(() -> isPlucking = false),
                 intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.ALGAE_HANDOFF)),
+                Commands.waitSeconds(0.25),
                 armevator.runOnce(
                     () -> {
                       if (isFullAutoSupplier.getAsBoolean()) {
@@ -1022,8 +1033,8 @@ public class RobotContainer {
                 new ConditionalCommand(
                     getDynamicNetPathCommand(),
                     new InstantCommand(),
-                    this::isFarEnoughFromNetForPathfinding),
-                new DriveToPose(
+                    () -> false), // this::isFarEnoughFromNetForPathfinding),
+                new DriveToPoseSlew(
                     drivetrain,
                     () ->
                         new Pose2d(
@@ -1306,7 +1317,7 @@ public class RobotContainer {
                   preferNetRightSideSupplier.getAsBoolean()
                       ? Rotation2d.fromDegrees(135)
                       : Rotation2d.fromDegrees(-135));
-          return AutoBuilder.pathfindToPose(targetPose, hpPathConstraints, 0.3);
+          return AutoBuilder.pathfindToPose(targetPose, hpPathConstraints);
         });
   }
 
