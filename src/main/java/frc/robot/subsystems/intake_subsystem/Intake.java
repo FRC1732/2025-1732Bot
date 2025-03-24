@@ -63,12 +63,12 @@ public class Intake extends SubsystemBase {
     intakeMotor = new TalonFX(IntakeConstants.TILT_MOTOR_ID);
 
     intakeMap = new HashMap<>();
-    intakeMap.put(ArmevatorPose.STARTING, -4.0);
+    intakeMap.put(ArmevatorPose.STARTING, -9.0);
     intakeMap.put(ArmevatorPose.CLIMB, 15.0);
     intakeMap.put(ArmevatorPose.CORAL_L4_STAGE, 5.0);
     intakeMap.put(ArmevatorPose.CORAL_HP_LOAD, 5.0);
-    intakeMap.put(ArmevatorPose.CORAL_L4_SCORE, -5.0);
-    intakeMap.put(ArmevatorPose.CORAL_L3_SCORE, -5.0);
+    intakeMap.put(ArmevatorPose.CORAL_L4_SCORE, -9.0);
+    intakeMap.put(ArmevatorPose.CORAL_L3_SCORE, -9.0);
     intakeMap.put(ArmevatorPose.CORAL_L2_SCORE, 5.0);
     intakeMap.put(ArmevatorPose.CORAL_L1_SCORE, 5.0);
     intakeMap.put(ArmevatorPose.CORAL_POST_SCORE, 5.0);
@@ -81,8 +81,8 @@ public class Intake extends SubsystemBase {
     intakeMap.put(ArmevatorPose.ALGAE_L2_PLUCK, 0.0);
     intakeMap.put(ArmevatorPose.ALGAE_L2_DROP, 10.0);
     intakeMap.put(ArmevatorPose.ALGAE_L2_PLUCK, 5.0);
-    intakeMap.put(ArmevatorPose.ALGAE_PRE_PLUCK_L2, -5.0);
-    intakeMap.put(ArmevatorPose.ALGAE_PRE_PLUCK_L3, -5.0);
+    intakeMap.put(ArmevatorPose.ALGAE_PRE_PLUCK_L2, -9.0);
+    intakeMap.put(ArmevatorPose.ALGAE_PRE_PLUCK_L3, -9.0);
 
     TalonFXConfiguration intakeConfig = new TalonFXConfiguration();
     intakeConfig.MotorOutput.withInverted(InvertedValue.CounterClockwise_Positive);

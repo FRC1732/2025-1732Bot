@@ -30,6 +30,7 @@ public class DriveToPoseSlew extends Command {
   public final SwerveRequest.FieldCentricFacingAngle driveRequest;
   private final Supplier<Pose2d> poseSupplier;
   private Pose2d targetPose;
+  private Pose2d lastPose = new Pose2d();
   private int atTargetCount = 0;
 
   private SlewRateLimiter xLimiter;
@@ -44,6 +45,8 @@ public class DriveToPoseSlew extends Command {
   private static final double driveMaxVelocity = 3.5;
   private static final double driveMaxAcceleration = 3.0;
   private static final double driveTolerance = 0.04;
+  private static final double velocityTolerance = 0.3;
+  private static final double angularVelocityTolerance = 0.6;
   private static final double thetaTolerance = 5.0;
   private static final double timeout = 5.0;
 
@@ -98,9 +101,9 @@ public class DriveToPoseSlew extends Command {
 
     // Reset slew rate limiters
     this.xLimiter =
-        new SlewRateLimiter(driveMaxAcceleration, -driveMaxVelocity, currentPose.getX());
+        new SlewRateLimiter(driveMaxAcceleration, -driveMaxAcceleration, currentPose.getX());
     this.yLimiter =
-        new SlewRateLimiter(driveMaxAcceleration, -driveMaxVelocity, currentPose.getY());
+        new SlewRateLimiter(driveMaxAcceleration, -driveMaxAcceleration, currentPose.getY());
 
     Logger.recordOutput("DriveToPose/targetPose", targetPose);
 
@@ -155,22 +158,39 @@ public class DriveToPoseSlew extends Command {
     Pose2d currentPose = drivetrain.getPose();
     double xError = Math.abs(targetPose.getX() - currentPose.getX());
     double yError = Math.abs(targetPose.getY() - currentPose.getY());
-
+    double thetaError =
+        Math.abs(targetPose.getRotation().minus(currentPose.getRotation()).getDegrees());
+    double currentVelocity =
+        Math.hypot(
+            drivetrain.getState().Speeds.vxMetersPerSecond,
+            drivetrain.getState().Speeds.vxMetersPerSecond);
+    double currentAngularVelocity = Math.abs(drivetrain.getState().Speeds.omegaRadiansPerSecond);
     boolean xAtGoal = xError < driveTolerance;
     boolean yAtGoal = yError < driveTolerance;
+    boolean thetaAtGoal = thetaError < thetaTolerance;
+    boolean velocityAtGoal = currentVelocity < velocityTolerance;
+    boolean angularVelocityAtGoal = currentAngularVelocity < thetaTolerance;
 
     Logger.recordOutput("DriveToPose/xErr", xAtGoal);
     Logger.recordOutput("DriveToPose/yErr", yAtGoal);
-    Logger.recordOutput("DriveToPose/tErr", isThetaAtGoal());
+    Logger.recordOutput("DriveToPose/tErr", thetaAtGoal);
+    Logger.recordOutput("DriveToPose/vErr", velocityAtGoal);
+    Logger.recordOutput("DriveToPose/tvErr", angularVelocityAtGoal);
 
-    boolean isAtTarget = (running && xAtGoal && yAtGoal && isThetaAtGoal());
+    boolean isAtTarget =
+        (running
+            && xAtGoal
+            && yAtGoal
+            && velocityAtGoal
+            && angularVelocityAtGoal
+            && isThetaAtGoal());
     if (isAtTarget) {
       atTargetCount++;
     } else {
       atTargetCount = 0;
     }
 
-    return this.timer.hasElapsed(timeout) || atTargetCount >= 15;
+    return this.timer.hasElapsed(timeout) || atTargetCount >= 2;
   }
 
   private boolean isThetaAtGoal() {

@@ -47,7 +47,7 @@
   "reversed": false,
   "folder": "Pathfinding Paths",
   "idealStartingState": {
-    "velocity": 0.5,
+    "velocity": 1.0,
     "rotation": 55.0
   },
   "useDefaultConstraints": true

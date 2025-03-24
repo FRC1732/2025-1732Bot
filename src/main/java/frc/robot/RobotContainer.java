@@ -161,9 +161,9 @@ public class RobotContainer {
   StructPublisher<Pose2d> questPosePublisher =
       NetworkTableInstance.getDefault().getStructTopic("questPose", Pose2d.struct).publish();
 
-  PathConstraints hpPathConstraints = new PathConstraints(4.0, 3.0, 8.42, 12.8876585);
-  PathConstraints pluckPathConstraints = new PathConstraints(4.0, 3.0, 8.0, 10.0);
-  PathConstraints scorePathConstraints = new PathConstraints(4.0, 3.0, 8.0, 10.0);
+  PathConstraints hpPathConstraints = new PathConstraints(4.5, 3.2, 8.42, 12.8876585);
+  PathConstraints pluckPathConstraints = new PathConstraints(4.5, 3.2, 8.0, 10.0);
+  PathConstraints scorePathConstraints = new PathConstraints(4.5, 3.2, 8.0, 10.0);
 
   PathPlannerPath pathF1;
   PathPlannerPath pathF2;
@@ -562,7 +562,7 @@ public class RobotContainer {
                 new ConditionalCommand(
                     Commands.deadline(
                         Commands.sequence(
-                            new WaitCommand(0.5),
+                            new WaitCommand(0.75),
                             Commands.runOnce(
                                 () -> {
                                   Pose2d visionPose =
@@ -576,8 +576,7 @@ public class RobotContainer {
                                       new Pose2d(
                                           visionPose.getX(), visionPose.getY(), new Rotation2d(0)));
                                 })),
-                        drivetrain.run(
-                            () -> driveSlowlyDirection(scoringAngleMap.get(scoringPathOption)))),
+                        drivetrain.run(() -> driveSlowlyDirection(Rotation2d.fromDegrees(0)))),
                     new InstantCommand(),
                     () -> true)));
 
@@ -943,23 +942,33 @@ public class RobotContainer {
         .whileTrue(
             new ConditionalCommand(
                 autoPluckCommand,
-                Commands.sequence(
-                    Commands.runOnce(() -> isPlucking = true),
-                    new PrintCommand("Non-Auto Command Started"),
-                    claw.runOnce(() -> claw.intakeAlgae()),
-                    intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.ALGAE_PRE_PLUCK_L2)),
-                    armevator.runOnce(
-                        () -> {
-                          ArmevatorPose setPose =
-                              isPluckTargetHighSupplier.getAsBoolean()
-                                  ? ArmevatorPose.ALGAE_L3_PLUCK
-                                  : ArmevatorPose.ALGAE_L2_PLUCK;
+                Commands.deadline(
+                    Commands.sequence(
+                        Commands.runOnce(() -> isPlucking = true),
+                        new PrintCommand("Non-Auto Command Started"),
+                        claw.runOnce(() -> claw.intakeAlgae()),
+                        intake.runOnce(
+                            () -> intake.setTargetPose(ArmevatorPose.ALGAE_PRE_PLUCK_L2)),
+                        armevator.runOnce(
+                            () -> {
+                              ArmevatorPose setPose =
+                                  isPluckTargetHighSupplier.getAsBoolean()
+                                      ? ArmevatorPose.ALGAE_L3_PLUCK
+                                      : ArmevatorPose.ALGAE_L2_PLUCK;
 
-                          if (isFullAutoSupplier.getAsBoolean()) {
-                            setPose = inferPluckArmevatorPose(false);
-                          }
-                          armevator.setTargetPose(setPose);
-                        })),
+                              if (isFullAutoSupplier.getAsBoolean()) {
+                                setPose = inferPluckArmevatorPose(false);
+                              }
+                              armevator.setTargetPose(setPose);
+                            }),
+                        drivetrain
+                            .run(
+                                () ->
+                                    driveFacingAngle(
+                                        -oi.getTranslateX() * MaxSpeed,
+                                        -oi.getTranslateY() * MaxSpeed,
+                                        scoringAngleMap.get(scoringPathOption)))
+                            .asProxy())),
                 isFullAutoSupplier));
 
     oi.pluckAlgaeButton()
