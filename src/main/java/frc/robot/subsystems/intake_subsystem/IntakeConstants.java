@@ -15,6 +15,10 @@ public class IntakeConstants {
   public static final double INTAKE_KP = 0.01;
   public static final double INTAKE_KI = 0;
   public static final double INTAKE_KD = 0;
+  public static final double INTAKE_KG = 0.025;
+  public static final double INTAKE_KV = 0.0;
+  public static final double INTAKE_KA = 0.0;
+  public static final double INTAKE_KS = 0.0;
 
   public static final double INTAKE_DEGREES_PER_ROTATION = 20.336;
   // 22.5; // degrees per motor revolution (360 / reduction = 360 / 16)
