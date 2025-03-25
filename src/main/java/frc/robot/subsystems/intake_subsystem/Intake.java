@@ -5,7 +5,6 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.revrobotics.RelativeEncoder;
-
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.PIDController;
@@ -46,8 +45,7 @@ public class Intake extends SubsystemBase {
       networkTable.getTopic("intakeGoalTolerance").getGenericEntry();
   private GenericEntry subscriberIntakeSetpoint =
       networkTable.getTopic("intakeSetpoint").getGenericEntry();
-  private GenericEntry subscriberIntakeKG = 
-      networkTable.getTopic("intakeKG").getGenericEntry();
+  private GenericEntry subscriberIntakeKG = networkTable.getTopic("intakeKG").getGenericEntry();
 
   public Intake() {
     subscriberIntakeGoalTolerance.setDouble(IntakeConstants.ANGLE_GOAL_TOLERANCE_DEGREES);
@@ -98,11 +96,11 @@ public class Intake extends SubsystemBase {
         intakeMap.get(ArmevatorPose.STARTING) / IntakeConstants.INTAKE_DEGREES_PER_ROTATION);
 
     intakeFeedforward =
-      new ArmFeedforward(
-        IntakeConstants.INTAKE_KS,
-        IntakeConstants.INTAKE_KG,
-        IntakeConstants.INTAKE_KV,
-        IntakeConstants.INTAKE_KA);
+        new ArmFeedforward(
+            IntakeConstants.INTAKE_KS,
+            IntakeConstants.INTAKE_KG,
+            IntakeConstants.INTAKE_KV,
+            IntakeConstants.INTAKE_KA);
 
     intakePID =
         new PIDController(
@@ -159,17 +157,17 @@ public class Intake extends SubsystemBase {
       System.out.println("Updated intake degree tolerance: " + setGoalTolerance);
     }
 
-  double setIntakeKG = subscriberIntakeKG.getDouble(IntakeConstants.INTAKE_KG);
-  if (intakeFeedforward.getKg() != setIntakeKG) {
-    intakeFeedforward =
-      new ArmFeedforward(
-        IntakeConstants.INTAKE_KS,
-        setIntakeKG,
-      IntakeConstants.INTAKE_KV,
-      IntakeConstants.INTAKE_KA);
+    double setIntakeKG = subscriberIntakeKG.getDouble(IntakeConstants.INTAKE_KG);
+    if (intakeFeedforward.getKg() != setIntakeKG) {
+      intakeFeedforward =
+          new ArmFeedforward(
+              IntakeConstants.INTAKE_KS,
+              setIntakeKG,
+              IntakeConstants.INTAKE_KV,
+              IntakeConstants.INTAKE_KA);
 
       System.out.println("Updated intake KG: " + setIntakeKG);
-  }
+    }
     double getNewSetpoint = subscriberIntakeSetpoint.getDouble(-9.0);
     if (targetSetpoint != getNewSetpoint) {
       targetSetpoint = getNewSetpoint;
@@ -185,10 +183,12 @@ public class Intake extends SubsystemBase {
     }
 
     double output = intakePID.calculate(getAngle(), targetSetpoint);
-    intakeMotor.set(output + intakeFeedforward.calculate(MathUtil.angleModulus(Math.toRadians(getAngle() + 90.0)), getVelocity()));
+    intakeMotor.set(
+        output
+            + intakeFeedforward.calculate(
+                MathUtil.angleModulus(Math.toRadians(getAngle() + 90.0)), getVelocity()));
 
     doLogging();
-    
   }
 
   public double getAngle() {
