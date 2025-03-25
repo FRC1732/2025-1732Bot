@@ -844,6 +844,21 @@ public class RobotContainer {
     // Algae Commands
     //////////////////
 
+    /*Command bangBang =
+        Commands.sequence(
+            intake.runOnce(() -> intake.runIntake()),
+            intake.runOnce(() -> intake.tiltForward()),
+            new WaitUntilCommand(() -> intake.getAngle() >= 60),
+            intake.runOnce(() -> intake.stopTilt()));
+
+    Command unBangBang =
+        Commands.sequence(
+            intake.runOnce(() -> intake.tiltBackwards()),
+            new WaitUntilCommand(() -> intake.getAngle() <= 6),
+            intake.runOnce(() -> intake.stopTilt()),
+            intake.runOnce(() -> intake.stopIntake()));
+    */
+
     oi.intakeAlgaeButton()
         .whileTrue(
             Commands.sequence(
