@@ -29,7 +29,6 @@ import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
-import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
@@ -69,7 +68,6 @@ import frc.robot.subsystems.rgb.StatusRgb;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BooleanSupplier;
-import java.util.function.IntSupplier;
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;
@@ -221,7 +219,7 @@ public class RobotContainer {
   Map<ScoringPathOption, Command> scoringPathMap = new HashMap<>(12);
   Map<ScoringPathOption, Command> simpleScoringPathMap = new HashMap<>(12);
   Map<ScoringPathOption, Command> simplePluckScoringMap = new HashMap<>(12);
-  Map<ClimberPathOption, Command> simpleClimberScoringMap =  new HashMap<>(3);
+  Map<ClimberPathOption, Command> simpleClimberScoringMap = new HashMap<>(3);
   Map<ScoringPathOption, Command> pluckAlgaePathMap = new HashMap<>(12);
   Map<ClimberPathOption, Command> climberPathMap = new HashMap<>(3);
   Map<ScoringPathOption, Rotation2d> scoringAngleMap = new HashMap<>(12);
@@ -1056,29 +1054,31 @@ public class RobotContainer {
     ////////////////////
     // Climber Commands
     ////////////////////
-    
-    Command nonAutoClimberCommand = Commands.sequence(
-        climber.runOnce(() -> climber.engageWindmill()),
-        new WaitCommand(0.1),
-        climber.run(() -> climber.retractClimber()));
 
-    Command nonAutoClimberCommandCopy = Commands.sequence( // copy needed to prevent errors
-        climber.runOnce(() -> climber.engageWindmill()),
-        new WaitCommand(0.1),
-        climber.run(() -> climber.retractClimber())); 
+    Command nonAutoClimberCommand =
+        Commands.sequence(
+            climber.runOnce(() -> climber.engageWindmill()),
+            new WaitCommand(0.1),
+            climber.run(() -> climber.retractClimber()));
 
-    Command autoClimberCommand = new SequentialCommandGroup(
-        nonAutoClimberCommandCopy,
-        new ConditionalCommand(
-            getClimberPathCommand(),
-            Commands.sequence(
-                new DriveToPose(
-                    drivetrain,
-                    () -> getClimberPathStartingPose(climbingPathOption),
-                    driveFacingAngleRequest),
-                getSimpleClimberPathCommand()),
-            this::isFarEnoughForPathfindingClimber)
-            ); 
+    Command nonAutoClimberCommandCopy =
+        Commands.sequence( // copy needed to prevent errors
+            climber.runOnce(() -> climber.engageWindmill()),
+            new WaitCommand(0.1),
+            climber.run(() -> climber.retractClimber()));
+
+    Command autoClimberCommand =
+        new SequentialCommandGroup(
+            nonAutoClimberCommandCopy,
+            new ConditionalCommand(
+                getClimberPathCommand(),
+                Commands.sequence(
+                    new DriveToPose(
+                        drivetrain,
+                        () -> getClimberPathStartingPose(climbingPathOption),
+                        driveFacingAngleRequest),
+                    getSimpleClimberPathCommand()),
+                this::isFarEnoughForPathfindingClimber));
 
     oi.operatorExtendClimber()
         .whileTrue(
@@ -1090,7 +1090,8 @@ public class RobotContainer {
     oi.operatorExtendClimber().onFalse(climber.runOnce(() -> climber.stopClimber()));
 
     oi.operatorRetractClimber()
-        .whileTrue(new ConditionalCommand(autoClimberCommand, nonAutoClimberCommand, isFullAutoSupplier));
+        .whileTrue(
+            new ConditionalCommand(autoClimberCommand, nonAutoClimberCommand, isFullAutoSupplier));
     oi.operatorRetractClimber().onFalse(climber.runOnce(() -> climber.brakeClimber()));
 
     oi.retractClimberSlowlySwitch().whileTrue(climber.runOnce(() -> climber.brakeClimber()));
@@ -1527,9 +1528,12 @@ public class RobotContainer {
         ClimberPathOption.PATH_MIDDLE,
         AutoBuilder.pathfindThenFollowPath(pathMiddleClimber, climberPathConstraints));
 
-        simpleClimberScoringMap.put(ClimberPathOption.PATH_LEFT, AutoBuilder.followPath(pathLeftClimber));
-        simpleClimberScoringMap.put(ClimberPathOption.PATH_RIGHT, AutoBuilder.followPath(pathRightClimber));
-        simpleClimberScoringMap.put(ClimberPathOption.PATH_MIDDLE, AutoBuilder.followPath(pathMiddleClimber));
+    simpleClimberScoringMap.put(
+        ClimberPathOption.PATH_LEFT, AutoBuilder.followPath(pathLeftClimber));
+    simpleClimberScoringMap.put(
+        ClimberPathOption.PATH_RIGHT, AutoBuilder.followPath(pathRightClimber));
+    simpleClimberScoringMap.put(
+        ClimberPathOption.PATH_MIDDLE, AutoBuilder.followPath(pathMiddleClimber));
 
     NetPathMap.put(
         0,
