@@ -38,6 +38,7 @@ import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.SelectCommand;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import frc.robot.commands.DriveToPose;
@@ -68,6 +69,7 @@ import frc.robot.subsystems.rgb.StatusRgb;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BooleanSupplier;
+import java.util.function.IntSupplier;
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;
@@ -112,6 +114,8 @@ public class RobotContainer {
   private boolean isPlucking = false;
   private boolean isVisionEnabled = true;
   private boolean isPluckTargetHigh = false;
+  private ClimberPathOption climbingPathOption = ClimberPathOption.PATH_LEFT;
+
   private BooleanSupplier slowModeSupplier = () -> isSlowMode;
   private BooleanSupplier preferNetRightSideSupplier = () -> preferNetRightSide;
   private BooleanSupplier isFullAutoSupplier = () -> isFullAuto;
@@ -120,7 +124,6 @@ public class RobotContainer {
   private BooleanSupplier isPluckTargetHighSupplier = () -> isPluckTargetHigh;
   private ArmevatorPose currentScoringLevel = ArmevatorPose.CORAL_L4_SCORE;
   private Supplier<ArmevatorPose> currentScoringLevelSupplier = () -> currentScoringLevel;
-  private ShuffleboardTab tab;
   private final Telemetry telemetryLogger = new Telemetry(MaxSpeed);
 
   private final SwerveRequest.FieldCentric driveRequest =
@@ -164,6 +167,7 @@ public class RobotContainer {
   PathConstraints hpPathConstraints = new PathConstraints(4.5, 3.2, 8.42, 12.8876585);
   PathConstraints pluckPathConstraints = new PathConstraints(4.5, 3.2, 8.0, 10.0);
   PathConstraints scorePathConstraints = new PathConstraints(4.5, 3.2, 8.0, 10.0);
+  PathConstraints climberPathConstraints = new PathConstraints(2, 1.25, 8.0, 10.0);
 
   PathPlannerPath pathF1;
   PathPlannerPath pathF2;
@@ -187,6 +191,10 @@ public class RobotContainer {
   PathPlannerPath pathBRAlgae;
   PathPlannerPath pathBAlgae;
 
+  PathPlannerPath pathRightClimber;
+  PathPlannerPath pathLeftClimber;
+  PathPlannerPath pathMiddleClimber;
+
   private ScoringPathOption scoringPathOption = ScoringPathOption.PATH_F1;
 
   public enum ScoringPathOption {
@@ -204,10 +212,18 @@ public class RobotContainer {
     PATH_B2
   }
 
+  public enum ClimberPathOption {
+    PATH_LEFT,
+    PATH_RIGHT,
+    PATH_MIDDLE,
+  }
+
   Map<ScoringPathOption, Command> scoringPathMap = new HashMap<>(12);
   Map<ScoringPathOption, Command> simpleScoringPathMap = new HashMap<>(12);
   Map<ScoringPathOption, Command> simplePluckScoringMap = new HashMap<>(12);
+  Map<ClimberPathOption, Command> simpleClimberScoringMap =  new HashMap<>(3);
   Map<ScoringPathOption, Command> pluckAlgaePathMap = new HashMap<>(12);
+  Map<ClimberPathOption, Command> climberPathMap = new HashMap<>(3);
   Map<ScoringPathOption, Rotation2d> scoringAngleMap = new HashMap<>(12);
   Map<Integer, Command> NetPathMap = new HashMap<>(12);
 
@@ -240,6 +256,10 @@ public class RobotContainer {
       pathBLAlgae = PathPlannerPath.fromPathFile("BL Algae");
       pathBRAlgae = PathPlannerPath.fromPathFile("BR Algae");
       pathBAlgae = PathPlannerPath.fromPathFile("B Algae");
+
+      pathRightClimber = PathPlannerPath.fromPathFile("Climber Right");
+      pathLeftClimber = PathPlannerPath.fromPathFile("Climber Left");
+      pathMiddleClimber = PathPlannerPath.fromPathFile("Climber Middle");
 
     } catch (Exception e) {
       System.out.println(e.getMessage());
@@ -593,7 +613,7 @@ public class RobotContainer {
 
     // oi.getSysIdDynamicForward().whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
     // oi.getSysIdDynamicReverse().whileTrue(drivetrain.sysIdDynamic(Direction.kReverse));
-    // oi.getSysIdQuasistaticForward().whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
+    // oi.getSysIdQuasistaticForwarSd().whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
     // oi.getSysIdQuasistaticReverse().whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
 
     // drivetrain.registerTelemetry(telemetryLogger::telemeterize);
@@ -1036,6 +1056,29 @@ public class RobotContainer {
     ////////////////////
     // Climber Commands
     ////////////////////
+    
+    Command nonAutoClimberCommand = Commands.sequence(
+        climber.runOnce(() -> climber.engageWindmill()),
+        new WaitCommand(0.1),
+        climber.run(() -> climber.retractClimber()));
+
+    Command nonAutoClimberCommandCopy = Commands.sequence( // copy needed to prevent errors
+        climber.runOnce(() -> climber.engageWindmill()),
+        new WaitCommand(0.1),
+        climber.run(() -> climber.retractClimber())); 
+
+    Command autoClimberCommand = new SequentialCommandGroup(
+        nonAutoClimberCommandCopy,
+        new ConditionalCommand(
+            getClimberPathCommand(),
+            Commands.sequence(
+                new DriveToPose(
+                    drivetrain,
+                    () -> getClimberPathStartingPose(climbingPathOption),
+                    driveFacingAngleRequest),
+                getSimpleClimberPathCommand()),
+            this::isFarEnoughForPathfindingClimber)
+            ); 
 
     oi.operatorExtendClimber()
         .whileTrue(
@@ -1047,11 +1090,7 @@ public class RobotContainer {
     oi.operatorExtendClimber().onFalse(climber.runOnce(() -> climber.stopClimber()));
 
     oi.operatorRetractClimber()
-        .whileTrue(
-            Commands.sequence(
-                climber.runOnce(() -> climber.engageWindmill()),
-                new WaitCommand(0.1),
-                climber.run(() -> climber.retractClimber())));
+        .whileTrue(new ConditionalCommand(autoClimberCommand, nonAutoClimberCommand, isFullAutoSupplier));
     oi.operatorRetractClimber().onFalse(climber.runOnce(() -> climber.brakeClimber()));
 
     oi.retractClimberSlowlySwitch().whileTrue(climber.runOnce(() -> climber.brakeClimber()));
@@ -1182,6 +1221,10 @@ public class RobotContainer {
     return getPluckDistanceFromTarget() > 2.0;
   }
 
+  private boolean isFarEnoughForPathfindingClimber() {
+    return getClimberDistanceFromTarget() > 2.0;
+  }
+
   private boolean isRobotCloseToScoringPosition() {
     return getDistanceFromTarget() < 0.4;
   }
@@ -1211,6 +1254,12 @@ public class RobotContainer {
     return targetPose.getTranslation().getDistance(currentPose.getTranslation());
   }
 
+  private double getClimberDistanceFromTarget() {
+    Pose2d targetPose = getClimberPathStartingPose(climbingPathOption);
+    Pose2d currentPose = drivetrain.getPose();
+    return targetPose.getTranslation().getDistance(currentPose.getTranslation());
+  }
+
   private double getDistanceFromNet() {
     Pose2d targetPose =
         new Pose2d(NET_SCORE_LOCATION_X, drivetrain.getPose().getY(), Rotation2d.fromDegrees(135));
@@ -1234,6 +1283,10 @@ public class RobotContainer {
         return ArmevatorPose.ALGAE_L2_PLUCK;
       }
     }
+  }
+
+  private Command getClimberPathCommand() {
+    return new SelectCommand<>(climberPathMap, () -> climbingPathOption);
   }
 
   private Command getPluckPathCommand() {
@@ -1275,12 +1328,20 @@ public class RobotContainer {
     return new SelectCommand<>(simplePluckScoringMap, () -> scoringPathOption);
   }
 
+  private Command getSimpleClimberPathCommand() {
+    return new SelectCommand<>(simpleClimberScoringMap, () -> climbingPathOption);
+  }
+
   private Pose2d getPathStartingPose(ScoringPathOption scoringPathOption) {
     return getCurrentScoringPath(scoringPathOption).getStartingHolonomicPose().get();
   }
 
   private Pose2d getPluckPathStartingPose(ScoringPathOption scoringPathOption) {
     return getCurrentScoringPluckPath(scoringPathOption).getStartingHolonomicPose().get();
+  }
+
+  private Pose2d getClimberPathStartingPose(ClimberPathOption climberPathOption) {
+    return getCurrentScoringClimberPath(climberPathOption).getStartingHolonomicPose().get();
   }
 
   private PathPlannerPath getCurrentScoringPath(ScoringPathOption scoringPathOption) {
@@ -1335,6 +1396,10 @@ public class RobotContainer {
       }
     }
     return pathFAlgae;
+  }
+
+  private PathPlannerPath getCurrentScoringClimberPath(ClimberPathOption climberPathOption) {
+    return pathFAlgae; // TODO replace with an actual path
   }
 
   // run on init
@@ -1451,6 +1516,20 @@ public class RobotContainer {
     scoringAngleMap.put(ScoringPathOption.PATH_BR2, Rotation2d.fromDegrees(120.0));
     scoringAngleMap.put(ScoringPathOption.PATH_B1, Rotation2d.fromDegrees(180.0));
     scoringAngleMap.put(ScoringPathOption.PATH_B2, Rotation2d.fromDegrees(180.0));
+
+    climberPathMap.put(
+        ClimberPathOption.PATH_LEFT,
+        AutoBuilder.pathfindThenFollowPath(pathLeftClimber, climberPathConstraints));
+    climberPathMap.put(
+        ClimberPathOption.PATH_RIGHT,
+        AutoBuilder.pathfindThenFollowPath(pathRightClimber, climberPathConstraints));
+    climberPathMap.put(
+        ClimberPathOption.PATH_MIDDLE,
+        AutoBuilder.pathfindThenFollowPath(pathMiddleClimber, climberPathConstraints));
+
+        simpleClimberScoringMap.put(ClimberPathOption.PATH_LEFT, AutoBuilder.followPath(pathLeftClimber));
+        simpleClimberScoringMap.put(ClimberPathOption.PATH_RIGHT, AutoBuilder.followPath(pathRightClimber));
+        simpleClimberScoringMap.put(ClimberPathOption.PATH_MIDDLE, AutoBuilder.followPath(pathMiddleClimber));
 
     NetPathMap.put(
         0,
