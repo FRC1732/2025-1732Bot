@@ -21,6 +21,7 @@ import com.pathplanner.lib.path.PathPlannerPath;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructPublisher;
@@ -93,6 +94,13 @@ public class RobotContainer {
   private static final double NET_SCORE_LOCATION_X = 7.4;
   private static final double NET_SCORE_MIN_Y = 4.7;
   private static final double NET_SCORE_MAX_Y = 6.27;
+
+  private static final Pose2d APRILTAG_POSE_F =
+      new Pose2d(3.6576, 4.0208, Rotation2d.fromDegrees(180));
+  private static final Pose2d APRILTAG_POSE_BL =
+      new Pose2d(4.9047, 4.7404, Rotation2d.fromDegrees(60));
+  private static final Pose2d APRILTAG_POSE_BR =
+      new Pose2d(4.9047, 3.3012, Rotation2d.fromDegrees(-60));
 
   private Alliance lastAlliance = Alliance.Blue; // Field2d.getInstance().getAlliance();
 
@@ -187,6 +195,8 @@ public class RobotContainer {
   PathPlannerPath pathBRAlgae;
   PathPlannerPath pathBAlgae;
 
+  PathPlannerPath pathR2HP;
+
   private ScoringPathOption scoringPathOption = ScoringPathOption.PATH_F1;
 
   public enum ScoringPathOption {
@@ -240,6 +250,8 @@ public class RobotContainer {
       pathBLAlgae = PathPlannerPath.fromPathFile("BL Algae");
       pathBRAlgae = PathPlannerPath.fromPathFile("BR Algae");
       pathBAlgae = PathPlannerPath.fromPathFile("B Algae");
+
+      pathR2HP = PathPlannerPath.fromPathFile("R2-HP");
 
     } catch (Exception e) {
       System.out.println(e.getMessage());
@@ -549,7 +561,7 @@ public class RobotContainer {
         .onTrue(
             Commands.sequence(
                 intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.ALGAE_POST_HANDOFF)),
-                new WaitCommand(0.25),
+                new WaitCommand(0.15),
                 armevator.runOnce(() -> armevator.setTargetPose(ArmevatorPose.CORAL_L3_SCORE)),
                 intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.CORAL_L3_SCORE)),
                 new WaitCommand(0.75),
@@ -568,7 +580,11 @@ public class RobotContainer {
                                   Pose2d visionPose =
                                       visionApriltagSubsystem.hasReefTarget()
                                           ? visionApriltagSubsystem.getPoseEstimate().pose
-                                          : new Pose2d(3.203, 4.190, new Rotation2d(0));
+                                          : inferPoseFromTarget(
+                                              APRILTAG_POSE_F,
+                                              visionApriltagSubsystem
+                                                  .getTX()); // new Pose2d(3.203, 4.190, new
+                                  // Rotation2d(0));
                                   drivetrain.resetPose(
                                       new Pose2d(
                                           visionPose.getX(), visionPose.getY(), new Rotation2d(0)));
@@ -595,6 +611,13 @@ public class RobotContainer {
     // oi.getSysIdDynamicReverse().whileTrue(drivetrain.sysIdDynamic(Direction.kReverse));
     // oi.getSysIdQuasistaticForward().whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
     // oi.getSysIdQuasistaticReverse().whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
+
+    oi.testAutoButton()
+        .whileTrue(
+            Commands.sequence(
+                armevator.runOnce(() -> armevator.setTargetPose(ArmevatorPose.CORAL_HP_LOAD)),
+                AutoBuilder.followPath(pathR2HP),
+                drivetrain.run(() -> driveSlowlyDirection(Rotation2d.fromDegrees(125.0)))));
 
     // drivetrain.registerTelemetry(telemetryLogger::telemeterize);
   }
@@ -1589,6 +1612,46 @@ public class RobotContainer {
       return 11;
     }
     return index;
+  }
+
+  public Pose2d inferPoseFromTarget(Pose2d targetPose, double txDegrees) {
+    // Convert the tx angle from degrees to radians.
+    double txRadians = Math.toRadians(txDegrees);
+
+    // The camera is mounted so its optical axis is opposite to the target’s facing.
+    // Therefore, the camera's forward direction is targetPose's rotation plus 180°.
+    Rotation2d cameraDirection = targetPose.getRotation().rotateBy(new Rotation2d(Math.PI));
+
+    // "Ideal" camera position if the target were centered (tx == 0):
+    // 0.64115 m away from the target along the camera's forward direction.
+    Translation2d idealCameraTranslation =
+        targetPose
+            .getTranslation()
+            .plus(
+                new Translation2d(cameraDirection.getCos(), cameraDirection.getSin())
+                    .times(0.64115));
+
+    // The lateral offset (in meters) caused by an off-center target:
+    double lateralOffset = 0.64115 * Math.tan(txRadians);
+
+    // Compute the camera's right vector by rotating the forward vector -90°.
+    Rotation2d cameraRight = cameraDirection.rotateBy(Rotation2d.fromDegrees(-90));
+
+    // The actual camera position is shifted from the ideal position.
+    // A positive tx (target appears to the right) implies the camera is offset to
+    // the left.
+    Translation2d actualCameraTranslation =
+        idealCameraTranslation.minus(
+            new Translation2d(cameraRight.getCos(), cameraRight.getSin()).times(lateralOffset));
+
+    // The robot center is 0.19115 m forward from the camera (along the same forward
+    // direction).
+    Translation2d robotTranslation =
+        actualCameraTranslation.plus(
+            new Translation2d(cameraDirection.getCos(), cameraDirection.getSin()).times(0.19115));
+
+    // The robot is assumed to have the same heading as the camera.
+    return new Pose2d(robotTranslation, cameraDirection);
   }
 
   public void updateVisionPose() {
