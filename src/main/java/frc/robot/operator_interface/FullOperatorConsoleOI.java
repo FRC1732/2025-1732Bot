@@ -139,13 +139,13 @@ public class FullOperatorConsoleOI extends DualJoysticksOI {
 
   @Override
   public Trigger operatorNetSideSwitch() {
-    return operatorPanelButtonsOne[4];
-  }
-
-  @Override
-  public Trigger retractClimberSlowlySwitch() {
     return operatorPanelButtonsTwo[11];
   }
+
+  // @Override
+  // public Trigger retractClimberSlowlySwitch() {
+  //   return operatorPanelButtonsTwo[11];
+  // }
 
   @Override
   public Trigger operatorEjectCoral() {

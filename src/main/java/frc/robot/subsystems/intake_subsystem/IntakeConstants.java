@@ -9,11 +9,11 @@ public class IntakeConstants {
   public static final double PID_PERIOD_SEC = 0.02;
 
   public static final double MIN_ANGLE_DEGREES = -9.0;
-  public static final double MAX_ANGLE_DEGREES = 65.0;
+  public static final double MAX_ANGLE_DEGREES = 62.0;
   public static final double ANGLE_GOAL_TOLERANCE_DEGREES = 1.5;
 
   public static final double INTAKE_KP = 0.01;
-  public static final double INTAKE_KI = 0;
+  public static final double INTAKE_KI = 0.001;
   public static final double INTAKE_KD = 0;
   public static final double INTAKE_KG = 0.025;
   public static final double INTAKE_KV = 0.0;

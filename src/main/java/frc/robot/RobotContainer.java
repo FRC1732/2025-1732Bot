@@ -548,7 +548,7 @@ public class RobotContainer {
     oi.resetGyroButton()
         .onTrue(
             Commands.sequence(
-                intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.ALGAE_HANDOFF)),
+                intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.ALGAE_POST_HANDOFF)),
                 new WaitCommand(0.25),
                 armevator.runOnce(() -> armevator.setTargetPose(ArmevatorPose.CORAL_L3_SCORE)),
                 intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.CORAL_L3_SCORE)),
@@ -869,18 +869,25 @@ public class RobotContainer {
     oi.intakeAlgaeButton()
         .onFalse(
             Commands.sequence(
-                intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.STARTING)),
-                armevator.runOnce(() -> armevator.setTargetPose(ArmevatorPose.ALGAE_HANDOFF)),
-                Commands.waitSeconds(1.0),
+                intake.runOnce(() -> intake.stopIntake()),
+                claw.runOnce(() -> claw.stopClaw()),
+                intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.ALGAE_PRE_HANDOFF)),
+                armevator.runOnce(() -> armevator.setTargetPose(ArmevatorPose.ALGAE_POST_HANDOFF)),
+                Commands.waitSeconds(0.75),
                 intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.ALGAE_HANDOFF)),
-                Commands.parallel(
-                    intake.run(() -> intake.stopIntake()), claw.run(() -> claw.brakeAlgae()))));
+                Commands.waitSeconds(0.35),
+                intake.runOnce(() -> intake.runIntake()),
+                claw.runOnce(() -> claw.intakeAlgae()),
+                Commands.waitSeconds(0.5),
+                intake.runOnce(() -> intake.stopIntake()),
+                claw.runOnce(() -> claw.brakeAlgae()),
+                intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.ALGAE_POST_HANDOFF))));
 
     oi.ejectAlgaeButton()
         .whileTrue(
             Commands.sequence(
-                intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.ALGAE_HANDOFF)),
-                armevator.runOnce(() -> armevator.setTargetPose(ArmevatorPose.ALGAE_HANDOFF)),
+                intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.ALGAE_POST_HANDOFF)),
+                armevator.runOnce(() -> armevator.setTargetPose(ArmevatorPose.ALGAE_POST_HANDOFF)),
                 Commands.parallel(
                     intake.run(() -> intake.ejectIntake()), claw.run(() -> claw.ejectAlgae()))));
     oi.ejectAlgaeButton()
@@ -933,7 +940,7 @@ public class RobotContainer {
             new InstantCommand(
                 () -> visionApriltagSubsystem.setPipeline(Pipelines.TRACKING_CENTER)),
             armevator.runOnce(() -> armevator.setTargetPose(inferPluckArmevatorPose(true))),
-            intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.ALGAE_HANDOFF)),
+            intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.ALGAE_POST_HANDOFF)),
             Commands.deadline(
                 new ConditionalCommand(
                     getPluckPathCommand(),
@@ -990,12 +997,12 @@ public class RobotContainer {
         .onFalse(
             Commands.sequence(
                 Commands.runOnce(() -> isPlucking = false),
-                intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.ALGAE_HANDOFF)),
+                intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.ALGAE_POST_HANDOFF)),
                 Commands.waitSeconds(0.25),
                 armevator.runOnce(
                     () -> {
                       if (isFullAutoSupplier.getAsBoolean()) {
-                        armevator.setTargetPose(ArmevatorPose.ALGAE_HANDOFF);
+                        armevator.setTargetPose(ArmevatorPose.ALGAE_POST_HANDOFF);
                       } else {
                         armevator.setTargetPose(
                             isPluckTargetHighSupplier.getAsBoolean()
@@ -1036,7 +1043,7 @@ public class RobotContainer {
                         Commands.waitSeconds(0.2),
                         claw.runOnce(() -> claw.stopClaw()),
                         armevator.runOnce(
-                            () -> armevator.setTargetPose(ArmevatorPose.ALGAE_HANDOFF))),
+                            () -> armevator.setTargetPose(ArmevatorPose.ALGAE_POST_HANDOFF))),
                     drivetrain.run(
                         () ->
                             driveFacingAngle(
@@ -1046,7 +1053,8 @@ public class RobotContainer {
                                     ? Rotation2d.fromDegrees(135)
                                     : Rotation2d.fromDegrees(-135))))));
     oi.aimAtNetButton()
-        .onFalse(armevator.runOnce(() -> armevator.setTargetPose(ArmevatorPose.ALGAE_HANDOFF)));
+        .onFalse(
+            armevator.runOnce(() -> armevator.setTargetPose(ArmevatorPose.ALGAE_POST_HANDOFF)));
 
     ////////////////////
     // Climber Commands
