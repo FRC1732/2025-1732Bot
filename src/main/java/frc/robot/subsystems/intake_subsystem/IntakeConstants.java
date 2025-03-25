@@ -12,15 +12,9 @@ public class IntakeConstants {
   public static final double MAX_ANGLE_DEGREES = 65.0;
   public static final double ANGLE_GOAL_TOLERANCE_DEGREES = 1.5;
 
-  public static final double INTAKE_MAX_VELOCITY = 350;
-  public static final double INTAKE_MAX_ACCELERATION = 300;
   public static final double INTAKE_KP = 0.02001;
   public static final double INTAKE_KI = 0;
   public static final double INTAKE_KD = 0;
-  public static final double INTAKE_KG = 0.025; // V
-  public static final double INTAKE_KV = 0; // V*s/deg
-  public static final double INTAKE_KA = 0; // V*s^2/deg
-  public static final double INTAKE_KS = 0;
 
   public static final double INTAKE_DEGREES_PER_ROTATION = 20.336;
   // 22.5; // degrees per motor revolution (360 / reduction = 360 / 16)
