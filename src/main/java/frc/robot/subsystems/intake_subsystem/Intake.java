@@ -40,20 +40,23 @@ public class Intake extends SubsystemBase {
 
   private GenericEntry subscriberIntakeGoalTolerance =
       networkTable.getTopic("intakeGoalTolerance").getGenericEntry();
+  private GenericEntry subscriberIntakeSetpoint =
+      networkTable.getTopic("intakeSetpoint").getGenericEntry();
 
   public Intake() {
     subscriberIntakeGoalTolerance.setDouble(IntakeConstants.ANGLE_GOAL_TOLERANCE_DEGREES);
+    subscriberIntakeSetpoint.setDouble(-9.0);
 
     rollerMotor = new TalonFX(IntakeConstants.ROLLER_MOTOR_ID);
     intakeMotor = new TalonFX(IntakeConstants.TILT_MOTOR_ID);
 
     intakeMap = new HashMap<>();
-    intakeMap.put(ArmevatorPose.STARTING, -4.0);
+    intakeMap.put(ArmevatorPose.STARTING, -9.0);
     intakeMap.put(ArmevatorPose.CLIMB, 15.0);
     intakeMap.put(ArmevatorPose.CORAL_L4_STAGE, 5.0);
     intakeMap.put(ArmevatorPose.CORAL_HP_LOAD, 5.0);
-    intakeMap.put(ArmevatorPose.CORAL_L4_SCORE, -5.0);
-    intakeMap.put(ArmevatorPose.CORAL_L3_SCORE, -5.0);
+    intakeMap.put(ArmevatorPose.CORAL_L4_SCORE, -9.0);
+    intakeMap.put(ArmevatorPose.CORAL_L3_SCORE, -9.0);
     intakeMap.put(ArmevatorPose.CORAL_L2_SCORE, 5.0);
     intakeMap.put(ArmevatorPose.CORAL_L1_SCORE, 5.0);
     intakeMap.put(ArmevatorPose.CORAL_POST_SCORE, 5.0);
@@ -66,8 +69,8 @@ public class Intake extends SubsystemBase {
     intakeMap.put(ArmevatorPose.ALGAE_L2_PLUCK, 0.0);
     intakeMap.put(ArmevatorPose.ALGAE_L2_DROP, 10.0);
     intakeMap.put(ArmevatorPose.ALGAE_L2_PLUCK, 5.0);
-    intakeMap.put(ArmevatorPose.ALGAE_PRE_PLUCK_L2, -5.0);
-    intakeMap.put(ArmevatorPose.ALGAE_PRE_PLUCK_L3, -5.0);
+    intakeMap.put(ArmevatorPose.ALGAE_PRE_PLUCK_L2, -9.0);
+    intakeMap.put(ArmevatorPose.ALGAE_PRE_PLUCK_L3, -9.0);
 
     TalonFXConfiguration intakeConfig = new TalonFXConfiguration();
     intakeConfig.MotorOutput.withInverted(InvertedValue.CounterClockwise_Positive);
@@ -89,9 +92,7 @@ public class Intake extends SubsystemBase {
 
     intakePID =
         new PIDController(
-            IntakeConstants.INTAKE_KP,
-            IntakeConstants.INTAKE_KI,
-            IntakeConstants.INTAKE_KD);
+            IntakeConstants.INTAKE_KP, IntakeConstants.INTAKE_KI, IntakeConstants.INTAKE_KD);
     intakePID.setTolerance(IntakeConstants.ANGLE_GOAL_TOLERANCE_DEGREES);
     intakePID.reset();
 
@@ -143,6 +144,11 @@ public class Intake extends SubsystemBase {
       intakePID.setTolerance(setGoalTolerance);
       System.out.println("Updated intake degree tolerance: " + setGoalTolerance);
     }
+
+    double getNewSetpoint = subscriberIntakeSetpoint.getDouble(-9.0);
+    if (targetSetpoint != getNewSetpoint) {
+      targetSetpoint = getNewSetpoint;
+    }
   }
 
   @Override
@@ -172,6 +178,7 @@ public class Intake extends SubsystemBase {
 
   public void setTargetPose(ArmevatorPose pose) {
     this.pose = pose;
+    intakePID.reset();
     targetSetpoint = intakeMap.get(pose);
   }
 
@@ -182,8 +189,7 @@ public class Intake extends SubsystemBase {
   private void doLogging() {
     Logger.recordOutput(IntakeConstants.SUBSYSTEM_NAME + "/Tilt Position", getTiltPosition());
     Logger.recordOutput(IntakeConstants.SUBSYSTEM_NAME + "/Tilt Velocity", getTiltVelocity());
-    Logger.recordOutput(
-        IntakeConstants.SUBSYSTEM_NAME + "/Tilt Goal", targetSetpoint);
+    Logger.recordOutput(IntakeConstants.SUBSYSTEM_NAME + "/Tilt Goal", targetSetpoint);
   }
 
   private void setupNT() {
@@ -192,7 +198,7 @@ public class Intake extends SubsystemBase {
 
     tab.addDouble("Tilt Position", this::getAngle);
     tab.addDouble("Tilt Velocity", this::getVelocity);
-    tab.addDouble("Tilt Setpoint", () -> targetSetpoint);
+    // tab.addDouble("Tilt Setpoint", () -> targetSetpoint);
     tiltSpeed = tab.add("Tilt Speed Set", IntakeConstants.INTAKE_TILT_SPEED).getEntry();
 
     tab.add("Tilt PID", intakePID);
