@@ -1101,21 +1101,15 @@ public class RobotContainer {
     oi.pluckAlgaeButton()
         .onFalse(
             Commands.sequence(
-                Commands.runOnce(() -> isPlucking = false),
                 intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.ALGAE_POST_HANDOFF)),
                 Commands.waitSeconds(0.25),
                 armevator.runOnce(
                     () -> {
-                      if (isFullAutoSupplier.getAsBoolean()) {
-                        armevator.setTargetPose(ArmevatorPose.ALGAE_POST_HANDOFF);
-                      } else {
-                        armevator.setTargetPose(
-                            isPluckTargetHighSupplier.getAsBoolean()
-                                ? ArmevatorPose.ALGAE_L3_PLUCK
-                                : ArmevatorPose.ALGAE_L2_PLUCK);
-                      }
+                      armevator.setTargetPose(ArmevatorPose.ALGAE_POST_HANDOFF);
                     }),
-                claw.run(() -> claw.brakeAlgae())));
+                claw.run(() -> claw.brakeAlgae()),
+                Commands.runOnce(() -> isPlucking = false),
+                drivetrain.runOnce(() -> {})));
 
     oi.aimAtNetButton()
         .whileTrue(
