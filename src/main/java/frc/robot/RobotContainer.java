@@ -1071,31 +1071,27 @@ public class RobotContainer {
                 autoPluckCommand,
                 Commands.deadline(
                     Commands.sequence(
-                        Commands.runOnce(() -> isPlucking = true),
-                        new PrintCommand("Non-Auto Command Started"),
-                        claw.runOnce(() -> claw.intakeAlgae()),
-                        intake.runOnce(
-                            () -> intake.setTargetPose(ArmevatorPose.ALGAE_PRE_PLUCK_L2)),
-                        armevator.runOnce(
-                            () -> {
-                              ArmevatorPose setPose =
-                                  isPluckTargetHighSupplier.getAsBoolean()
-                                      ? ArmevatorPose.ALGAE_L3_PLUCK
-                                      : ArmevatorPose.ALGAE_L2_PLUCK;
+                            Commands.runOnce(() -> isPlucking = true),
+                            new PrintCommand("Non-Auto Command Started"),
+                            claw.runOnce(() -> claw.intakeAlgae()),
+                            intake.runOnce(
+                                () -> intake.setTargetPose(ArmevatorPose.ALGAE_PRE_PLUCK_L2)),
+                            armevator.runOnce(
+                                () -> {
+                                  ArmevatorPose setPose =
+                                      isPluckTargetHighSupplier.getAsBoolean()
+                                          ? ArmevatorPose.ALGAE_L3_PLUCK
+                                          : ArmevatorPose.ALGAE_L2_PLUCK;
 
-                              if (isFullAutoSupplier.getAsBoolean()) {
-                                setPose = inferPluckArmevatorPose(false);
-                              }
-                              armevator.setTargetPose(setPose);
-                            }),
-                        drivetrain
-                            .run(
+                                  armevator.setTargetPose(setPose);
+                                }),
+                            drivetrain.run(
                                 () ->
                                     driveFacingAngle(
                                         -oi.getTranslateX() * MaxSpeed,
                                         -oi.getTranslateY() * MaxSpeed,
-                                        scoringAngleMap.get(scoringPathOption)))
-                            .asProxy())),
+                                        scoringAngleMap.get(scoringPathOption))))
+                        .asProxy()),
                 isFullAutoSupplier));
 
     oi.pluckAlgaeButton()
@@ -1106,14 +1102,7 @@ public class RobotContainer {
                 Commands.waitSeconds(0.25),
                 armevator.runOnce(
                     () -> {
-                      if (isFullAutoSupplier.getAsBoolean()) {
-                        armevator.setTargetPose(ArmevatorPose.ALGAE_POST_HANDOFF);
-                      } else {
-                        armevator.setTargetPose(
-                            isPluckTargetHighSupplier.getAsBoolean()
-                                ? ArmevatorPose.ALGAE_L3_PLUCK
-                                : ArmevatorPose.ALGAE_L2_PLUCK);
-                      }
+                      armevator.setTargetPose(ArmevatorPose.ALGAE_POST_HANDOFF);
                     }),
                 claw.run(() -> claw.brakeAlgae())));
 
