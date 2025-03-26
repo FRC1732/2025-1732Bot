@@ -100,6 +100,10 @@ public interface OperatorInterface {
     return new Trigger(() -> false);
   }
 
+  public default Trigger testAutoButton() {
+    return new Trigger(() -> false);
+  }
+
   public default Trigger operatorEjectAlgae() { // button 1
     return new Trigger(() -> false);
   }

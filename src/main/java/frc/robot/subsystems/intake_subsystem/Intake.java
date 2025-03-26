@@ -1,7 +1,3 @@
-// Copyright (c) FIRST and other WPILib contributors.
-// Open Source Software; you can modify and/or share it under the terms of
-// the WPILib BSD license file in the root directory of this project.
-
 package frc.robot.subsystems.intake_subsystem;
 
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
@@ -11,10 +7,8 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.revrobotics.RelativeEncoder;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ArmFeedforward;
-import edu.wpi.first.math.controller.ProfiledPIDController;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.trajectory.TrapezoidProfile;
-import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
@@ -30,7 +24,7 @@ public class Intake extends SubsystemBase {
   private HashMap<ArmevatorPose, Double> intakeMap;
   private double algaeAngleSetpoint;
 
-  private ProfiledPIDController intakePID;
+  private PIDController intakePID;
   private ArmFeedforward intakeFeedforward;
 
   private RelativeEncoder tiltEncoder;
@@ -40,23 +34,22 @@ public class Intake extends SubsystemBase {
 
   private ArmevatorPose pose;
 
+  private double targetSetpoint;
+  private GenericEntry tiltSpeed;
+
   private NetworkTableInstance table = NetworkTableInstance.getDefault();
 
   private NetworkTable networkTable = table.getTable("IntakeConstants");
 
-  private GenericEntry subscriberIntakeVelocity =
-      networkTable.getTopic("intakeMaxVelocity").getGenericEntry();
-  private GenericEntry subscriberIntakeMaxAcceleration =
-      networkTable.getTopic("intakeMaxAcceleration").getGenericEntry();
   private GenericEntry subscriberIntakeGoalTolerance =
       networkTable.getTopic("intakeGoalTolerance").getGenericEntry();
+  private GenericEntry subscriberIntakeSetpoint =
+      networkTable.getTopic("intakeSetpoint").getGenericEntry();
   private GenericEntry subscriberIntakeKG = networkTable.getTopic("intakeKG").getGenericEntry();
 
   public Intake() {
-    // ensure network tables are visible on elastic (unsure if this is needed)
-    subscriberIntakeVelocity.setDouble(IntakeConstants.INTAKE_MAX_VELOCITY);
-    subscriberIntakeMaxAcceleration.setDouble(IntakeConstants.INTAKE_MAX_ACCELERATION);
     subscriberIntakeGoalTolerance.setDouble(IntakeConstants.ANGLE_GOAL_TOLERANCE_DEGREES);
+    subscriberIntakeSetpoint.setDouble(-9.0);
     subscriberIntakeKG.setDouble(IntakeConstants.INTAKE_KG);
 
     rollerMotor = new TalonFX(IntakeConstants.ROLLER_MOTOR_ID);
@@ -72,8 +65,10 @@ public class Intake extends SubsystemBase {
     intakeMap.put(ArmevatorPose.CORAL_L2_SCORE, 5.0);
     intakeMap.put(ArmevatorPose.CORAL_L1_SCORE, 5.0);
     intakeMap.put(ArmevatorPose.CORAL_POST_SCORE, 5.0);
-    intakeMap.put(ArmevatorPose.ALGAE_INTAKE, 62.5);
-    intakeMap.put(ArmevatorPose.ALGAE_HANDOFF, 10.0);
+    intakeMap.put(ArmevatorPose.ALGAE_INTAKE, 62.0);
+    intakeMap.put(ArmevatorPose.ALGAE_PRE_HANDOFF, 20.0);
+    intakeMap.put(ArmevatorPose.ALGAE_HANDOFF, 0.0);
+    intakeMap.put(ArmevatorPose.ALGAE_POST_HANDOFF, 10.0);
     intakeMap.put(ArmevatorPose.ALGAE_NET_SCORE, 5.0);
     intakeMap.put(ArmevatorPose.ALGAE_NET_STAGE, 10.0);
     intakeMap.put(ArmevatorPose.ALGAE_L3_PLUCK, 0.0);
@@ -110,16 +105,10 @@ public class Intake extends SubsystemBase {
             IntakeConstants.INTAKE_KA);
 
     intakePID =
-        new ProfiledPIDController(
-            IntakeConstants.INTAKE_KP,
-            IntakeConstants.INTAKE_KI,
-            IntakeConstants.INTAKE_KD,
-            new TrapezoidProfile.Constraints(
-                IntakeConstants.INTAKE_MAX_VELOCITY, IntakeConstants.INTAKE_MAX_ACCELERATION),
-            IntakeConstants.PID_PERIOD_SEC);
+        new PIDController(
+            IntakeConstants.INTAKE_KP, IntakeConstants.INTAKE_KI, IntakeConstants.INTAKE_KD);
     intakePID.setTolerance(IntakeConstants.ANGLE_GOAL_TOLERANCE_DEGREES);
-    intakePID.reset(intakeMap.get(ArmevatorPose.STARTING));
-    intakePID.setGoal(intakeMap.get(ArmevatorPose.CORAL_L1_SCORE));
+    intakePID.reset();
 
     intakeMotor.stopMotor();
 
@@ -127,7 +116,7 @@ public class Intake extends SubsystemBase {
   }
 
   public boolean isAtGoal() {
-    return intakePID.atGoal();
+    return intakePID.atSetpoint();
   }
 
   public void runIntake() {
@@ -139,11 +128,11 @@ public class Intake extends SubsystemBase {
   }
 
   public void tiltForward() {
-    intakeMotor.set(-0.3);
+    intakeMotor.set(tiltSpeed.getDouble(IntakeConstants.INTAKE_TILT_SPEED));
   }
 
   public void tiltBackwards() {
-    intakeMotor.set(0.3);
+    intakeMotor.set(-tiltSpeed.getDouble(IntakeConstants.INTAKE_TILT_SPEED));
   }
 
   public void stopTilt() {
@@ -163,21 +152,6 @@ public class Intake extends SubsystemBase {
   }
 
   public void doConstantChecks() {
-    double newIntakeMaxVelocity =
-        subscriberIntakeVelocity.getDouble(IntakeConstants.INTAKE_MAX_VELOCITY);
-    double newIntakeMaxAcceleration =
-        subscriberIntakeMaxAcceleration.getDouble(IntakeConstants.INTAKE_MAX_ACCELERATION);
-
-    if (intakePID.getConstraints().maxVelocity != newIntakeMaxVelocity
-        || intakePID.getConstraints().maxAcceleration != newIntakeMaxAcceleration) {
-      intakePID.setConstraints(new Constraints(newIntakeMaxVelocity, newIntakeMaxAcceleration));
-      System.out.println(
-          "Updated intake velocity and accel: "
-              + newIntakeMaxVelocity
-              + ", "
-              + newIntakeMaxAcceleration);
-    }
-
     double setGoalTolerance =
         subscriberIntakeGoalTolerance.getDouble(IntakeConstants.ANGLE_GOAL_TOLERANCE_DEGREES);
     if (intakePID.getPositionTolerance() != setGoalTolerance) {
@@ -196,18 +170,23 @@ public class Intake extends SubsystemBase {
 
       System.out.println("Updated intake KG: " + setIntakeKG);
     }
+    double getNewSetpoint = subscriberIntakeSetpoint.getDouble(-9.0);
+    if (targetSetpoint != getNewSetpoint) {
+      targetSetpoint = getNewSetpoint;
+    }
   }
 
   @Override
   public void periodic() {
-    doConstantChecks();
+    // doConstantChecks();
 
     if (DriverStation.isDisabled()) {
-      intakePID.reset(getAngle());
+      intakePID.reset();
     }
 
+    double output = intakePID.calculate(getAngle(), targetSetpoint);
     intakeMotor.set(
-        intakePID.calculate(getAngle())
+        output
             + intakeFeedforward.calculate(
                 MathUtil.angleModulus(Math.toRadians(getAngle() + 90.0)), getVelocity()));
 
@@ -227,7 +206,8 @@ public class Intake extends SubsystemBase {
 
   public void setTargetPose(ArmevatorPose pose) {
     this.pose = pose;
-    intakePID.setGoal(intakeMap.get(pose));
+    intakePID.reset();
+    targetSetpoint = intakeMap.get(pose);
   }
 
   public ArmevatorPose getPose() {
@@ -237,8 +217,7 @@ public class Intake extends SubsystemBase {
   private void doLogging() {
     Logger.recordOutput(IntakeConstants.SUBSYSTEM_NAME + "/Tilt Position", getTiltPosition());
     Logger.recordOutput(IntakeConstants.SUBSYSTEM_NAME + "/Tilt Velocity", getTiltVelocity());
-    Logger.recordOutput(
-        IntakeConstants.SUBSYSTEM_NAME + "/Tilt Goal", intakePID.getGoal().position);
+    Logger.recordOutput(IntakeConstants.SUBSYSTEM_NAME + "/Tilt Goal", targetSetpoint);
   }
 
   private void setupNT() {
@@ -247,6 +226,9 @@ public class Intake extends SubsystemBase {
 
     tab.addDouble("Tilt Position", this::getAngle);
     tab.addDouble("Tilt Velocity", this::getVelocity);
+    // tab.addDouble("Tilt Setpoint", () -> targetSetpoint);
+    tiltSpeed = tab.add("Tilt Speed Set", IntakeConstants.INTAKE_TILT_SPEED).getEntry();
+
     tab.add("Tilt PID", intakePID);
   }
 }
