@@ -39,7 +39,7 @@ public class DriveToPoseSlew extends Command {
   private boolean running = false;
   private Timer timer;
 
-  private static final double driveKp = 7.5;
+  private static final double driveKp = 5.0;
   private static final double driveKd = 0.0;
   private static final double driveKi = 0.0;
   private static final double driveMaxVelocity = 3.5;
@@ -134,12 +134,17 @@ public class DriveToPoseSlew extends Command {
     yVelocity = Math.min(Math.max(yVelocity, -driveMaxVelocity), driveMaxVelocity);
 
     // Apply slew rate limiting to smooth acceleration
-    xVelocity = xLimiter.calculate(xVelocity);
-    yVelocity = yLimiter.calculate(yVelocity);
+    // xVelocity = xLimiter.calculate(xVelocity);
+    // yVelocity = yLimiter.calculate(yVelocity);
 
     // If we're at the goal, stop moving
     if (Math.abs(xError) < driveTolerance) xVelocity = 0.0;
     if (Math.abs(yError) < driveTolerance) yVelocity = 0.0;
+
+    // System.out.println("xErr" + xError);
+    // System.out.println("yErr" + yError);
+    // System.out.println("xVel" + xVelocity);
+    // System.out.println("yVel" + yVelocity);
 
     drivetrain.setControl(
         driveRequest

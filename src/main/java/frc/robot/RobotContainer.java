@@ -107,6 +107,8 @@ public class RobotContainer {
   public final CommandSwerveDrivetrain drivetrain =
       TunerConstants.createDrivetrain((pose) -> questNav.resetPose(pose));
 
+  private Command fourPieceRight;
+
   private double MaxSpeed =
       TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
   private double MaxAngularRate =
@@ -380,6 +382,82 @@ public class RobotContainer {
         Commands.sequence(
             intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.CORAL_L4_STAGE)),
             armevator.runOnce(() -> armevator.setTargetPose(ArmevatorPose.CORAL_L4_STAGE))));
+    NamedCommands.registerCommand(
+        "setPipelineLocalization",
+        new InstantCommand(() -> visionApriltagSubsystem.setPipeline(Pipelines.LOCALIZATION)));
+    NamedCommands.registerCommand(
+        "setPipelineLeft",
+        new InstantCommand(
+            () ->
+                visionApriltagSubsystem.setPipeline(
+                    isAutoFlipped().getAsBoolean()
+                        ? Pipelines.TRACKING_RIGHT
+                        : Pipelines.TRACKING_LEFT)));
+    NamedCommands.registerCommand(
+        "setPipelineRight",
+        new InstantCommand(
+            () ->
+                visionApriltagSubsystem.setPipeline(
+                    isAutoFlipped().getAsBoolean()
+                        ? Pipelines.TRACKING_LEFT
+                        : Pipelines.TRACKING_RIGHT)));
+    NamedCommands.registerCommand(
+        "localizeRobot",
+        new ConditionalCommand(
+            Commands.deadline(
+                Commands.sequence(
+                    new WaitCommand(0.35),
+                    Commands.runOnce(
+                        () -> {
+                          Pose2d visionPose =
+                              inferPoseFromTarget(APRILTAG_POSE_F, visionApriltagSubsystem.getTX());
+                          drivetrain.resetPose(visionPose);
+                          questNav.resetPose(visionPose);
+                        })),
+                drivetrain.run(
+                    () ->
+                        driveSlowlyDirection(
+                            isAutoFlipped().getAsBoolean()
+                                ? scoringAngleMap.get(scoringPathOption.PATH_BR1)
+                                : scoringAngleMap.get(scoringPathOption.PATH_BL1)))),
+            new InstantCommand(),
+            () -> visionApriltagSubsystem.hasReefTarget()));
+    NamedCommands.registerCommand(
+        "driveHpSlowly",
+        drivetrain.run(
+            () ->
+                driveSlowlyDirection(
+                    isAutoFlipped().getAsBoolean()
+                        ? Rotation2d.fromDegrees(-120)
+                        : Rotation2d.fromDegrees(120))));
+    NamedCommands.registerCommand(
+        "driveFlSlowly",
+        drivetrain.run(
+            () ->
+                driveSlowlyDirection(
+                    isAutoFlipped().getAsBoolean()
+                        ? scoringAngleMap.get(scoringPathOption.PATH_FR1)
+                        : scoringAngleMap.get(scoringPathOption.PATH_FL1))));
+    NamedCommands.registerCommand(
+        "driveFSlowly",
+        drivetrain.run(() -> driveSlowlyDirection(scoringAngleMap.get(scoringPathOption.PATH_F1))));
+    NamedCommands.registerCommand(
+        "adjustBlSlowly",
+        getAdjustSlowlyCommand(
+            () ->
+                isAutoFlipped().getAsBoolean()
+                    ? scoringAngleMap.get(scoringPathOption.PATH_BR1)
+                    : scoringAngleMap.get(scoringPathOption.PATH_BL1)));
+    NamedCommands.registerCommand(
+        "adjustFlSlowly",
+        getAdjustSlowlyCommand(
+            () ->
+                isAutoFlipped().getAsBoolean()
+                    ? scoringAngleMap.get(scoringPathOption.PATH_FR1)
+                    : scoringAngleMap.get(scoringPathOption.PATH_FL1)));
+    NamedCommands.registerCommand(
+        "adjustFSlowly",
+        getAdjustSlowlyCommand(() -> scoringAngleMap.get(scoringPathOption.PATH_F1)));
 
     // Event Markers
     new EventTrigger("Marker").onTrue(Commands.print("reached event marker"));
@@ -397,7 +475,7 @@ public class RobotContainer {
     Command fourPiece = new PathPlannerAuto("4 piece");
     autoChooser.addOption("4 piece left", fourPiece);
 
-    Command fourPieceRight = new PathPlannerAuto("4 piece", true);
+    fourPieceRight = new PathPlannerAuto("4 piece", true);
     autoChooser.addOption("4 piece right", fourPieceRight);
 
     // Command startPoint =
@@ -524,7 +602,7 @@ public class RobotContainer {
             new WaitUntilCommand(
                 () ->
                     !visionApriltagSubsystem.hasReefTarget()
-                        || Math.abs(visionApriltagSubsystem.getTX()) < 3.0),
+                        || Math.abs(visionApriltagSubsystem.getTX()) < 1.0),
             drivetrain.run(
                 () ->
                     driveSlowlyDirection(
@@ -535,6 +613,10 @@ public class RobotContainer {
                                     Math.signum(visionApriltagSubsystem.getTX())))))),
         new InstantCommand(),
         visionApriltagSubsystem::hasReefTarget);
+  }
+
+  private BooleanSupplier isAutoFlipped() {
+    return () -> getAutonomousCommand() == fourPieceRight;
   }
 
   private void configureDrivetrainCommands() {
@@ -695,7 +777,7 @@ public class RobotContainer {
                                 getScoringPathCommand(),
                                 // Drive directly to pose
                                 Commands.sequence(
-                                    new DriveToPose(
+                                    new DriveToPoseSlew(
                                         drivetrain,
                                         () -> getPathStartingPose(scoringPathOption),
                                         driveFacingAngleRequest), //
@@ -1023,31 +1105,27 @@ public class RobotContainer {
                 autoPluckCommand,
                 Commands.deadline(
                     Commands.sequence(
-                        Commands.runOnce(() -> isPlucking = true),
-                        new PrintCommand("Non-Auto Command Started"),
-                        claw.runOnce(() -> claw.intakeAlgae()),
-                        intake.runOnce(
-                            () -> intake.setTargetPose(ArmevatorPose.ALGAE_PRE_PLUCK_L2)),
-                        armevator.runOnce(
-                            () -> {
-                              ArmevatorPose setPose =
-                                  isPluckTargetHighSupplier.getAsBoolean()
-                                      ? ArmevatorPose.ALGAE_L3_PLUCK
-                                      : ArmevatorPose.ALGAE_L2_PLUCK;
+                            Commands.runOnce(() -> isPlucking = true),
+                            new PrintCommand("Non-Auto Command Started"),
+                            claw.runOnce(() -> claw.intakeAlgae()),
+                            intake.runOnce(
+                                () -> intake.setTargetPose(ArmevatorPose.ALGAE_PRE_PLUCK_L2)),
+                            armevator.runOnce(
+                                () -> {
+                                  ArmevatorPose setPose =
+                                      isPluckTargetHighSupplier.getAsBoolean()
+                                          ? ArmevatorPose.ALGAE_L3_PLUCK
+                                          : ArmevatorPose.ALGAE_L2_PLUCK;
 
-                              if (isFullAutoSupplier.getAsBoolean()) {
-                                setPose = inferPluckArmevatorPose(false);
-                              }
-                              armevator.setTargetPose(setPose);
-                            }),
-                        drivetrain
-                            .run(
+                                  armevator.setTargetPose(setPose);
+                                }),
+                            drivetrain.run(
                                 () ->
                                     driveFacingAngle(
                                         -oi.getTranslateX() * MaxSpeed,
                                         -oi.getTranslateY() * MaxSpeed,
-                                        scoringAngleMap.get(scoringPathOption)))
-                            .asProxy())),
+                                        scoringAngleMap.get(scoringPathOption))))
+                        .asProxy()),
                 isFullAutoSupplier));
 
     oi.pluckAlgaeButton()
@@ -1058,14 +1136,7 @@ public class RobotContainer {
                 Commands.waitSeconds(0.25),
                 armevator.runOnce(
                     () -> {
-                      if (isFullAutoSupplier.getAsBoolean()) {
-                        armevator.setTargetPose(ArmevatorPose.ALGAE_POST_HANDOFF);
-                      } else {
-                        armevator.setTargetPose(
-                            isPluckTargetHighSupplier.getAsBoolean()
-                                ? ArmevatorPose.ALGAE_L3_PLUCK
-                                : ArmevatorPose.ALGAE_L2_PLUCK);
-                      }
+                      armevator.setTargetPose(ArmevatorPose.ALGAE_POST_HANDOFF);
                     }),
                 claw.run(() -> claw.brakeAlgae())));
 
@@ -1684,10 +1755,10 @@ public class RobotContainer {
             .getTranslation()
             .plus(
                 new Translation2d(cameraDirection.getCos(), cameraDirection.getSin())
-                    .times(0.64115));
+                    .times(0.65615));
 
     // The lateral offset (in meters) caused by an off-center target:
-    double lateralOffset = 0.64115 * Math.tan(txRadians);
+    double lateralOffset = 0.65615 * Math.tan(txRadians);
 
     // Compute the camera's right vector by rotating the forward vector -90°.
     Rotation2d cameraRight = cameraDirection.rotateBy(Rotation2d.fromDegrees(-90));
@@ -1703,7 +1774,7 @@ public class RobotContainer {
     // direction).
     Translation2d robotTranslation =
         actualCameraTranslation.plus(
-            new Translation2d(cameraDirection.getCos(), cameraDirection.getSin()).times(0.19115));
+            new Translation2d(cameraDirection.getCos(), cameraDirection.getSin()).times(0.20615));
 
     // The robot is assumed to have the same heading as the camera.
     return new Pose2d(robotTranslation, cameraDirection);
