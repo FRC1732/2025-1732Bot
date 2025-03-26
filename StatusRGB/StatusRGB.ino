@@ -32,7 +32,7 @@ uint32_t highBlue = pixelsFront.Color(0, 0, INTENSITY);
 uint32_t lowGold = pixelsFront.Color(INTENSITY / 3, INTENSITY / 6, 0);
 uint32_t highGold = pixelsFront.Color(INTENSITY, INTENSITY / 2, 0);
 uint32_t fullRed = pixelsFront.Color(255, 0, 0);
-uint32_t fullGreen = pixelsFront.Color(0, 255, 0);  
+uint32_t fullGreen = pixelsFront.Color(0, 255, 0);
 uint32_t fullBlue = pixelsFront.Color(0, 0, 255);
 uint32_t purple = pixelsFront.Color(128, 0, 128);
 uint32_t cyan = pixelsFront.Color(0, 255, 255);
@@ -126,12 +126,12 @@ void loop() {
 
         break;
 
-      case 5: // close to reef target
+      case 5:  // close to reef target
         setFullColor(fullGreen, &pixelsFront, NUMPIXELS_FRONT);
         setFullColor(fullGreen, &pixelsSides, NUMPIXELS_SIDES);
         break;
 
-      case 6: // not close to reef target
+      case 6:  // not close to reef target
         setFullColor(fullRed, &pixelsFront, NUMPIXELS_FRONT);
         setFullColor(fullRed, &pixelsSides, NUMPIXELS_SIDES);
         break;
@@ -198,6 +198,8 @@ void setFullColor(uint32_t setColor, Adafruit_NeoPixel *pixels, int size) {
 }
 
 void rapidFlash(uint32_t setColor, Adafruit_NeoPixel *pixels, int size, int time) {
+  pixels->clear();
+
   for (int i = 0; i < size; i++) {
     int willSet = (time + i) % 2;
 
@@ -212,9 +214,11 @@ void rapidFlash(uint32_t setColor, Adafruit_NeoPixel *pixels, int size, int time
 
 // distance goes from 0 to 10, 0 being spot on, 10 being off
 void farOffGradient(Adafruit_NeoPixel *pixels, int size, int distance) {
-  int red = (int) (255 * (distance / 10.0) + 255 * (1.0 - distance / 10.0));
+  pixels->clear();
+
+  int red = (int)(255 * (distance / 10.0) + 255 * (1.0 - distance / 10.0));
   int green = 255 * (1.0 - distance / 10.0);
-  int blue = (int) (255 * (distance / 10.0) + 255 * (1.0 - distance / 10.0));
+  int blue = (int)(255 * (distance / 10.0) + 255 * (1.0 - distance / 10.0));
 
   uint32_t setColor = pixels->Color(red, green, blue);
 
@@ -224,15 +228,17 @@ void farOffGradient(Adafruit_NeoPixel *pixels, int size, int distance) {
 }
 
 void fullAutoGradient(Adafruit_NeoPixel *pixels, int size, int time) {
-    double progress = 0.0;
+  pixels->clear();
 
-    int redFirst = 0;
-    int greenFirst = 0;
-    int blueFirst = 0;
+  double progress = 0.0;
 
-    int redSecond = 0;
-    int greenSecond = 0;
-    int blueSecond = 0;
+  int redFirst = 0;
+  int greenFirst = 0;
+  int blueFirst = 0;
+
+  int redSecond = 0;
+  int greenSecond = 0;
+  int blueSecond = 0;
 
   for (int i = 0; i < size; i++) {
     time += 10;
@@ -270,10 +276,10 @@ void fullAutoGradient(Adafruit_NeoPixel *pixels, int size, int time) {
     int blueAdjusted = (int)(blueFirst * progress + blueSecond * (1.0 - progress));
 
     uint32_t setColor = pixels->Color(redAdjusted, greenAdjusted, blueAdjusted);
-    uint32_t correctedColor = pixels ->gamma32(setColor);
+    uint32_t correctedColor = pixels->gamma32(setColor);
 
     pixels->setPixelColor(i, correctedColor);
-
+    pixels->show();
     // time++;
   }
 }

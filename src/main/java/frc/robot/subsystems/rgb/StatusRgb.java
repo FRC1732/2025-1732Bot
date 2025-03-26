@@ -4,6 +4,7 @@
 
 package frc.robot.subsystems.rgb;
 
+import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StringPublisher;
@@ -39,6 +40,9 @@ public class StatusRgb extends SubsystemBase {
   private NetworkTableInstance table = NetworkTableInstance.getDefault();
   private NetworkTable nt4Table = table.getTable("rgbOperator");
   private StringPublisher publisher = nt4Table.getStringTopic("rgb").publish();
+
+  private NetworkTable lastModeTable = table.getTable("lastLEDMode");
+  private GenericEntry lastMode = lastModeTable.getTopic("Last LED Mode").getGenericEntry();
 
   private Armevator armevator;
 
@@ -98,8 +102,8 @@ public class StatusRgb extends SubsystemBase {
   }
 
   public void setMode(int modeToSet) {
-
-    System.out.println("Sending LED mode: " + modeToSet);
+    // System.out.println("Sending LED mode: " + modeToSet);
+    lastMode.setInteger(modeToSet);
     if (modeToSet % 2 == 1) {
       out0.set(!true);
     } else {
