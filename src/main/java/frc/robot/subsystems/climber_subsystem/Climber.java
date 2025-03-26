@@ -21,7 +21,7 @@ public class Climber extends SubsystemBase {
   private SparkMax climberMotor;
 
   private SparkMax windmillMotor;
-  
+
   private ShuffleboardTab tab;
 
   private RelativeEncoder climberRelativeEncoder;

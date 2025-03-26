@@ -17,35 +17,34 @@
               {
                 "type": "named",
                 "data": {
+                  "name": "setPoseL4"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
                   "name": "brakeCoral"
                 }
               },
               {
-                "type": "sequential",
+                "type": "named",
                 "data": {
-                  "commands": [
-                    {
-                      "type": "named",
-                      "data": {
-                        "name": "setPoseStage"
-                      }
-                    },
-                    {
-                      "type": "named",
-                      "data": {
-                        "name": "setPoseL4Wait"
-                      }
-                    }
-                  ]
+                  "name": "setPipelineLocalization"
                 }
               }
             ]
           }
         },
         {
-          "type": "wait",
+          "type": "named",
           "data": {
-            "waitTime": 0.25
+            "name": "adjustBlSlowly"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "localizeRobot"
           }
         },
         {
@@ -63,19 +62,13 @@
                 "data": {
                   "commands": [
                     {
-                      "type": "named",
-                      "data": {
-                        "name": "setPoseL4"
-                      }
-                    },
-                    {
                       "type": "deadline",
                       "data": {
                         "commands": [
                           {
                             "type": "wait",
                             "data": {
-                              "waitTime": 0.5
+                              "waitTime": 0.4
                             }
                           },
                           {
@@ -94,6 +87,31 @@
                       }
                     }
                   ]
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "deadline",
+          "data": {
+            "commands": [
+              {
+                "type": "wait",
+                "data": {
+                  "waitTime": 0.25
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "driveHpSlowly"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "intakeCoral"
                 }
               }
             ]
@@ -140,14 +158,39 @@
                     }
                   ]
                 }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "setPipelineLeft"
+                }
               }
             ]
           }
         },
         {
-          "type": "wait",
+          "type": "named",
           "data": {
-            "waitTime": 0.25
+            "name": "adjustFlSlowly"
+          }
+        },
+        {
+          "type": "deadline",
+          "data": {
+            "commands": [
+              {
+                "type": "wait",
+                "data": {
+                  "waitTime": 0.25
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "driveFlSlowly"
+                }
+              }
+            ]
           }
         },
         {
@@ -171,7 +214,7 @@
                           {
                             "type": "wait",
                             "data": {
-                              "waitTime": 0.5
+                              "waitTime": 0.4
                             }
                           },
                           {
@@ -190,6 +233,31 @@
                       }
                     }
                   ]
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "deadline",
+          "data": {
+            "commands": [
+              {
+                "type": "wait",
+                "data": {
+                  "waitTime": 0.25
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "driveHpSlowly"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "intakeCoral"
                 }
               }
             ]
@@ -236,14 +304,39 @@
                     }
                   ]
                 }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "setPipelineRight"
+                }
               }
             ]
           }
         },
         {
-          "type": "wait",
+          "type": "named",
           "data": {
-            "waitTime": 0.25
+            "name": "adjustFlSlowly"
+          }
+        },
+        {
+          "type": "deadline",
+          "data": {
+            "commands": [
+              {
+                "type": "wait",
+                "data": {
+                  "waitTime": 0.25
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "driveFlSlowly"
+                }
+              }
+            ]
           }
         },
         {
@@ -267,7 +360,7 @@
                           {
                             "type": "wait",
                             "data": {
-                              "waitTime": 0.5
+                              "waitTime": 0.4
                             }
                           },
                           {
@@ -286,6 +379,31 @@
                       }
                     }
                   ]
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "deadline",
+          "data": {
+            "commands": [
+              {
+                "type": "wait",
+                "data": {
+                  "waitTime": 0.25
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "driveHpSlowly"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "intakeCoral"
                 }
               }
             ]
@@ -320,11 +438,48 @@
                             "data": {
                               "waitTime": 0.5
                             }
+                          },
+                          {
+                            "type": "named",
+                            "data": {
+                              "name": "setPoseL4"
+                            }
                           }
                         ]
                       }
                     }
                   ]
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "setPipelineLeft"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "adjustFSlowly"
+          }
+        },
+        {
+          "type": "deadline",
+          "data": {
+            "commands": [
+              {
+                "type": "wait",
+                "data": {
+                  "waitTime": 0.25
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "driveFSlowly"
                 }
               }
             ]
@@ -337,7 +492,7 @@
               {
                 "type": "wait",
                 "data": {
-                  "waitTime": 0.5
+                  "waitTime": 0.4
                 }
               },
               {
