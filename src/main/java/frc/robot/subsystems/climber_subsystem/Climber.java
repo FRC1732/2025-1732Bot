@@ -21,8 +21,7 @@ public class Climber extends SubsystemBase {
   private SparkMax climberMotor;
 
   private SparkMax windmillMotor;
-  private RelativeEncoder windmillEncoder;
-
+  
   private ShuffleboardTab tab;
 
   private RelativeEncoder climberRelativeEncoder;
@@ -147,11 +146,11 @@ public class Climber extends SubsystemBase {
   }
 
   public boolean isWindmillEngaged() {
-    return windmillEncoder.getPosition() >= ClimberConstants.WINDMILL_TOLERANCE;
+    return windmillRelativeEncoder.getPosition() >= ClimberConstants.WINDMILL_TOLERANCE;
   }
 
   public boolean isWindmillFullyEngaged() {
-    return windmillEncoder.getPosition()
+    return windmillRelativeEncoder.getPosition()
         >= ClimberConstants.WINDMILL_FULLY_ENGAGED_SETPOINT - ClimberConstants.WINDMILL_TOLERANCE;
   }
 
