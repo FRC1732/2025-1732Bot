@@ -218,7 +218,7 @@ void farOffGradient(Adafruit_NeoPixel *pixels, int size, int distance) {
 
   int red = (int)(255 * (distance / 10.0) + 255 * (1.0 - distance / 10.0));
   int green = 255 * (1.0 - distance / 10.0);
-  int blue = (int)(255 * (distance / 10.0) + 255 * (1.0 - distance / 10.0));
+  int blue = (int)(0 * (distance / 10.0) + 255 * (1.0 - distance / 10.0));
 
   uint32_t setColor = pixels->Color(red, green, blue);
 

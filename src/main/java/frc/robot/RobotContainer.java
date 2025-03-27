@@ -23,6 +23,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.wpilibj.Alert;
@@ -188,6 +189,8 @@ public class RobotContainer {
   StructPublisher<Pose2d> questPosePublisher =
       NetworkTableInstance.getDefault().getStructTopic("questPose", Pose2d.struct).publish();
 
+  GenericEntry pathfindErrorNetwork =  NetworkTableInstance.getDefault().getTopic("LEDDebug").getGenericEntry("PathfindError");
+
   PathConstraints hpPathConstraints = new PathConstraints(4.5, 3.2, 8.42, 12.8876585);
   PathConstraints pluckPathConstraints = new PathConstraints(4.5, 3.2, 8.0, 10.0);
   PathConstraints scorePathConstraints = new PathConstraints(4.5, 3.2, 8.0, 10.0);
@@ -294,6 +297,8 @@ public class RobotContainer {
     if (Constants.TUNING_MODE) {
       this.tuningAlert.set(true);
     }
+
+    pathfindErrorNetwork.setDouble(0.0);
   }
 
   private void defineSubsystems() {
@@ -1277,7 +1282,7 @@ public class RobotContainer {
     }
 
     if (visionApriltagSubsystem.hasReefTarget()) {
-      if (visionApriltagSubsystem.getDistanceToTarget() > 0.25) {
+      if (Math.abs(visionApriltagSubsystem.getTX()) > 1.0) {
         apriltagStatus = AprilTagStatus.REEF_TARGET_OUTSIDE_RANGE;
       } else {
         apriltagStatus = AprilTagStatus.REEF_TARGET_IN_RANGE;
@@ -1808,15 +1813,13 @@ public class RobotContainer {
     if (!isRunningPath) {
       return -1;
     }
+    double calc  =
+        drivetrain.getPose().getTranslation().getDistance(currentPathPose.getTranslation());
 
-    double calc =
-        Math.pow(drivetrain.getPose().getX() - currentPathPose.getX(), 2)
-            + Math.pow(drivetrain.getPose().getY() - currentPathPose.getY(), 2);
+    pathfindErrorNetwork.setDouble(calc);
 
     int calculatedMode =
-        Math.min(
-            10,
-            (int) (Math.sqrt(calc) * 20)); // TODO: unsure what values this will give, adjust later
+        Math.min(10, (int) (calc + 10)); // TODO: unsure what values this will give, adjust later
     return calculatedMode;
   }
 }
