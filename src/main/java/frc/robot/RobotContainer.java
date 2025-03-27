@@ -41,7 +41,6 @@ import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.SelectCommand;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
-import frc.robot.commands.DriveToPose;
 import frc.robot.commands.DriveToPoseSlew;
 import frc.robot.commands.DynamicCommand;
 // import frc.lib.team3061.leds.LEDs;
@@ -383,13 +382,19 @@ public class RobotContainer {
         new ConditionalCommand(
             Commands.deadline(
                 Commands.sequence(
-                    new WaitCommand(0.35),
+                    new WaitCommand(0.4),
                     Commands.runOnce(
                         () -> {
+                          System.out.println("curPose: " + drivetrain.getPose().toString());
                           Pose2d visionPose =
-                              inferPoseFromTarget(APRILTAG_POSE_F, visionApriltagSubsystem.getTX());
+                              inferPoseFromTarget(
+                                  isAutoFlipped().getAsBoolean()
+                                      ? APRILTAG_POSE_BR
+                                      : APRILTAG_POSE_BL,
+                                  visionApriltagSubsystem.getTX());
                           drivetrain.resetPose(visionPose);
                           questNav.resetPose(visionPose);
+                          System.out.println("visionPose: " + visionPose.toString());
                         })),
                 drivetrain.run(
                     () ->
@@ -661,18 +666,11 @@ public class RobotContainer {
                                 () -> {
                                   Pose2d visionPose =
                                       visionApriltagSubsystem.hasReefTarget()
-                                          ? visionApriltagSubsystem.getPoseEstimate().pose
-                                          : inferPoseFromTarget(
-                                              APRILTAG_POSE_F,
-                                              visionApriltagSubsystem
-                                                  .getTX()); // new Pose2d(3.203, 4.190, new
-                                  // Rotation2d(0));
-                                  drivetrain.resetPose(
-                                      new Pose2d(
-                                          visionPose.getX(), visionPose.getY(), new Rotation2d(0)));
-                                  questNav.resetPose(
-                                      new Pose2d(
-                                          visionPose.getX(), visionPose.getY(), new Rotation2d(0)));
+                                          ? inferPoseFromTarget(
+                                              APRILTAG_POSE_F, visionApriltagSubsystem.getTX())
+                                          : new Pose2d(3.203, 4.190, new Rotation2d(0));
+                                  drivetrain.resetPose(visionPose);
+                                  questNav.resetPose(visionPose);
                                 })),
                         drivetrain.run(() -> driveSlowlyDirection(Rotation2d.fromDegrees(0)))),
                     new InstantCommand(),
@@ -750,17 +748,18 @@ public class RobotContainer {
                                 // Pathfind
                                 getScoringPathCommand(),
                                 // Drive directly to pose
-                                Commands.sequence(
-                                    new DriveToPoseSlew(
-                                        drivetrain,
-                                        () -> getPathStartingPose(scoringPathOption),
-                                        driveFacingAngleRequest),
-                                    new WaitCommand(0.2),
-                                    getSimpleScoringPathCommand()),
+                                new InstantCommand(),
                                 this::isFarEnoughForPathfinding),
+                            Commands.sequence(
+                                new DriveToPoseSlew(
+                                    drivetrain,
+                                    () -> getPathStartingPose(scoringPathOption),
+                                    driveFacingAngleRequest),
+                                // new WaitCommand(0.2),
+                                getSimpleScoringPathCommand()),
                             getAdjustSlowlyCommand(() -> scoringAngleMap.get(scoringPathOption)),
                             Commands.parallel(
-                                Commands.sequence(new WaitCommand(0.25), new ClawBackwards(claw)),
+                                Commands.sequence(new WaitCommand(0.1), new ClawBackwards(claw)),
                                 drivetrain.run(
                                     () ->
                                         driveSlowlyDirection(
@@ -1050,7 +1049,7 @@ public class RobotContainer {
                 new ConditionalCommand(
                     getPluckPathCommand(),
                     Commands.sequence(
-                        new DriveToPose(
+                        new DriveToPoseSlew(
                             drivetrain,
                             () -> getPluckPathStartingPose(scoringPathOption),
                             driveFacingAngleRequest),
@@ -1099,7 +1098,7 @@ public class RobotContainer {
             Commands.sequence(
                 Commands.runOnce(() -> isPlucking = false),
                 intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.ALGAE_POST_HANDOFF)),
-                Commands.waitSeconds(0.25),
+                Commands.waitSeconds(0.15),
                 armevator.runOnce(
                     () -> {
                       armevator.setTargetPose(ArmevatorPose.ALGAE_POST_HANDOFF);
@@ -1396,6 +1395,10 @@ public class RobotContainer {
     return getCurrentScoringPath(scoringPathOption).getStartingHolonomicPose().get();
   }
 
+  private Pose2d getPathStartingPose(PathPlannerPath path) {
+    return path.getStartingHolonomicPose().get();
+  }
+
   private Pose2d getPluckPathStartingPose(ScoringPathOption scoringPathOption) {
     return getCurrentScoringPluckPath(scoringPathOption).getStartingHolonomicPose().get();
   }
@@ -1458,40 +1461,40 @@ public class RobotContainer {
   private void setupScoringPathMap() {
     scoringPathMap.put(
         ScoringPathOption.PATH_F1,
-        AutoBuilder.pathfindThenFollowPath(pathF1, scorePathConstraints));
+        AutoBuilder.pathfindToPose(getPathStartingPose(pathF1), scorePathConstraints));
     scoringPathMap.put(
         ScoringPathOption.PATH_F2,
-        AutoBuilder.pathfindThenFollowPath(pathF2, scorePathConstraints));
+        AutoBuilder.pathfindToPose(getPathStartingPose(pathF2), scorePathConstraints));
     scoringPathMap.put(
         ScoringPathOption.PATH_FL1,
-        AutoBuilder.pathfindThenFollowPath(pathFL1, scorePathConstraints));
+        AutoBuilder.pathfindToPose(getPathStartingPose(pathFL1), scorePathConstraints));
     scoringPathMap.put(
         ScoringPathOption.PATH_FL2,
-        AutoBuilder.pathfindThenFollowPath(pathFL2, scorePathConstraints));
+        AutoBuilder.pathfindToPose(getPathStartingPose(pathFL2), scorePathConstraints));
     scoringPathMap.put(
         ScoringPathOption.PATH_FR1,
-        AutoBuilder.pathfindThenFollowPath(pathFR1, scorePathConstraints));
+        AutoBuilder.pathfindToPose(getPathStartingPose(pathFR1), scorePathConstraints));
     scoringPathMap.put(
         ScoringPathOption.PATH_FR2,
-        AutoBuilder.pathfindThenFollowPath(pathFR2, scorePathConstraints));
+        AutoBuilder.pathfindToPose(getPathStartingPose(pathFR2), scorePathConstraints));
     scoringPathMap.put(
         ScoringPathOption.PATH_BL1,
-        AutoBuilder.pathfindThenFollowPath(pathBL1, scorePathConstraints));
+        AutoBuilder.pathfindToPose(getPathStartingPose(pathBL1), scorePathConstraints));
     scoringPathMap.put(
         ScoringPathOption.PATH_BL2,
-        AutoBuilder.pathfindThenFollowPath(pathBL2, scorePathConstraints));
+        AutoBuilder.pathfindToPose(getPathStartingPose(pathBL2), scorePathConstraints));
     scoringPathMap.put(
         ScoringPathOption.PATH_BR1,
-        AutoBuilder.pathfindThenFollowPath(pathBR1, scorePathConstraints));
+        AutoBuilder.pathfindToPose(getPathStartingPose(pathBR1), scorePathConstraints));
     scoringPathMap.put(
         ScoringPathOption.PATH_BR2,
-        AutoBuilder.pathfindThenFollowPath(pathBR2, scorePathConstraints));
+        AutoBuilder.pathfindToPose(getPathStartingPose(pathBR2), scorePathConstraints));
     scoringPathMap.put(
         ScoringPathOption.PATH_B1,
-        AutoBuilder.pathfindThenFollowPath(pathB1, scorePathConstraints));
+        AutoBuilder.pathfindToPose(getPathStartingPose(pathB1), scorePathConstraints));
     scoringPathMap.put(
         ScoringPathOption.PATH_B2,
-        AutoBuilder.pathfindThenFollowPath(pathB2, scorePathConstraints));
+        AutoBuilder.pathfindToPose(getPathStartingPose(pathB2), scorePathConstraints));
 
     simpleScoringPathMap.put(ScoringPathOption.PATH_F1, AutoBuilder.followPath(pathF1));
     simpleScoringPathMap.put(ScoringPathOption.PATH_F2, AutoBuilder.followPath(pathF2));
@@ -1698,7 +1701,7 @@ public class RobotContainer {
     Translation2d idealCameraTranslation =
         targetPose
             .getTranslation()
-            .plus(
+            .minus(
                 new Translation2d(cameraDirection.getCos(), cameraDirection.getSin())
                     .times(0.65615));
 
@@ -1720,7 +1723,11 @@ public class RobotContainer {
     Translation2d robotTranslation =
         actualCameraTranslation.plus(
             new Translation2d(cameraDirection.getCos(), cameraDirection.getSin()).times(0.20615));
-
+    System.out.println("target pose x " + targetPose.getX());
+    System.out.println("target pose y " + targetPose.getY());
+    System.out.println("txDegrees " + txDegrees);
+    System.out.println("lateralOffset " + lateralOffset);
+    System.out.println("actualcamerax " + actualCameraTranslation.getX());
     // The robot is assumed to have the same heading as the camera.
     return new Pose2d(robotTranslation, cameraDirection);
   }

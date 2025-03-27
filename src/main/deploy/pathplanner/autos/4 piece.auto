@@ -29,7 +29,7 @@
               {
                 "type": "named",
                 "data": {
-                  "name": "setPipelineLocalization"
+                  "name": "setPipelineLeft"
                 }
               }
             ]
@@ -39,6 +39,12 @@
           "type": "named",
           "data": {
             "name": "adjustBlSlowly"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "setPipelineLocalization"
           }
         },
         {
@@ -502,6 +508,12 @@
                 }
               }
             ]
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "intakeCoral"
           }
         }
       ]
