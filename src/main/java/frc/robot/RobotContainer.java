@@ -403,7 +403,7 @@ public class RobotContainer {
                                 ? scoringAngleMap.get(scoringPathOption.PATH_BR1)
                                 : scoringAngleMap.get(scoringPathOption.PATH_BL1)))),
             new InstantCommand(),
-            () -> visionApriltagSubsystem.hasReefTarget()));
+            () -> true)); // visionApriltagSubsystem.hasReefTarget()));
     NamedCommands.registerCommand(
         "driveHpSlowly",
         drivetrain.run(
