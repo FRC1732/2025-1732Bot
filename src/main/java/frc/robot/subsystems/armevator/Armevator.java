@@ -45,6 +45,7 @@ public class Armevator extends SubsystemBase {
 
   private int limitSwitchCounter;
   private boolean elevatorPIDOverride;
+  private boolean armAngleInitialized = false;
 
   private ProfiledPIDController armPID;
   private ArmFeedforward armFeedforward;
@@ -289,7 +290,9 @@ public class Armevator extends SubsystemBase {
   }
 
   public void resetToAbsoluteEncoder() {
-    armRelativeEncoder.setPosition(getAbsoluteDegrees());
+    if (!armAngleInitialized) {
+      armRelativeEncoder.setPosition(getAbsoluteDegrees());
+    }
   }
 
   public void doConstantChecks() {
@@ -367,6 +370,8 @@ public class Armevator extends SubsystemBase {
     if (DriverStation.isDisabled()) {
       elevatorPID.reset(elevatorEncoder.getPosition());
       armPID.reset(armRelativeEncoder.getPosition());
+    } else {
+      armAngleInitialized = true;
     }
 
     // filter out false positives
