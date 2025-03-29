@@ -72,9 +72,28 @@
                       "data": {
                         "commands": [
                           {
-                            "type": "wait",
+                            "type": "sequential",
                             "data": {
-                              "waitTime": 0.4
+                              "commands": [
+                                {
+                                  "type": "wait",
+                                  "data": {
+                                    "waitTime": 0.225
+                                  }
+                                },
+                                {
+                                  "type": "named",
+                                  "data": {
+                                    "name": "setPoseFlip"
+                                  }
+                                },
+                                {
+                                  "type": "wait",
+                                  "data": {
+                                    "waitTime": 0.175
+                                  }
+                                }
+                              ]
                             }
                           },
                           {
@@ -177,7 +196,7 @@
         {
           "type": "named",
           "data": {
-            "name": "adjustFlSlowly"
+            "name": "adjustFl2Slowly"
           }
         },
         {
@@ -323,7 +342,7 @@
         {
           "type": "named",
           "data": {
-            "name": "adjustFlSlowly"
+            "name": "adjustFl1Slowly"
           }
         },
         {
