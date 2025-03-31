@@ -90,7 +90,7 @@ public class RobotContainer {
   private Intake intake;
   private Climber climber;
 
-  private static final double NET_SCORE_LOCATION_X = 7.4 - 0.088 - 0.012;
+  private static final double NET_SCORE_LOCATION_X = 7.65 - 0.088 - 0.012;
   private static final double NET_SCORE_MIN_Y = 4.7;
   private static final double NET_SCORE_MAX_Y = 6.27;
 
@@ -1147,19 +1147,23 @@ public class RobotContainer {
                 intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.ALGAE_NET_STAGE)),
                 claw.runOnce(() -> claw.intakeAlgae()),
                 new ConditionalCommand(
-                    getDynamicNetPathCommand(),
-                    new InstantCommand(),
-                    () -> false), // this::isFarEnoughFromNetForPathfinding),
-                new DriveToPoseSlew(
-                    drivetrain,
-                    () ->
-                        new Pose2d(
-                            7.65,
-                            drivetrain.getPose().getY(),
-                            preferNetRightSideSupplier.getAsBoolean()
-                                ? Rotation2d.fromDegrees(135)
-                                : Rotation2d.fromDegrees(-135)),
-                    driveFacingAngleRequest),
+                    Commands.sequence(
+                        new ConditionalCommand(
+                            getDynamicNetPathCommand(),
+                            new InstantCommand(),
+                            this::isFarEnoughFromNetForPathfinding),
+                        new DriveToPoseSlew(
+                            drivetrain,
+                            () ->
+                                new Pose2d(
+                                    NET_SCORE_LOCATION_X,
+                                    drivetrain.getPose().getY(),
+                                    preferNetRightSideSupplier.getAsBoolean()
+                                        ? Rotation2d.fromDegrees(135 + 8)
+                                        : Rotation2d.fromDegrees(-135 - 8)),
+                            driveFacingAngleRequest)),
+                    Commands.waitSeconds(1.5),
+                    isFullAutoSupplier),
                 Commands.deadline(
                     Commands.sequence(
                         claw.runOnce(() -> claw.brakeAlgae()),

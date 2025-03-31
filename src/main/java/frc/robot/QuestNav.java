@@ -44,6 +44,7 @@ public class QuestNav {
 
   private Pose2d lastPose = new Pose2d();
   private boolean poseUpdated = false;
+  private boolean wasDisconnected = true;
 
   // Pose of the Quest when the pose was reset
   private Pose2d resetPoseOculus = new Pose2d();
@@ -75,6 +76,9 @@ public class QuestNav {
   }
 
   public void updateAverageRobotPose() {
+    if (wasDisconnected) {
+      rollingAvg.reset();
+    }
     Pose2d curPose = getRobotPose();
     rollingAvg.addPose(getRobotPose());
 
@@ -147,6 +151,7 @@ public class QuestNav {
         poseUpdated
             && (Math.abs(curPose.getTranslation().getX()) > 0.05
                 || Math.abs(curPose.getTranslation().getY()) > 0.05);
+    wasDisconnected = !poseUpdated;
     return poseUpdated;
   }
 
