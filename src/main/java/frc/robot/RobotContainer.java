@@ -188,7 +188,8 @@ public class RobotContainer {
   StructPublisher<Pose2d> questPosePublisher =
       NetworkTableInstance.getDefault().getStructTopic("questPose", Pose2d.struct).publish();
 
-  GenericEntry pathfindErrorNetwork =  NetworkTableInstance.getDefault().getTopic("LEDDebug").getGenericEntry("PathfindError");
+  GenericEntry pathfindErrorNetwork =
+      NetworkTableInstance.getDefault().getTopic("LEDDebug").getGenericEntry("PathfindError");
 
   PathConstraints hpPathConstraints = new PathConstraints(4.5, 3.2, 8.42, 12.8876585);
   PathConstraints pluckPathConstraints = new PathConstraints(4.5, 3.2, 8.0, 10.0);
@@ -1820,13 +1821,13 @@ public class RobotContainer {
     if (!isRunningPath) {
       return -1;
     }
-    double calc  =
+    double calc =
         drivetrain.getPose().getTranslation().getDistance(currentPathPose.getTranslation());
 
     pathfindErrorNetwork.setDouble(calc);
 
     int calculatedMode =
-        Math.min(10, (int) (calc + 10)); // TODO: unsure what values this will give, adjust later
+        Math.min(10, (int) (calc)) + 10; // TODO: unsure what values this will give, adjust later
     return calculatedMode;
   }
 }

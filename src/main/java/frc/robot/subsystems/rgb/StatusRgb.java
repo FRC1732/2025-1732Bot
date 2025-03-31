@@ -167,7 +167,7 @@ public class StatusRgb extends SubsystemBase {
     } else if (apriltagStatusSupplier.get() == AprilTagStatus.REEF_TARGET_OUTSIDE_RANGE) {
       setMode(6);
     } else if (pathFollowError.getAsInt() > 0) {
-      setMode(pathFollowError.getAsInt() + 10);
+      setMode(pathFollowError.getAsInt());
     } else if (canAutoScore.getAsBoolean()) { // TODO: add a trigger for this
       // setMode(4); currently unused
     } else if (inFullAuto.getAsBoolean()) {
