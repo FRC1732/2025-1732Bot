@@ -674,7 +674,7 @@ public class RobotContainer {
                             * (slowModeSupplier.getAsBoolean() ? MaxSlowSpeed : MaxSpeed),
                         -oi.getTranslateY()
                             * (slowModeSupplier.getAsBoolean() ? MaxSlowSpeed : MaxSpeed),
-                        Rotation2d.fromDegrees(90))));
+                        Rotation2d.fromDegrees(-90))));
 
     // slow-mode toggle
     oi.slowModeSwitch().onTrue(Commands.runOnce(() -> isSlowMode = true));
