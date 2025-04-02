@@ -15,13 +15,8 @@
 #define LEDSTRIP_FRONT A4
 #define LEDSTRIP_SIDES A5
 
-#define NUMPIXELS_FRONT 24  // number of neopixels in strip
-#define NUMPIXELS_SIDES 24  // number of neopixels in strip
-
-#define EYES_START 0          // start of where we turn the eyes red
-#define EYES_START_SECOND 3   // second start of where we turn the eyes red
-#define EYES_LENGTH 0         // number of pixels we want to turn red for the ram
-#define EYES_LENGTH_SECOND 0  // second number of pixels we want to turn red for the ram
+#define NUMPIXELS_FRONT 10  // number of neopixels in strip
+#define NUMPIXELS_SIDES 10  // number of neopixels in strip
 
 #define DELAY_TIME 200
 #define INTENSITY 255
@@ -37,9 +32,10 @@ uint32_t highBlue = pixelsFront.Color(0, 0, INTENSITY);
 uint32_t lowGold = pixelsFront.Color(INTENSITY / 3, INTENSITY / 6, 0);
 uint32_t highGold = pixelsFront.Color(INTENSITY, INTENSITY / 2, 0);
 uint32_t fullRed = pixelsFront.Color(255, 0, 0);
+uint32_t fullGreen = pixelsFront.Color(0, 255, 0);
 uint32_t fullBlue = pixelsFront.Color(0, 0, 255);
-
-bool doBlueEyes = false;
+uint32_t purple = pixelsFront.Color(128, 0, 128);
+uint32_t cyan = pixelsFront.Color(0, 255, 255);
 
 int mode = 0;
 int timer = 0;
@@ -62,26 +58,12 @@ void setup() {
   pinMode(OUTPUT_D4, OUTPUT);
 
   pixelsFront.begin();
-  pixelsSides.begin();
-}
-
-void redEyes(Adafruit_NeoPixel *pixels) {  // method that turns the ram eyes red
-  return;
-  uint32_t pickColor = fullRed;
-  if (doBlueEyes) {
-    uint32_t pickColor = fullBlue;
-  }
-  pixels->fill(pickColor, EYES_START, EYES_LENGTH);
-  pixels->fill(pickColor, EYES_START_SECOND, EYES_LENGTH_SECOND);
 }
 
 void setColor(bool red, bool green, bool blue, Adafruit_NeoPixel *pixels, int size) {
   pixels->clear();
   for (int i = 0; i < size; i++) {
     pixels->setPixelColor(i, pixels->Color(INTENSITY * (int)red, INTENSITY * (int)green * .50, INTENSITY * (int)blue));
-  }
-  if (size == NUMPIXELS_FRONT) {
-    redEyes(pixels);
   }
   pixels->show();
 }
@@ -90,8 +72,6 @@ void setColorInt(int red, int green, int blue, Adafruit_NeoPixel *pixels, int si
   pixels->clear();
   for (int i = 0; i < size; i++) {
     pixels->setPixelColor(i, pixels->Color(red, green, blue));
-  }
-  if (size == NUMPIXELS_FRONT) {
   }
   pixels->show();
 }
@@ -114,57 +94,53 @@ void loop() {
   digitalWrite(OUTPUT_D3, b3);
   digitalWrite(OUTPUT_D4, b4);
 
-  /*int doBlue = (int)b3 << 3;
-  if (doBlue > 0) {
-    doBlueEyes = true;
-  } else {
-    doBlueEyes = false;
-  }*/
 
   // bits 3 and 4 reversed
-  mode = ((int)b0 << 0) + ((int)b1 << 1) + ((int)b2 << 2) + ((int)b3 << 4) + ((int)b4 << 3);
+  mode = ((int)b0 << 0) + ((int)b1 << 1) + ((int)b2 << 2) + ((int)b3 << 3) + ((int)b4 << 4);
   Serial.print("Mode: ");
   Serial.println(mode);
 
-  switch (mode) {
-    case 0:  // idle
-      idleMode(&pixelsFront, NUMPIXELS_FRONT);
-      idleMode(&pixelsSides, NUMPIXELS_SIDES);
-      break;
+  if (mode >= 10 && mode <= 20) {
+    farOffGradient(&pixelsFront, NUMPIXELS_FRONT, mode - 10);
+    farOffGradient(&pixelsSides, NUMPIXELS_SIDES, mode - 10);
+  } else {
+    switch (mode) {
+      case 0:  // idle
+        idleMode(&pixelsFront, NUMPIXELS_FRONT);
+        idleMode(&pixelsSides, NUMPIXELS_SIDES);
+        break;
 
-    case 1:  // fast flash
-      flashFast(false, true, false, &pixelsFront, NUMPIXELS_FRONT);
-      flashFast(false, true, false, &pixelsSides, NUMPIXELS_SIDES);
-      break;
+      case 1:  // fast flash
+        flashFast(false, true, false, &pixelsFront, NUMPIXELS_FRONT);
+        flashFast(false, true, false, &pixelsSides, NUMPIXELS_SIDES);
+        break;
 
-    case 2:  // L1
-      setColorInt(255 / 4, 255 / 4, 255, &pixelsFront, NUMPIXELS_FRONT);
-      setColorInt(255 / 4, 255 / 4, 255, &pixelsSides, NUMPIXELS_SIDES);
-      break;
+      case 2:  // drive slowly trigger
+        rapidFlash(cyan, &pixelsFront, NUMPIXELS_FRONT, timer);
+        rapidFlash(cyan, &pixelsSides, NUMPIXELS_SIDES, timer);
+        break;
 
-    case 3:  // L2
-      setColorInt(255 / 3, 255 / 3, 255, &pixelsFront, NUMPIXELS_FRONT);
-      setColorInt(255 / 3, 255 / 3, 255, &pixelsSides, NUMPIXELS_SIDES);
-      break;
+      case 3:  // full auto mode
+        fullAutoGradient(&pixelsFront, NUMPIXELS_FRONT, timer);
+        fullAutoGradient(&pixelsSides, NUMPIXELS_SIDES, timer);
 
-    case 4:  // L3
-      setColorInt(255 / 2, 255 / 2, 255, &pixelsFront, NUMPIXELS_FRONT);
-      setColorInt(255 / 2, 255 / 2, 255, &pixelsSides, NUMPIXELS_SIDES);
-      break;
+        break;
 
-    case 5:  // L4
-      setColorInt(255 / 1, 255 / 1, 255, &pixelsFront, NUMPIXELS_FRONT);
-      setColorInt(255 / 1, 255 / 1, 255, &pixelsSides, NUMPIXELS_SIDES);
-      break;
+      case 5:  // close to reef target
+        setFullColor(fullGreen, &pixelsFront, NUMPIXELS_FRONT);
+        setFullColor(fullGreen, &pixelsSides, NUMPIXELS_SIDES);
+        break;
 
-    case 6:  // Coral Station
-      setColorInt(255 / 1, 255 / 1, 255 / 4, &pixelsFront, NUMPIXELS_FRONT);
-      setColorInt(255 / 1, 255 / 1, 255 / 4, &pixelsSides, NUMPIXELS_SIDES);
-      break;
+      case 6:  // not close to reef target
+        setFullColor(fullRed, &pixelsFront, NUMPIXELS_FRONT);
+        setFullColor(fullRed, &pixelsSides, NUMPIXELS_SIDES);
+        break;
 
-    default:
-      break;
+      default:
+        break;
+    }
   }
+
 
   myTime = millis();
   timer++;
@@ -198,10 +174,6 @@ void idleMode(Adafruit_NeoPixel *pixels, int size) {
     pixels->setPixelColor(i, color);
   }
 
-  if (size == NUMPIXELS_FRONT) {
-    redEyes(pixels);
-  }
-
   pixels->show();
 }
 
@@ -219,176 +191,95 @@ void flashFast(bool red, bool green, bool blue, Adafruit_NeoPixel *pixels, int s
   }
 }
 
-int currentlyFlashingFront[NUMPIXELS_FRONT];
-int currentlyFlashingSide[NUMPIXELS_SIDES];
-
-void climberColors(bool red, bool green, bool blue, Adafruit_NeoPixel *pixels, int size) {
-  if (myTime % 15 == 0) {
-    int pickTable[size] = {};
-    // there isnt a better way to do this sadly
-    for (int i = 0; i < size; i++) {
-      if (size == NUMPIXELS_FRONT) {
-        pickTable[i] = currentlyFlashingFront[i];
-      } else {
-        pickTable[i] = currentlyFlashingSide[i];
-      }
-    }
-
-    pixels->clear();
-    for (int i = 0; i < size; i++) {
-      int rng = random(1, 25);
-      if (rng == 1 && pickTable[i] == 0) {
-        pickTable[i] = 250;
-      } else if (pickTable[i] > 0) {
-        pickTable[i] = max(0, pickTable[i] - 20);
-      }
-      uint32_t setColor = pixels->Color(red * pickTable[i], green * pickTable[i], blue * pickTable[i]);
-      pixels->setPixelColor(i, setColor);
-    }
-
-    if (size == NUMPIXELS_FRONT) {
-      redEyes(pixels);
-    }
-
-    pixels->show();
-
-    // and convert the table back
-    for (int i = 0; i < size; i++) {
-      if (size == NUMPIXELS_FRONT) {
-        currentlyFlashingFront[i] = pickTable[i];
-      } else {
-        currentlyFlashingSide[i] = pickTable[i];
-      }
-    }
-  }
+void setFullColor(uint32_t setColor, Adafruit_NeoPixel *pixels, int size) {
+  pixels->clear();
+  pixels->fill(setColor, 0);
+  pixels->show();
 }
 
-// RAINBOW verison of the climber
-int currentlyFlashingColorFront[NUMPIXELS_FRONT][3];
-int currentlyFlashingColorSide[NUMPIXELS_SIDES][3];
+void rapidFlash(uint32_t setColor, Adafruit_NeoPixel *pixels, int size, int time) {
+  pixels->clear();
 
-void climberColorsRainbow(Adafruit_NeoPixel *pixels, int size) {
-  if (myTime % 10 == 0) {
-    int pickTable[size] = {};
-    int pickTableColor[size][3] = {};
+  for (int i = 0; i < size; i++) {
+    int willSet = (time + i) % 2;
 
-    for (int i = 0; i < size; i++) {
-      if (size == NUMPIXELS_FRONT) {
-        pickTable[i] = currentlyFlashingFront[i];
-        pickTableColor[i][0] = currentlyFlashingColorFront[i][0];
-        pickTableColor[i][1] = currentlyFlashingColorFront[i][1];
-        pickTableColor[i][2] = currentlyFlashingColorFront[i][2];
-      } else {
-        pickTable[i] = currentlyFlashingSide[i];
-        pickTableColor[i][0] = currentlyFlashingColorSide[i][0];
-        pickTableColor[i][1] = currentlyFlashingColorSide[i][1];
-        pickTableColor[i][2] = currentlyFlashingColorSide[i][2];
-      }
-    }
 
-    pixels->clear();
-    for (int i = 0; i < size; i++) {
-      int rng = random(1, 15);
-
-      if (rng == 1 && pickTable[i] == 0) {
-        pickTable[i] = 250;
-        pickTableColor[i][0] = random(5, 255);
-        pickTableColor[i][1] = random(5, 255);
-        pickTableColor[i][2] = random(5, 255);
-
-      } else if (pickTable[i] > 0) {
-        pickTable[i] = max(0, pickTable[i] - 20);
-      }
-
-      uint32_t setColor = pixels->Color(pickTableColor[i][0] * (pickTable[i] / 250.0), pickTableColor[i][1] * (pickTable[i] / 250.0), pickTableColor[i][2] * (pickTable[i] / 250.0));
+    if (willSet == 0) {
       pixels->setPixelColor(i, setColor);
     }
-    if (size == NUMPIXELS_FRONT) {
-      redEyes(pixels);
-    }
-    pixels->show();
-
-    for (int i = 0; i < size; i++) {
-      if (size == NUMPIXELS_FRONT) {
-        currentlyFlashingFront[i] = pickTable[i];
-        currentlyFlashingColorFront[i][0] = pickTableColor[i][0];
-        currentlyFlashingColorFront[i][1] = pickTableColor[i][1];
-        currentlyFlashingColorFront[i][2] = pickTableColor[i][2];
-      } else {
-        currentlyFlashingSide[i] = pickTable[i];
-        currentlyFlashingColorSide[i][0] = pickTableColor[i][0];
-        currentlyFlashingColorSide[i][1] = pickTableColor[i][1];
-        currentlyFlashingColorSide[i][2] = pickTableColor[i][2];
-      }
-    }
   }
+
+  pixels->show();
 }
 
+// distance goes from 0 to 10, 0 being spot on, 10 being off
+void farOffGradient(Adafruit_NeoPixel *pixels, int size, int distance) {
+  pixels->clear();
 
-// int currentlyFlashingColorOld[NUMPIXELS][3];
-// int waitTime = 50;
-// bool colorDirection = true;
+  int red = (int)(255 * (distance / 10.0) + 255 * (1.0 - distance / 10.0));
+  int green = 255 * (1.0 - distance / 10.0);
+  int blue = (int)(0 * (distance / 10.0) + 255 * (1.0 - distance / 10.0));
 
-// // different take on the idle state, currently broken
-// void topperLine() {
-//   if (myTime % waitTime == 0) {
-//     if (colorDirection == false) {
-//       waitTime++;
-//     } else {
-//       waitTime--;
-//     }
+  uint32_t setColor = pixels->Color(red, green, blue);
 
-//     if (waitTime == 1 || waitTime == 55) {
-//       colorDirection = !colorDirection;
-//     }
 
-//     bool doColor = false;
-//     if (timer >= 125 && waitTime <= 60) {
-//       timer = 0;
-//       doColor = true;
-//     }
-//     pixelsFront.clear();
+  pixels->fill(setColor, 0);
+  pixels->show();
+}
 
-//     for (int i = 0; i < NUMPIXELS; i++) {
-//       if (currentlyFlashingColor[i][0] == 0 && currentlyFlashingColor[i][2] == 0) {
-//           currentlyFlashingColor[i][0] = 0;
-//           currentlyFlashingColor[i][1] = 0;
-//           currentlyFlashingColor[i][2] = 255;
-//       }
-//     }
+void fullAutoGradient(Adafruit_NeoPixel *pixels, int size, int time) {
+  pixels->clear();
 
-//     for (int i = 0; i < NUMPIXELS; i++) {
-//       currentlyFlashingColorOld[i][0] = currentlyFlashingColor[i][0];
-//       currentlyFlashingColorOld[i][1] = currentlyFlashingColor[i][1];
-//       currentlyFlashingColorOld[i][2] = currentlyFlashingColor[i][2];
-//     }
+  double progress = 0.0;
 
-//     for (int i = 0; i < NUMPIXELS ; i++) {
-//       int putPosition = i;
+  int redFirst = 0;
+  int greenFirst = 0;
+  int blueFirst = 0;
 
-//       if (putPosition == 0) {
-//         if (!doColor) {
-//           currentlyFlashingColor[putPosition][0] = 0;
-//           currentlyFlashingColor[putPosition][1] = 0;
-//           currentlyFlashingColor[putPosition][2] = 255;
-//         } else {
-//           currentlyFlashingColor[putPosition][0] = 255;
-//           currentlyFlashingColor[putPosition][1] = 125;
-//           currentlyFlashingColor[putPosition][2] = 0;
-//         }
+  int redSecond = 0;
+  int greenSecond = 0;
+  int blueSecond = 0;
 
-//       } else {
-//         shiftColor(putPosition, 1);
-//       }
+  for (int i = 0; i < size; i++) {
+    time += 10;
+    time %= 300;
 
-//       pixelsFront.setPixelColor(putPosition, pixelsFront.Color(currentlyFlashingColor[putPosition][0], currentlyFlashingColor[putPosition][1], currentlyFlashingColor[putPosition][2]));
-//     }
-//     pixelsFront.show();
-//   }
-// }
+    if (time <= 150) {  // lerp from pink to blue
+      progress = time / 150.0;
 
-// void shiftColor(int pos, int direction) {
-//   currentlyFlashingColor[pos][0] = currentlyFlashingColorOld[pos - direction][0];
-//   currentlyFlashingColor[pos][1] = currentlyFlashingColorOld[pos - direction][1];
-//   currentlyFlashingColor[pos][2] = currentlyFlashingColorOld[pos - direction][2];
-// }
+      redFirst = 255 * 0.8;
+      greenFirst = 192 * 0.5;
+      blueFirst = 225 * 0.5;
+
+      redSecond = 112 * 0;
+      greenSecond = 59;
+      blueSecond = 231;
+      progress = sqrt(progress);
+
+    } else {  // lerp from blue to pink
+      progress = (time - 150) / 150.0;
+      progress = progress * progress;
+
+      redSecond = 255 * 0.8;
+      greenSecond = 192 * 0.5;
+      blueSecond = 225 * 0.5;
+
+      redFirst = 112 * 0;
+      greenFirst = 59;
+      blueFirst = 231;
+    }
+
+
+
+    int redAdjusted = (int)(redFirst * progress + redSecond * (1.0 - progress));
+    int greenAdjusted = (int)(greenFirst * progress + greenSecond * (1.0 - progress));
+    int blueAdjusted = (int)(blueFirst * progress + blueSecond * (1.0 - progress));
+
+    uint32_t setColor = pixels->Color(redAdjusted, greenAdjusted, blueAdjusted);
+    uint32_t correctedColor = pixels->gamma32(setColor);
+
+    pixels->setPixelColor(i, correctedColor);
+    pixels->show();
+    // time++;
+  }
+}

@@ -23,6 +23,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.wpilibj.Alert;
@@ -121,12 +122,29 @@ public class RobotContainer {
   private boolean isPlucking = false;
   private boolean isVisionEnabled = true;
   private boolean isPluckTargetHigh = false;
+  private boolean isRunningPath = false;
+
+  private boolean driveSlowlyDirectionAlert =
+      false; // do drive slowly cyan flash when bot is stopped
+
   private BooleanSupplier slowModeSupplier = () -> isSlowMode;
   private BooleanSupplier preferNetRightSideSupplier = () -> preferNetRightSide;
   private BooleanSupplier isFullAutoSupplier = () -> isFullAuto;
   private BooleanSupplier isPluckingSupplier = () -> isPlucking;
   private BooleanSupplier isVisionEnabledSupplier = () -> isVisionEnabled;
   private BooleanSupplier isPluckTargetHighSupplier = () -> isPluckTargetHigh;
+
+  public enum AprilTagStatus {
+    REEF_TARGET_IN_RANGE,
+    REEF_TARGET_OUTSIDE_RANGE,
+    NO_TARGET,
+  }
+
+  private AprilTagStatus apriltagStatus = AprilTagStatus.NO_TARGET;
+  private Supplier<AprilTagStatus> apriltagStatusSupplier = () -> apriltagStatus;
+
+  private Pose2d currentPathPose = new Pose2d();
+
   private ArmevatorPose currentScoringLevel = ArmevatorPose.CORAL_L4_SCORE;
   private Supplier<ArmevatorPose> currentScoringLevelSupplier = () -> currentScoringLevel;
   private ShuffleboardTab tab;
@@ -169,6 +187,9 @@ public class RobotContainer {
       NetworkTableInstance.getDefault().getStructTopic("robotPose", Pose2d.struct).publish();
   StructPublisher<Pose2d> questPosePublisher =
       NetworkTableInstance.getDefault().getStructTopic("questPose", Pose2d.struct).publish();
+
+  GenericEntry pathfindErrorNetwork =
+      NetworkTableInstance.getDefault().getTopic("LEDDebug").getGenericEntry("PathfindError");
 
   PathConstraints hpPathConstraints = new PathConstraints(4.5, 3.2, 8.42, 12.8876585);
   PathConstraints pluckPathConstraints = new PathConstraints(4.5, 3.2, 8.0, 10.0);
@@ -275,12 +296,20 @@ public class RobotContainer {
     if (Constants.TUNING_MODE) {
       this.tuningAlert.set(true);
     }
+
+    pathfindErrorNetwork.setDouble(0.0);
   }
 
   private void defineSubsystems() {
     claw = new Claw();
     armevator = new Armevator();
-    statusRgb = new StatusRgb(armevator);
+    statusRgb =
+        new StatusRgb(
+            armevator,
+            () -> false,
+            this::getCurrentPathfindError,
+            isFullAutoSupplier,
+            apriltagStatusSupplier);
     intake = new Intake();
     climber = new Climber();
 
@@ -588,6 +617,8 @@ public class RobotContainer {
             .withVelocityX(0.3 * Math.cos(targetDirection.getRadians()))
             .withVelocityY(0.3 * Math.sin(targetDirection.getRadians()))
             .withRotationalRate(0.0));
+
+    driveSlowlyDirectionAlert = true;
   }
 
   private Command getAdjustSlowlyCommand(
@@ -787,6 +818,7 @@ public class RobotContainer {
                     Commands.parallel(
                         // Raise Piece to scoring level
                         Commands.sequence(
+                            new InstantCommand(() -> isRunningPath = true),
                             new WaitUntilCommand(this::isRobotCloseToScoringPosition),
                             armevator.runOnce(
                                 () -> armevator.setTargetPose(currentScoringLevelSupplier.get()))),
@@ -830,11 +862,12 @@ public class RobotContainer {
     oi.scoreCoralButton()
         .onFalse(
             new ConditionalCommand(
-                new InstantCommand(),
-                armevator
-                    .runOnce(() -> armevator.setTargetPose(ArmevatorPose.CORAL_POST_SCORE))
-                    .asProxy(),
-                () -> isPlucking));
+                    new InstantCommand(),
+                    armevator
+                        .runOnce(() -> armevator.setTargetPose(ArmevatorPose.CORAL_POST_SCORE))
+                        .asProxy(),
+                    () -> isPlucking)
+                .alongWith(new InstantCommand(() -> isRunningPath = false)));
 
     oi.intakeCoralRight()
         .whileTrue(
@@ -882,6 +915,7 @@ public class RobotContainer {
         .whileTrue(
             Commands.deadline(
                 Commands.sequence(
+                    new InstantCommand(() -> isRunningPath = true),
                     intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.CORAL_L1_SCORE)),
                     armevator.runOnce(() -> armevator.setTargetPose(ArmevatorPose.CORAL_HP_LOAD)),
                     new IntakeCoral(claw, statusRgb)),
@@ -896,6 +930,8 @@ public class RobotContainer {
                             drivetrain.run(
                                 () -> driveSlowlyDirection(Rotation2d.fromDegrees(-125.0)))),
                         this::shouldIntakeLeftSide))));
+
+    oi.intakeCoralButton().whileFalse(Commands.runOnce(() -> isRunningPath = false));
 
     oi.operatorF1()
         .onTrue(
@@ -1291,6 +1327,26 @@ public class RobotContainer {
     if (llPose2d != null) {
       field2d.setPose(FieldObject.LIMELIGHT_POSE, llPose2d);
     }
+
+    double botSpeed =
+        Math.abs(drivetrain.getState().Speeds.vxMetersPerSecond)
+            + Math.abs(drivetrain.getState().Speeds.vyMetersPerSecond);
+
+    // TODO, 0.05 is a guess on minimum speed, this needs testing
+    if (botSpeed < 0.05 && driveSlowlyDirectionAlert) {
+      driveSlowlyDirectionAlert = false;
+      statusRgb.driveSlowlyTrigger();
+    }
+
+    if (visionApriltagSubsystem.hasReefTarget()) {
+      if (Math.abs(visionApriltagSubsystem.getTX()) > 1.0) {
+        apriltagStatus = AprilTagStatus.REEF_TARGET_OUTSIDE_RANGE;
+      } else {
+        apriltagStatus = AprilTagStatus.REEF_TARGET_IN_RANGE;
+      }
+    } else {
+      apriltagStatus = AprilTagStatus.NO_TARGET;
+    }
   }
 
   private Pose2d extractLimelightPose() {
@@ -1528,6 +1584,7 @@ public class RobotContainer {
   }
 
   // run on init
+
   private void setupScoringPathMap() {
     scoringPathMap.put(
         ScoringPathOption.PATH_F1,
@@ -1705,5 +1762,23 @@ public class RobotContainer {
     //       limelightMeasurement.timestampSeconds,
     //       VecBuilder.fill(.6, .6, 9999999));
     // }
+  }
+
+  public void setCurrentPathPose(Pose2d pose) {
+    currentPathPose = pose;
+  }
+
+  private int getCurrentPathfindError() {
+    if (!isRunningPath) {
+      return -1;
+    }
+    double calc =
+        drivetrain.getPose().getTranslation().getDistance(currentPathPose.getTranslation());
+
+    pathfindErrorNetwork.setDouble(calc);
+
+    int calculatedMode =
+        Math.min(10, (int) (calc)) + 10; // TODO: unsure what values this will give, adjust later
+    return calculatedMode;
   }
 }
