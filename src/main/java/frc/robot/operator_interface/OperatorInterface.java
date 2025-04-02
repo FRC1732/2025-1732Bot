@@ -211,4 +211,8 @@ public interface OperatorInterface {
   public default Trigger operatorFullAutoPlacementSwitch() { // button 26
     return new Trigger(() -> false);
   }
+
+  public default Trigger operatorAlignForClimb() {
+    return new Trigger(() -> false);
+  }
 }
