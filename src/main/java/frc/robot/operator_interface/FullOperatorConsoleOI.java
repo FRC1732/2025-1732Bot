@@ -171,4 +171,9 @@ public class FullOperatorConsoleOI extends DualJoysticksOI {
   public Trigger operatorAlignForClimb() {
     return operatorPanelButtonsOne[4];
   }
+
+  @Override
+  public Trigger operatorAlignForClimbDefendingSide() {
+    return operatorPanelButtonsOne[5];
+  }
 }

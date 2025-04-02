@@ -676,6 +676,17 @@ public class RobotContainer {
                             * (slowModeSupplier.getAsBoolean() ? MaxSlowSpeed : MaxSpeed),
                         Rotation2d.fromDegrees(-90))));
 
+    oi.operatorAlignForClimbDefendingSide()
+        .whileTrue(
+            drivetrain.run(
+                () ->
+                    driveFacingAngle(
+                        -oi.getTranslateX()
+                            * (slowModeSupplier.getAsBoolean() ? MaxSlowSpeed : MaxSpeed),
+                        -oi.getTranslateY()
+                            * (slowModeSupplier.getAsBoolean() ? MaxSlowSpeed : MaxSpeed),
+                        Rotation2d.fromDegrees(90))));
+
     // slow-mode toggle
     oi.slowModeSwitch().onTrue(Commands.runOnce(() -> isSlowMode = true));
     oi.slowModeSwitch().onFalse(Commands.runOnce(() -> isSlowMode = false));
