@@ -4,7 +4,7 @@
 
 package frc.robot.subsystems.rgb;
 
-import edu.wpi.first.networktables.GenericEntry;
+import edu.wpi.first.networktables.IntegerPublisher;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StringPublisher;
@@ -42,7 +42,7 @@ public class StatusRgb extends SubsystemBase {
   private StringPublisher publisher = nt4Table.getStringTopic("rgb").publish();
 
   private NetworkTable lastModeTable = table.getTable("lastLEDMode");
-  private GenericEntry lastMode = lastModeTable.getTopic("Last LED Mode").getGenericEntry();
+  private IntegerPublisher lastMode = lastModeTable.getIntegerTopic("Last LED Mode").publish();
 
   private Armevator armevator;
 
@@ -103,7 +103,8 @@ public class StatusRgb extends SubsystemBase {
 
   public void setMode(int modeToSet) {
     // System.out.println("Sending LED mode: " + modeToSet);
-    lastMode.setInteger(modeToSet);
+    lastMode.set(modeToSet);
+
     if (modeToSet % 2 == 1) {
       out0.set(!true);
     } else {
@@ -167,7 +168,7 @@ public class StatusRgb extends SubsystemBase {
     } else if (apriltagStatusSupplier.get() == AprilTagStatus.REEF_TARGET_OUTSIDE_RANGE) {
       setMode(6);
     } else if (pathFollowError.getAsInt() > 0) {
-      setMode(pathFollowError.getAsInt() + 10);
+      setMode(pathFollowError.getAsInt());
     } else if (canAutoScore.getAsBoolean()) { // TODO: add a trigger for this
       // setMode(4); currently unused
     } else if (inFullAuto.getAsBoolean()) {

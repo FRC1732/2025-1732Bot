@@ -23,7 +23,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.networktables.GenericEntry;
+import edu.wpi.first.networktables.DoublePublisher;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.wpilibj.Alert;
@@ -188,8 +188,8 @@ public class RobotContainer {
   StructPublisher<Pose2d> questPosePublisher =
       NetworkTableInstance.getDefault().getStructTopic("questPose", Pose2d.struct).publish();
 
-  GenericEntry pathfindErrorNetwork =
-      NetworkTableInstance.getDefault().getTopic("LEDDebug").getGenericEntry("PathfindError");
+  DoublePublisher pathfindErrorNetwork =
+      NetworkTableInstance.getDefault().getDoubleTopic("PathfindError").publish();
 
   PathConstraints hpPathConstraints = new PathConstraints(4.5, 3.2, 8.42, 12.8876585);
   PathConstraints pluckPathConstraints = new PathConstraints(4.5, 3.2, 8.0, 10.0);
@@ -297,7 +297,7 @@ public class RobotContainer {
       this.tuningAlert.set(true);
     }
 
-    pathfindErrorNetwork.setDouble(0.0);
+    pathfindErrorNetwork.set(0.0);
   }
 
   private void defineSubsystems() {
@@ -834,7 +834,7 @@ public class RobotContainer {
                                 new DriveToPoseSlew(
                                     drivetrain,
                                     () -> getPathStartingPose(scoringPathOption),
-                                    driveFacingAngleRequest),
+                                    driveFacingAngleRequest), //
                                 // new WaitCommand(0.2),
                                 getSimpleScoringPathCommand()),
                             getAdjustSlowlyCommand(
@@ -1127,28 +1127,32 @@ public class RobotContainer {
 
     Command autoPluckCommand =
         Commands.sequence(
-            new InstantCommand(
-                () -> visionApriltagSubsystem.setPipeline(Pipelines.TRACKING_CENTER)),
-            armevator.runOnce(() -> armevator.setTargetPose(inferPluckArmevatorPose(true))),
-            intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.ALGAE_POST_HANDOFF)),
-            Commands.deadline(
-                new ConditionalCommand(
-                    getPluckPathCommand(),
+                new InstantCommand(
+                    () -> visionApriltagSubsystem.setPipeline(Pipelines.TRACKING_CENTER)),
+                armevator.runOnce(() -> armevator.setTargetPose(inferPluckArmevatorPose(true))),
+                intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.ALGAE_POST_HANDOFF)),
+                Commands.deadline(
+                    new InstantCommand(() -> isRunningPath = true),
+                    new ConditionalCommand(
+                        getPluckPathCommand(),
+                        Commands.sequence(
+                            new DriveToPoseSlew(
+                                drivetrain,
+                                () -> getPluckPathStartingPose(scoringPathOption),
+                                driveFacingAngleRequest),
+                            getSimplePluckPathCommand()),
+                        this::isFarEnoughForPathfindingPluck),
+                    new InstantCommand(() -> isRunningPath = false),
                     Commands.sequence(
-                        new DriveToPoseSlew(
-                            drivetrain,
-                            () -> getPluckPathStartingPose(scoringPathOption),
-                            driveFacingAngleRequest),
-                        getSimplePluckPathCommand()),
-                    this::isFarEnoughForPathfindingPluck),
-                Commands.sequence(
-                    new WaitCommand(0.25),
-                    intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.ALGAE_PRE_PLUCK_L2)))),
-            getAdjustSlowlyCommand(() -> scoringAngleMap.get(scoringPathOption), () -> true),
-            Commands.parallel(
-                nonAutoPluck,
-                drivetrain.run(
-                    () -> driveSlowlyDirection(scoringAngleMap.get(scoringPathOption)))));
+                        new WaitCommand(0.25),
+                        intake.runOnce(
+                            () -> intake.setTargetPose(ArmevatorPose.ALGAE_PRE_PLUCK_L2)))),
+                getAdjustSlowlyCommand(() -> scoringAngleMap.get(scoringPathOption), () -> true),
+                Commands.parallel(
+                    nonAutoPluck,
+                    drivetrain.run(
+                        () -> driveSlowlyDirection(scoringAngleMap.get(scoringPathOption)))))
+            .finallyDo(() -> isRunningPath = false);
 
     oi.pluckAlgaeButton()
         .whileTrue(
@@ -1768,6 +1772,8 @@ public class RobotContainer {
     currentPathPose = pose;
   }
 
+  private int debugPublishCounter = 0;
+
   private int getCurrentPathfindError() {
     if (!isRunningPath) {
       return -1;
@@ -1775,7 +1781,11 @@ public class RobotContainer {
     double calc =
         drivetrain.getPose().getTranslation().getDistance(currentPathPose.getTranslation());
 
-    pathfindErrorNetwork.setDouble(calc);
+    if (debugPublishCounter++ > 10) {
+      // Since this for debug, not every cycle
+      pathfindErrorNetwork.set(calc);
+      debugPublishCounter = 0;
+    }
 
     int calculatedMode =
         Math.min(10, (int) (calc)) + 10; // TODO: unsure what values this will give, adjust later
