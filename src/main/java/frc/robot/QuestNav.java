@@ -8,12 +8,14 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.networktables.BooleanSubscriber;
 import edu.wpi.first.networktables.DoubleSubscriber;
 import edu.wpi.first.networktables.FloatArraySubscriber;
 import edu.wpi.first.networktables.IntegerPublisher;
 import edu.wpi.first.networktables.IntegerSubscriber;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.PubSubOption;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
@@ -34,13 +36,19 @@ public class QuestNav {
   // Subscribe to the Network Tables questnav data topics
   private DoubleSubscriber questTimestamp = nt4Table.getDoubleTopic("timestamp").subscribe(0.0f);
   private FloatArraySubscriber questPosition =
-      nt4Table.getFloatArrayTopic("position").subscribe(new float[] {0.0f, 0.0f, 0.0f});
+      nt4Table
+          .getFloatArrayTopic("position")
+          .subscribe(new float[] {0.0f, 0.0f, 0.0f}, PubSubOption.periodic(0.02));
   private FloatArraySubscriber questQuaternion =
       nt4Table.getFloatArrayTopic("quaternion").subscribe(new float[] {0.0f, 0.0f, 0.0f, 0.0f});
   private FloatArraySubscriber questEulerAngles =
-      nt4Table.getFloatArrayTopic("eulerAngles").subscribe(new float[] {0.0f, 0.0f, 0.0f});
+      nt4Table
+          .getFloatArrayTopic("eulerAngles")
+          .subscribe(new float[] {0.0f, 0.0f, 0.0f}, PubSubOption.periodic(0.02));
   private DoubleSubscriber questBatteryPercent =
       nt4Table.getDoubleTopic("batteryPercent").subscribe(0.0f);
+  private BooleanSubscriber questIsTrackingSupplier =
+      nt4Table.getBooleanTopic("IsTracking").subscribe(true);
 
   private Pose2d lastPose = new Pose2d();
   private boolean poseUpdated = false;
@@ -132,27 +140,8 @@ public class QuestNav {
    * @return true if the Quest is connected
    */
   public boolean isConnected() {
-    // System.out.println("FPGATime: " + RobotController.getFPGATime());
-    // System.out.println("Last Change: " + questBatteryPercent.getLastChange());
-    // System.out.println(
-    //     "Diff: " + (RobotController.getFPGATime() - questBatteryPercent.getLastChange()) /
-    // 1000.0);
-    // return ((RobotController.getFPGATime() - questPosition.getLastChange()) / 1000.0) < 30.0;
-
-    // System.out.println("first: " + !lastPose.equals(curPose));
-    // System.out.println(
-    //     "second: "
-    //         + (Math.abs(curPose.getTranslation().getX()) > 0.05
-    //             || Math.abs(curPose.getTranslation().getY()) > 0.05));
-    // System.out.println("third: " + curPose.getTranslation().getX());
-    // System.out.println("third: " + curPose.getTranslation().getY());
-    Pose2d curPose = getUncorrectedOculusPose();
-    boolean isConnected =
-        poseUpdated
-            && (Math.abs(curPose.getTranslation().getX()) > 0.05
-                || Math.abs(curPose.getTranslation().getY()) > 0.05);
     wasDisconnected = !poseUpdated;
-    return poseUpdated;
+    return questIsTrackingSupplier.get(true) && poseUpdated;
   }
 
   /**

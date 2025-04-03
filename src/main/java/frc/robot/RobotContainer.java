@@ -29,6 +29,7 @@ import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
@@ -133,6 +134,8 @@ public class RobotContainer {
   private BooleanSupplier isPluckingSupplier = () -> isPlucking;
   private BooleanSupplier isVisionEnabledSupplier = () -> isVisionEnabled;
   private BooleanSupplier isPluckTargetHighSupplier = () -> isPluckTargetHigh;
+
+  private boolean adjustingRight = false;
 
   public enum AprilTagStatus {
     REEF_TARGET_IN_RANGE,
@@ -621,35 +624,79 @@ public class RobotContainer {
     driveSlowlyDirectionAlert = true;
   }
 
+  private void driveSlowlyDirectionLocked(
+      Rotation2d targetDirection, Rotation2d rotationDireciton) {
+    drivetrain.setControl(
+        driveFacingAngleRequest
+            .withVelocityX(0.3 * Math.cos(targetDirection.getRadians()))
+            .withVelocityY(0.3 * Math.sin(targetDirection.getRadians()))
+            .withTargetDirection(rotationDireciton));
+
+    driveSlowlyDirectionAlert = true;
+  }
+
   private Command getAdjustSlowlyCommand(
       Supplier<Rotation2d> targetDirectionSupplier, BooleanSupplier isTargetRight) {
-    return Commands.sequence(
-        new ConditionalCommand(
-            new InstantCommand(),
-            Commands.deadline(
-                Commands.waitSeconds(0.3),
-                drivetrain.run(
-                    () ->
-                        driveSlowlyDirection(
-                            targetDirectionSupplier
-                                .get()
-                                .plus(
-                                    Rotation2d.kCW_90deg.times(
-                                        isTargetRight.getAsBoolean() ? 1 : -1))))),
-            visionApriltagSubsystem::hasReefTarget),
-        Commands.deadline(
-            new WaitUntilCommand(
-                () ->
-                    !visionApriltagSubsystem.hasReefTarget()
-                        || Math.abs(visionApriltagSubsystem.getTX()) < 1.0),
+
+    // Custom command that ends based on vision target conditions.
+    Command timeoutCommand =
+        new Command() {
+          private double startTime;
+          private double lastTargetTime;
+          private boolean hasSeenTarget;
+          private double timeoutSeconds;
+
+          @Override
+          public void initialize() {
+            startTime = Timer.getFPGATimestamp();
+            lastTargetTime = startTime;
+            hasSeenTarget = false;
+            timeoutSeconds = 0;
+          }
+
+          @Override
+          public void execute() {
+            if (visionApriltagSubsystem.hasReefTarget()) {
+              hasSeenTarget = true;
+              lastTargetTime = Timer.getFPGATimestamp();
+              timeoutSeconds =
+                  Math.max(Math.abs(visionApriltagSubsystem.getTX() - 1.0), 0.0) * 0.09;
+            }
+          }
+
+          @Override
+          public boolean isFinished() {
+            double currentTime = Timer.getFPGATimestamp();
+
+            // Condition 1: Never saw a target and 0.3 seconds elapsed
+            if (!hasSeenTarget && (currentTime - startTime) > 0.3) {
+              return true;
+            }
+
+            // Condition 2: Time since last target visible exceeds calculated timeout
+            if (hasSeenTarget && (currentTime - lastTargetTime) >= timeoutSeconds) {
+              return true;
+            }
+
+            return false;
+          }
+        };
+
+    return Commands.deadline(
+        timeoutCommand,
+        Commands.sequence(
+            new InstantCommand(() -> adjustingRight = isTargetRight.getAsBoolean()),
             drivetrain.run(
-                () ->
-                    driveSlowlyDirection(
-                        targetDirectionSupplier
-                            .get()
-                            .plus(
-                                Rotation2d.kCW_90deg.times(
-                                    Math.signum(visionApriltagSubsystem.getTX())))))));
+                () -> {
+                  if (visionApriltagSubsystem.hasReefTarget()) {
+                    adjustingRight = visionApriltagSubsystem.getTX() > 0;
+                  }
+                  driveSlowlyDirectionLocked(
+                      targetDirectionSupplier
+                          .get()
+                          .plus(Rotation2d.kCW_90deg.times(adjustingRight ? 1 : -1)),
+                      targetDirectionSupplier.get());
+                })));
   }
 
   private BooleanSupplier isAutoFlipped() {
@@ -1750,8 +1797,6 @@ public class RobotContainer {
 
   public void updateVisionPose() {
     if (questNav.isConnected() && isVisionEnabled) {
-      // drivetrain.addVisionMeasurement(
-      // questNav.getRobotPose(), VecBuilder.fill(0.0, 0.0, 9999999.0));
       drivetrain.addVisionMeasurement(
           questNav.getAverageRobotPose(), VecBuilder.fill(0.0, 0.0, 0.0));
       return;

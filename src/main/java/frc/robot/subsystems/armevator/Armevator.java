@@ -103,15 +103,15 @@ public class Armevator extends SubsystemBase {
     armMap.put(ArmevatorPose.CORAL_L4_STAGE, 40.0);
     armMap.put(ArmevatorPose.CORAL_HP_LOAD, -116.0);
     armMap.put(ArmevatorPose.CORAL_L4_FLIP, -116.0);
-    armMap.put(ArmevatorPose.CORAL_L4_SCORE, 55.0);
+    armMap.put(ArmevatorPose.CORAL_L4_SCORE, 54.5);
     armMap.put(ArmevatorPose.CORAL_L3_SCORE, 45.0);
     armMap.put(ArmevatorPose.CORAL_L2_SCORE, 72.0);
     armMap.put(ArmevatorPose.CORAL_L1_SCORE, 80.0);
     armMap.put(ArmevatorPose.CORAL_POST_SCORE, 40.0);
     armMap.put(ArmevatorPose.ALGAE_INTAKE, 89.0);
-    armMap.put(ArmevatorPose.ALGAE_PRE_HANDOFF, 89.0);
-    armMap.put(ArmevatorPose.ALGAE_HANDOFF, 89.0);
-    armMap.put(ArmevatorPose.ALGAE_POST_HANDOFF, 89.0);
+    armMap.put(ArmevatorPose.ALGAE_PRE_HANDOFF, 87.0);
+    armMap.put(ArmevatorPose.ALGAE_HANDOFF, 87.0);
+    armMap.put(ArmevatorPose.ALGAE_POST_HANDOFF, 87.0);
     armMap.put(ArmevatorPose.ALGAE_NET_SCORE, -125.0);
     armMap.put(ArmevatorPose.ALGAE_NET_STAGE, 90.0);
     armMap.put(ArmevatorPose.ALGAE_L3_PLUCK, 15.0);
@@ -124,10 +124,10 @@ public class Armevator extends SubsystemBase {
     elevatorMap = new HashMap<>(); // in inches
     elevatorMap.put(ArmevatorPose.STARTING, 0.0);
     elevatorMap.put(ArmevatorPose.CLIMB, 0.0);
-    elevatorMap.put(ArmevatorPose.CORAL_L4_STAGE, 32.0);
+    elevatorMap.put(ArmevatorPose.CORAL_L4_STAGE, 32.5);
     elevatorMap.put(ArmevatorPose.CORAL_HP_LOAD, 3.75);
-    elevatorMap.put(ArmevatorPose.CORAL_L4_FLIP, 32.0);
-    elevatorMap.put(ArmevatorPose.CORAL_L4_SCORE, 32.0);
+    elevatorMap.put(ArmevatorPose.CORAL_L4_FLIP, 32.5);
+    elevatorMap.put(ArmevatorPose.CORAL_L4_SCORE, 32.5);
     elevatorMap.put(ArmevatorPose.CORAL_L3_SCORE, 4.5);
     elevatorMap.put(ArmevatorPose.CORAL_L2_SCORE, 0.0);
     elevatorMap.put(ArmevatorPose.CORAL_L1_SCORE, 0.0);
@@ -136,8 +136,8 @@ public class Armevator extends SubsystemBase {
     elevatorMap.put(ArmevatorPose.ALGAE_PRE_HANDOFF, 0.0);
     elevatorMap.put(ArmevatorPose.ALGAE_HANDOFF, 0.0);
     elevatorMap.put(ArmevatorPose.ALGAE_POST_HANDOFF, 0.0);
-    elevatorMap.put(ArmevatorPose.ALGAE_NET_SCORE, 15.0);
-    elevatorMap.put(ArmevatorPose.ALGAE_NET_STAGE, 15.0);
+    elevatorMap.put(ArmevatorPose.ALGAE_NET_SCORE, 11.0);
+    elevatorMap.put(ArmevatorPose.ALGAE_NET_STAGE, 11.0);
     elevatorMap.put(ArmevatorPose.ALGAE_L3_PLUCK, 18.0);
     elevatorMap.put(ArmevatorPose.ALGAE_L3_DROP, 20.0);
     elevatorMap.put(ArmevatorPose.ALGAE_L2_PLUCK, 3.0);
