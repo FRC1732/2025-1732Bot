@@ -660,7 +660,7 @@ public class RobotContainer {
               hasSeenTarget = true;
               lastTargetTime = Timer.getFPGATimestamp();
               timeoutSeconds =
-                  Math.max(Math.abs(visionApriltagSubsystem.getTX() - 1.0), 0.0) * 0.09;
+                  Math.max(Math.abs(visionApriltagSubsystem.getTX()) - 1.0, 0.0) * 0.09;
             }
           }
 
@@ -669,7 +669,7 @@ public class RobotContainer {
             double currentTime = Timer.getFPGATimestamp();
 
             // Condition 1: Never saw a target and 0.3 seconds elapsed
-            if (!hasSeenTarget && (currentTime - startTime) > 0.3) {
+            if (!hasSeenTarget && (currentTime - startTime) > 0.4) {
               return true;
             }
 
@@ -1123,7 +1123,7 @@ public class RobotContainer {
     oi.ejectAlgaeButton()
         .whileTrue(
             Commands.sequence(
-                intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.ALGAE_POST_HANDOFF)),
+                intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.ALGAE_HANDOFF)),
                 armevator.runOnce(() -> armevator.setTargetPose(ArmevatorPose.ALGAE_POST_HANDOFF)),
                 Commands.parallel(
                     intake.run(() -> intake.ejectIntake()), claw.run(() -> claw.ejectAlgae()))));
@@ -1178,8 +1178,8 @@ public class RobotContainer {
                     () -> visionApriltagSubsystem.setPipeline(Pipelines.TRACKING_CENTER)),
                 armevator.runOnce(() -> armevator.setTargetPose(inferPluckArmevatorPose(true))),
                 intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.ALGAE_POST_HANDOFF)),
+                new InstantCommand(() -> isRunningPath = true),
                 Commands.deadline(
-                    new InstantCommand(() -> isRunningPath = true),
                     new ConditionalCommand(
                         getPluckPathCommand(),
                         Commands.sequence(
