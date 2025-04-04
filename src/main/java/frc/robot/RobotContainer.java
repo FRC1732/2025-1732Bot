@@ -668,8 +668,8 @@ public class RobotContainer {
           public boolean isFinished() {
             double currentTime = Timer.getFPGATimestamp();
 
-            // Condition 1: Never saw a target and 0.3 seconds elapsed
-            if (!hasSeenTarget && (currentTime - startTime) > 0.4) {
+            // Condition 1: Never saw a target and 0.5 seconds elapsed
+            if (!hasSeenTarget && (currentTime - startTime) > 0.5) {
               return true;
             }
 
@@ -892,9 +892,12 @@ public class RobotContainer {
                                     driveFacingAngleRequest), //
                                 // new WaitCommand(0.2),
                                 getSimpleScoringPathCommand()),
-                            getAdjustSlowlyCommand(
-                                () -> scoringAngleMap.get(scoringPathOption),
-                                () -> getScoringAprilTagRight()),
+                            new ConditionalCommand(
+                                new InstantCommand(),
+                                getAdjustSlowlyCommand(
+                                    () -> scoringAngleMap.get(scoringPathOption),
+                                    () -> getScoringAprilTagRight()),
+                                () -> currentScoringLevel == ArmevatorPose.CORAL_L2_SCORE),
                             Commands.parallel(
                                 Commands.sequence(new WaitCommand(0.1), new ClawBackwards(claw)),
                                 drivetrain.run(
@@ -1165,7 +1168,7 @@ public class RobotContainer {
         Commands.sequence(
             Commands.runOnce(() -> isPlucking = true),
             new PrintCommand("Non-Auto Command Started"),
-            claw.runOnce(() -> claw.intakeAlgae()),
+            claw.runOnce(() -> claw.intakeAlgaePluck()),
             intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.ALGAE_PRE_PLUCK_L2)),
             armevator.runOnce(
                 () -> {
@@ -1217,7 +1220,7 @@ public class RobotContainer {
                     Commands.sequence(
                             Commands.runOnce(() -> isPlucking = true),
                             new PrintCommand("Non-Auto Command Started"),
-                            claw.runOnce(() -> claw.intakeAlgae()),
+                            claw.runOnce(() -> claw.intakeAlgaePluck()),
                             intake.runOnce(
                                 () -> intake.setTargetPose(ArmevatorPose.ALGAE_PRE_PLUCK_L2)),
                             armevator.runOnce(

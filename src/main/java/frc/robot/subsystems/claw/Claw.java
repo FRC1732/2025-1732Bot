@@ -48,6 +48,10 @@ public class Claw extends SubsystemBase {
   }
 
   public void intakeAlgae() {
+    clawMotor.set(ClawConstants.CLAW_MOTOR_SPEED * -0.5);
+  }
+
+  public void intakeAlgaePluck() {
     clawMotor.set(ClawConstants.CLAW_MOTOR_SPEED * -1.0);
   }
 
