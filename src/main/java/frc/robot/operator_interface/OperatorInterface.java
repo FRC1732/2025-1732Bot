@@ -28,6 +28,10 @@ public interface OperatorInterface {
     return new Trigger(() -> false);
   }
 
+  public default Trigger resetGyroF1Button() {
+    return new Trigger(() -> false);
+  }
+
   public default Trigger xStanceButton() {
     return new Trigger(() -> false);
   }

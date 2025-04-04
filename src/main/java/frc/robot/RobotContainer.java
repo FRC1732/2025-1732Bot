@@ -802,6 +802,14 @@ public class RobotContainer {
                     new InstantCommand(),
                     () -> true)));
 
+    oi.resetGyroF1Button()
+        .onTrue(
+            Commands.runOnce(
+                () -> {
+                  drivetrain.resetPose(new Pose2d(3.203, 4.190, new Rotation2d(0)));
+                  questNav.resetPose(new Pose2d(3.203, 4.190, new Rotation2d(0)));
+                }));
+
     oi.operatorResetGyroButton()
         .onTrue(
             Commands.runOnce(

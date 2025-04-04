@@ -116,6 +116,11 @@ public class DualJoysticksOI implements OperatorInterface {
     return rotateJoystickButtons[8];
   }
 
+  @Override
+  public Trigger resetGyroF1Button() {
+    return rotateJoystickButtons[9];
+  }
+
   // SysId Buttons @todo disable these after using sysid
   @Override
   public Trigger getSysIdDynamicForward() {
