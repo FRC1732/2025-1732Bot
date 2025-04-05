@@ -78,7 +78,7 @@
                                 {
                                   "type": "wait",
                                   "data": {
-                                    "waitTime": 0.225
+                                    "waitTime": 0.175
                                   }
                                 },
                                 {
@@ -90,7 +90,7 @@
                                 {
                                   "type": "wait",
                                   "data": {
-                                    "waitTime": 0.175
+                                    "waitTime": 0.225
                                   }
                                 }
                               ]
@@ -243,7 +243,7 @@
                                 {
                                   "type": "wait",
                                   "data": {
-                                    "waitTime": 0.225
+                                    "waitTime": 0.175
                                   }
                                 },
                                 {
@@ -255,7 +255,7 @@
                                 {
                                   "type": "wait",
                                   "data": {
-                                    "waitTime": 0.175
+                                    "waitTime": 0.225
                                   }
                                 }
                               ]
@@ -408,7 +408,7 @@
                                 {
                                   "type": "wait",
                                   "data": {
-                                    "waitTime": 0.225
+                                    "waitTime": 0.175
                                   }
                                 },
                                 {
@@ -420,7 +420,7 @@
                                 {
                                   "type": "wait",
                                   "data": {
-                                    "waitTime": 0.175
+                                    "waitTime": 0.225
                                   }
                                 }
                               ]

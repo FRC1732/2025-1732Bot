@@ -660,7 +660,7 @@ public class RobotContainer {
               hasSeenTarget = true;
               lastTargetTime = Timer.getFPGATimestamp();
               timeoutSeconds =
-                  Math.max(Math.abs(visionApriltagSubsystem.getTX()) - 1.0, 0.0) * 0.09;
+                  Math.max(Math.abs(visionApriltagSubsystem.getTX()) - 1.5, 0.0) * 0.09;
             }
           }
 

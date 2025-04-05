@@ -128,7 +128,7 @@ public class Armevator extends SubsystemBase {
     elevatorMap.put(ArmevatorPose.CORAL_HP_LOAD, 3.75);
     elevatorMap.put(ArmevatorPose.CORAL_L4_FLIP, 32.5);
     elevatorMap.put(ArmevatorPose.CORAL_L4_SCORE, 32.5);
-    elevatorMap.put(ArmevatorPose.CORAL_L3_SCORE, 4.5);
+    elevatorMap.put(ArmevatorPose.CORAL_L3_SCORE, 4.0);
     elevatorMap.put(ArmevatorPose.CORAL_L2_SCORE, 0.0);
     elevatorMap.put(ArmevatorPose.CORAL_L1_SCORE, 0.0);
     elevatorMap.put(ArmevatorPose.CORAL_POST_SCORE, 4.25);

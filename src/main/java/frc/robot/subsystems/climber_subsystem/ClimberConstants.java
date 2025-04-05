@@ -24,7 +24,7 @@ public class ClimberConstants {
   public static final double MAX_CLIMBER_EXTEND = 0.0;
   public static final double MAX_CLIMBER_RETRACT = 0.0;
 
-  public static final double CLIMB_SETPOINT = 7.5; // 10.72"
+  public static final double CLIMB_SETPOINT = 6.5; // 10.72"
   public static final double FULLY_EXTENDED_SETPOINT = 15.4; // 17.65"
   public static final double WINDMILL_TOLERANCE = 3.0;
   public static final double WINDMILL_FULLY_ENGAGED_SETPOINT = 90.0;
