@@ -92,9 +92,10 @@ public class RobotContainer {
   private Intake intake;
   private Climber climber;
 
-  private static final double NET_SCORE_LOCATION_X = 7.65 - 0.088 - 0.012;
-  private static final double NET_SCORE_MIN_Y = 4.7;
-  private static final double NET_SCORE_MAX_Y = 6.27;
+  private static final double NET_SCORE_LOCATION_X = 7.55;
+  private static final double FAR_NET_SCORE_LOCATION_X = (8.774 - NET_SCORE_LOCATION_X) + 8.774;
+  private static final double NET_SCORE_MIN_Y = 3.5;
+  private static final double NET_SCORE_MAX_Y = 8.0;
 
   private static final Pose2d APRILTAG_POSE_F =
       new Pose2d(3.6576, 4.0208, Rotation2d.fromDegrees(180));
@@ -707,8 +708,9 @@ public class RobotContainer {
         new Command() {
           private double startTime;
           private double lastTargetTime;
-          private boolean hasSeenTarget;
           private double timeoutSeconds;
+          private boolean hasSeenTarget;
+          private double condition2StartTime;
 
           @Override
           public void initialize() {
@@ -716,6 +718,7 @@ public class RobotContainer {
             lastTargetTime = startTime;
             hasSeenTarget = false;
             timeoutSeconds = 0;
+            condition2StartTime = -1;
           }
 
           @Override
@@ -737,9 +740,17 @@ public class RobotContainer {
               return true;
             }
 
-            // Condition 2: Time since last target visible exceeds calculated timeout
+            // Condition 2: Time since last target visible exceeds calculated timeout for 0.2
+            // seconds
             if (hasSeenTarget && (currentTime - lastTargetTime) >= timeoutSeconds) {
-              return true;
+              if (condition2StartTime < 0) {
+                condition2StartTime = currentTime;
+              }
+              if ((currentTime - condition2StartTime) >= 0.2) {
+                return true;
+              }
+            } else {
+              condition2StartTime = -1;
             }
 
             return false;
@@ -1341,23 +1352,43 @@ public class RobotContainer {
                 intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.ALGAE_NET_STAGE)),
                 claw.runOnce(() -> claw.intakeAlgae()),
                 new ConditionalCommand(
-                    Commands.sequence(
-                        new ConditionalCommand(
-                            getDynamicNetPathCommand(),
-                            new InstantCommand(),
-                            this::isFarEnoughFromNetForPathfinding),
-                        new DriveToPoseSlew(
-                            drivetrain,
-                            () ->
-                                new Pose2d(
-                                    NET_SCORE_LOCATION_X,
-                                    drivetrain.getPose().getY(),
-                                    preferNetRightSideSupplier.getAsBoolean()
-                                        ? Rotation2d.fromDegrees(135 + 8)
-                                        : Rotation2d.fromDegrees(-135 - 8)),
-                            driveFacingAngleRequest)),
-                    Commands.waitSeconds(1.5),
-                    isFullAutoSupplier),
+                    new ConditionalCommand(
+                        Commands.sequence(
+                            new ConditionalCommand(
+                                getDynamicNetPathCommand(),
+                                new InstantCommand(),
+                                this::isFarEnoughFromFarNetForPathfinding),
+                            new DriveToPoseSlew(
+                                drivetrain,
+                                () ->
+                                    new Pose2d(
+                                        FAR_NET_SCORE_LOCATION_X,
+                                        drivetrain.getPose().getY(),
+                                        preferNetRightSideSupplier.getAsBoolean()
+                                            ? Rotation2d.fromDegrees(45 - 8)
+                                            : Rotation2d.fromDegrees(-45 + 8)),
+                                driveFacingAngleRequest)),
+                        Commands.waitSeconds(1.0),
+                        isFullAutoSupplier),
+                    new ConditionalCommand(
+                        Commands.sequence(
+                            new ConditionalCommand(
+                                getDynamicNetPathCommand(),
+                                new InstantCommand(),
+                                this::isFarEnoughFromNetForPathfinding),
+                            new DriveToPoseSlew(
+                                drivetrain,
+                                () ->
+                                    new Pose2d(
+                                        NET_SCORE_LOCATION_X,
+                                        drivetrain.getPose().getY(),
+                                        preferNetRightSideSupplier.getAsBoolean()
+                                            ? Rotation2d.fromDegrees(135 + 8)
+                                            : Rotation2d.fromDegrees(-135 - 8)),
+                                driveFacingAngleRequest)),
+                        Commands.waitSeconds(1.0),
+                        isFullAutoSupplier),
+                    this::isOnFarSideOfField),
                 Commands.deadline(
                     Commands.sequence(
                         claw.runOnce(() -> claw.brakeAlgae()),
@@ -1376,8 +1407,12 @@ public class RobotContainer {
                                 0,
                                 0,
                                 preferNetRightSideSupplier.getAsBoolean()
-                                    ? Rotation2d.fromDegrees(135)
-                                    : Rotation2d.fromDegrees(-135))))));
+                                    ? isOnFarSideOfField()
+                                        ? Rotation2d.fromDegrees(45 - 8)
+                                        : Rotation2d.fromDegrees(135 + 8)
+                                    : isOnFarSideOfField()
+                                        ? Rotation2d.fromDegrees(-45 + 8)
+                                        : Rotation2d.fromDegrees(-135 - 8))))));
     oi.aimAtNetButton()
         .onFalse(
             armevator.runOnce(() -> armevator.setTargetPose(ArmevatorPose.ALGAE_POST_HANDOFF)));
@@ -1543,6 +1578,14 @@ public class RobotContainer {
     return getDistanceFromNet() > 2.0;
   }
 
+  private boolean isFarEnoughFromFarNetForPathfinding() {
+    return getDistanceFromFarNet() > 2.0;
+  }
+
+  private boolean isOnFarSideOfField() {
+    return drivetrain.getPose().getX() > 9.0;
+  }
+
   private boolean isFarEnoughForPathfinding() {
     return getDistanceFromTarget() > 2.0;
   }
@@ -1600,6 +1643,14 @@ public class RobotContainer {
     return targetPose.getTranslation().getDistance(currentPose.getTranslation());
   }
 
+  private double getDistanceFromFarNet() {
+    Pose2d targetPose =
+        new Pose2d(
+            FAR_NET_SCORE_LOCATION_X, drivetrain.getPose().getY(), Rotation2d.fromDegrees(135));
+    Pose2d currentPose = drivetrain.getPose();
+    return targetPose.getTranslation().getDistance(currentPose.getTranslation());
+  }
+
   private ArmevatorPose inferPluckArmevatorPose(boolean getPrePluck) {
     switch (scoringPathOption) {
       case PATH_F1, PATH_F2, PATH_BR1, PATH_BR2, PATH_BL1, PATH_BL2 -> {
@@ -1639,8 +1690,27 @@ public class RobotContainer {
                   NET_SCORE_LOCATION_X,
                   currentY,
                   preferNetRightSideSupplier.getAsBoolean()
-                      ? Rotation2d.fromDegrees(135)
-                      : Rotation2d.fromDegrees(-135));
+                      ? Rotation2d.fromDegrees(135 + 8)
+                      : Rotation2d.fromDegrees(-135 - 8));
+          return AutoBuilder.pathfindToPose(targetPose, hpPathConstraints);
+        });
+  }
+
+  private Command getDynamicFarNetPathCommand() {
+    return new DynamicCommand(
+        () -> {
+          Pose2d currentPose = drivetrain.getPose();
+          double currentY = currentPose.getY();
+          if (currentY < NET_SCORE_MIN_Y || currentY > NET_SCORE_MAX_Y) {
+            return new InstantCommand();
+          }
+          Pose2d targetPose =
+              new Pose2d(
+                  FAR_NET_SCORE_LOCATION_X,
+                  currentY,
+                  preferNetRightSideSupplier.getAsBoolean()
+                      ? Rotation2d.fromDegrees(45 - 8)
+                      : Rotation2d.fromDegrees(-45 + 8));
           return AutoBuilder.pathfindToPose(targetPose, hpPathConstraints);
         });
   }
