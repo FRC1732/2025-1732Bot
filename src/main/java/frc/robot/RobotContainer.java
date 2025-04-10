@@ -1355,7 +1355,7 @@ public class RobotContainer {
                     new ConditionalCommand(
                         Commands.sequence(
                             new ConditionalCommand(
-                                getDynamicNetPathCommand(),
+                                getDynamicFarNetPathCommand(),
                                 new InstantCommand(),
                                 this::isFarEnoughFromFarNetForPathfinding),
                             new DriveToPoseSlew(
