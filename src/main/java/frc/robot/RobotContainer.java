@@ -660,7 +660,71 @@ public class RobotContainer {
               hasSeenTarget = true;
               lastTargetTime = Timer.getFPGATimestamp();
               timeoutSeconds =
-                  Math.max(Math.abs(visionApriltagSubsystem.getTX()) - 1.5, 0.0) * 0.09;
+                  Math.max(Math.abs(visionApriltagSubsystem.getTX()) - 2.5, 0.0) * 0.09;
+            }
+          }
+
+          @Override
+          public boolean isFinished() {
+            double currentTime = Timer.getFPGATimestamp();
+
+            // Condition 1: Never saw a target and 0.5 seconds elapsed
+            if (!hasSeenTarget && (currentTime - startTime) > 0.5) {
+              return true;
+            }
+
+            // Condition 2: Time since last target visible exceeds calculated timeout
+            if (hasSeenTarget && (currentTime - lastTargetTime) >= timeoutSeconds) {
+              return true;
+            }
+
+            return false;
+          }
+        };
+
+    return Commands.deadline(
+        timeoutCommand,
+        Commands.sequence(
+            new InstantCommand(() -> adjustingRight = isTargetRight.getAsBoolean()),
+            drivetrain.run(
+                () -> {
+                  if (visionApriltagSubsystem.hasReefTarget()) {
+                    adjustingRight = visionApriltagSubsystem.getTX() > 0;
+                  }
+                  driveSlowlyDirectionLocked(
+                      targetDirectionSupplier
+                          .get()
+                          .plus(Rotation2d.kCW_90deg.times(adjustingRight ? 1 : -1)),
+                      targetDirectionSupplier.get());
+                })));
+  }
+
+  private Command getPluckAdjustSlowlyCommand(
+      Supplier<Rotation2d> targetDirectionSupplier, BooleanSupplier isTargetRight) {
+
+    // Custom command that ends based on vision target conditions.
+    Command timeoutCommand =
+        new Command() {
+          private double startTime;
+          private double lastTargetTime;
+          private boolean hasSeenTarget;
+          private double timeoutSeconds;
+
+          @Override
+          public void initialize() {
+            startTime = Timer.getFPGATimestamp();
+            lastTargetTime = startTime;
+            hasSeenTarget = false;
+            timeoutSeconds = 0;
+          }
+
+          @Override
+          public void execute() {
+            if (visionApriltagSubsystem.hasReefTarget()) {
+              hasSeenTarget = true;
+              lastTargetTime = Timer.getFPGATimestamp();
+              timeoutSeconds =
+                  Math.max(Math.abs(visionApriltagSubsystem.getTX()) - 1.0, 0.0) * 0.09;
             }
           }
 
@@ -899,7 +963,16 @@ public class RobotContainer {
                                     () -> getScoringAprilTagRight()),
                                 () -> currentScoringLevel == ArmevatorPose.CORAL_L2_SCORE),
                             Commands.parallel(
-                                Commands.sequence(new WaitCommand(0.1), new ClawBackwards(claw)),
+                                new ConditionalCommand(
+                                    Commands.sequence(
+                                        Commands.waitSeconds(0.1),
+                                        Commands.runOnce(
+                                            () ->
+                                                armevator.setTargetPose(
+                                                    ArmevatorPose.CORAL_L4_FLIP))),
+                                    new InstantCommand(),
+                                    () -> currentScoringLevel == ArmevatorPose.CORAL_L4_SCORE),
+                                Commands.sequence(new WaitCommand(0.075), new ClawBackwards(claw)),
                                 drivetrain.run(
                                     () ->
                                         driveSlowlyDirection(
@@ -1205,7 +1278,8 @@ public class RobotContainer {
                         new WaitCommand(0.25),
                         intake.runOnce(
                             () -> intake.setTargetPose(ArmevatorPose.ALGAE_PRE_PLUCK_L2)))),
-                getAdjustSlowlyCommand(() -> scoringAngleMap.get(scoringPathOption), () -> true),
+                getPluckAdjustSlowlyCommand(
+                    () -> scoringAngleMap.get(scoringPathOption), () -> true),
                 Commands.parallel(
                     nonAutoPluck,
                     drivetrain.run(
