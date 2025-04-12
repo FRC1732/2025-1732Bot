@@ -103,6 +103,8 @@ public class RobotContainer {
       new Pose2d(4.9047, 4.7404, Rotation2d.fromDegrees(60));
   private static final Pose2d APRILTAG_POSE_BR =
       new Pose2d(4.9047, 3.3012, Rotation2d.fromDegrees(-60));
+  private static final Pose2d APRILTAG_POSE_B =
+      new Pose2d(5.321046, 4.0208, Rotation2d.fromDegrees(0));
 
   private Alliance lastAlliance = Alliance.Blue; // Field2d.getInstance().getAlliance();
 
@@ -380,6 +382,21 @@ public class RobotContainer {
             intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.CORAL_L4_SCORE)),
             armevator.runOnce(() -> armevator.setTargetPose(ArmevatorPose.CORAL_L4_SCORE))));
     NamedCommands.registerCommand(
+        "setPoseL3",
+        Commands.sequence(
+            intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.CORAL_L4_SCORE)),
+            armevator.runOnce(() -> armevator.setTargetPose(ArmevatorPose.CORAL_L3_SCORE))));
+    NamedCommands.registerCommand(
+        "setPosePrePluckHigh",
+        Commands.sequence(
+            intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.CORAL_L4_SCORE)),
+            armevator.runOnce(() -> armevator.setTargetPose(ArmevatorPose.ALGAE_PRE_PLUCK_L3))));
+    NamedCommands.registerCommand(
+        "setPosePrePluckLow",
+        Commands.sequence(
+            intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.CORAL_L4_SCORE)),
+            armevator.runOnce(() -> armevator.setTargetPose(ArmevatorPose.ALGAE_PRE_PLUCK_L2))));
+    NamedCommands.registerCommand(
         "setPoseL4Wait",
         Commands.sequence(
             Commands.waitUntil(armevator::isMaxHeight),
@@ -396,6 +413,9 @@ public class RobotContainer {
     NamedCommands.registerCommand(
         "setPipelineLocalization",
         new InstantCommand(() -> visionApriltagSubsystem.setPipeline(Pipelines.LOCALIZATION)));
+    NamedCommands.registerCommand(
+        "setPipelineLocalization",
+        new InstantCommand(() -> visionApriltagSubsystem.setPipeline(Pipelines.TRACKING_CENTER)));
     NamedCommands.registerCommand(
         "setPipelineLeft",
         new InstantCommand(
@@ -440,6 +460,25 @@ public class RobotContainer {
             new InstantCommand(),
             () -> true)); // visionApriltagSubsystem.hasReefTarget()));
     NamedCommands.registerCommand(
+        "localizeRobotB",
+        new ConditionalCommand(
+            Commands.deadline(
+                Commands.sequence(
+                    new WaitCommand(0.4),
+                    Commands.runOnce(
+                        () -> {
+                          System.out.println("curPose: " + drivetrain.getPose().toString());
+                          Pose2d visionPose =
+                              inferPoseFromTarget(APRILTAG_POSE_B, visionApriltagSubsystem.getTX());
+                          drivetrain.resetPose(visionPose);
+                          questNav.resetPose(visionPose);
+                          System.out.println("visionPose: " + visionPose.toString());
+                        })),
+                drivetrain.run(
+                    () -> driveSlowlyDirection(scoringAngleMap.get(scoringPathOption.PATH_B1)))),
+            new InstantCommand(),
+            () -> true)); // visionApriltagSubsystem.hasReefTarget()));
+    NamedCommands.registerCommand(
         "driveHpSlowly",
         drivetrain.run(
             () ->
@@ -456,8 +495,27 @@ public class RobotContainer {
                         ? scoringAngleMap.get(scoringPathOption.PATH_FR1)
                         : scoringAngleMap.get(scoringPathOption.PATH_FL1))));
     NamedCommands.registerCommand(
+        "driveBlSlowly",
+        drivetrain.run(
+            () ->
+                driveSlowlyDirection(
+                    isAutoFlipped().getAsBoolean()
+                        ? scoringAngleMap.get(scoringPathOption.PATH_BR1)
+                        : scoringAngleMap.get(scoringPathOption.PATH_BL1))));
+    NamedCommands.registerCommand(
+        "driveBRSlowly",
+        drivetrain.run(
+            () ->
+                driveSlowlyDirection(
+                    isAutoFlipped().getAsBoolean()
+                        ? scoringAngleMap.get(scoringPathOption.PATH_BL1)
+                        : scoringAngleMap.get(scoringPathOption.PATH_BR1))));
+    NamedCommands.registerCommand(
         "driveFSlowly",
         drivetrain.run(() -> driveSlowlyDirection(scoringAngleMap.get(scoringPathOption.PATH_F1))));
+    NamedCommands.registerCommand(
+        "driveBSlowly",
+        drivetrain.run(() -> driveSlowlyDirection(scoringAngleMap.get(scoringPathOption.PATH_B1))));
     NamedCommands.registerCommand(
         "adjustBlSlowly",
         getAdjustSlowlyCommand(
@@ -466,6 +524,14 @@ public class RobotContainer {
                     ? scoringAngleMap.get(scoringPathOption.PATH_BR1)
                     : scoringAngleMap.get(scoringPathOption.PATH_BL1),
             () -> !isAutoFlipped().getAsBoolean()));
+    NamedCommands.registerCommand(
+        "adjustBrSlowly",
+        getAdjustSlowlyCommand(
+            () ->
+                !isAutoFlipped().getAsBoolean()
+                    ? scoringAngleMap.get(scoringPathOption.PATH_BR1)
+                    : scoringAngleMap.get(scoringPathOption.PATH_BL1),
+            () -> isAutoFlipped().getAsBoolean()));
     NamedCommands.registerCommand(
         "adjustBl1Slowly",
         getAdjustSlowlyCommand(
@@ -495,6 +561,42 @@ public class RobotContainer {
         getAdjustSlowlyCommand(
             () -> scoringAngleMap.get(scoringPathOption.PATH_F1),
             () -> !isAutoFlipped().getAsBoolean()));
+    NamedCommands.registerCommand(
+        "adjustBSlowly",
+        getAdjustSlowlyCommand(
+            () -> scoringAngleMap.get(scoringPathOption.PATH_B1),
+            () -> isAutoFlipped().getAsBoolean()));
+    NamedCommands.registerCommand(
+        "adjustPluckSlowly",
+        getPluckAdjustSlowlyCommand(
+            () -> scoringAngleMap.get(scoringPathOption.PATH_B1),
+            () -> isAutoFlipped().getAsBoolean()));
+    NamedCommands.registerCommand(
+        "pluckAlgaeHigh",
+        Commands.sequence(
+            claw.runOnce(() -> claw.intakeAlgaePluck()),
+            armevator.runOnce(() -> armevator.setTargetPose(ArmevatorPose.ALGAE_L3_PLUCK)),
+            Commands.waitSeconds(0.6),
+            intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.ALGAE_NET_STAGE)),
+            armevator.runOnce(() -> armevator.setTargetPose(ArmevatorPose.ALGAE_NET_STAGE))));
+    NamedCommands.registerCommand(
+        "pluckAlgaeLow",
+        Commands.sequence(
+            claw.runOnce(() -> claw.intakeAlgaePluck()),
+            armevator.runOnce(() -> armevator.setTargetPose(ArmevatorPose.ALGAE_L2_PLUCK)),
+            Commands.waitSeconds(0.6),
+            claw.runOnce(() -> claw.brakeAlgae()),
+            intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.ALGAE_NET_STAGE)),
+            armevator.runOnce(() -> armevator.setTargetPose(ArmevatorPose.ALGAE_NET_STAGE))));
+    NamedCommands.registerCommand(
+        "shootNet",
+        Commands.sequence(
+            armevator.runOnce(() -> armevator.setTargetPose(ArmevatorPose.ALGAE_NET_SCORE)),
+            Commands.waitUntil(armevator::isAtNetReleaseAngle),
+            claw.runOnce(() -> claw.ejectAlgae()),
+            Commands.waitSeconds(0.3),
+            claw.runOnce(() -> claw.stopClaw()),
+            armevator.runOnce(() -> armevator.setTargetPose(ArmevatorPose.CORAL_HP_LOAD))));
 
     // Event Markers
     new EventTrigger("Marker").onTrue(Commands.print("reached event marker"));
@@ -1203,9 +1305,9 @@ public class RobotContainer {
                 claw.runOnce(() -> claw.stopClaw()),
                 intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.ALGAE_PRE_HANDOFF)),
                 armevator.runOnce(() -> armevator.setTargetPose(ArmevatorPose.ALGAE_POST_HANDOFF)),
-                Commands.waitSeconds(0.75),
+                Commands.waitSeconds(0.65),
                 intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.ALGAE_HANDOFF)),
-                Commands.waitSeconds(0.35),
+                Commands.waitSeconds(0.2),
                 intake.runOnce(() -> intake.runIntake()),
                 claw.runOnce(() -> claw.intakeAlgae()),
                 Commands.waitSeconds(0.5),
@@ -1399,7 +1501,7 @@ public class RobotContainer {
                             () -> armevator.setTargetPose(ArmevatorPose.ALGAE_NET_SCORE)),
                         Commands.waitUntil(armevator::isAtNetReleaseAngle),
                         claw.runOnce(() -> claw.ejectAlgae()),
-                        Commands.waitSeconds(0.2),
+                        Commands.waitSeconds(0.3),
                         claw.runOnce(() -> claw.stopClaw()),
                         armevator.runOnce(
                             () -> armevator.setTargetPose(ArmevatorPose.ALGAE_POST_HANDOFF))),
@@ -1417,7 +1519,9 @@ public class RobotContainer {
                                         : Rotation2d.fromDegrees(-135 - 8))))));
     oi.aimAtNetButton()
         .onFalse(
-            armevator.runOnce(() -> armevator.setTargetPose(ArmevatorPose.ALGAE_POST_HANDOFF)));
+            Commands.sequence(
+                armevator.runOnce(() -> armevator.setTargetPose(ArmevatorPose.ALGAE_POST_HANDOFF)),
+                claw.runOnce(() -> claw.stopClaw())));
 
     ////////////////////
     // Climber Commands
