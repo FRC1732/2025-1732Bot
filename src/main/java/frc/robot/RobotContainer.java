@@ -417,7 +417,7 @@ public class RobotContainer {
         new ConditionalCommand(
             Commands.deadline(
                 Commands.sequence(
-                    new WaitCommand(0.4),
+                    new WaitCommand(0.3),
                     Commands.runOnce(
                         () -> {
                           System.out.println("curPose: " + drivetrain.getPose().toString());
@@ -708,9 +708,8 @@ public class RobotContainer {
         new Command() {
           private double startTime;
           private double lastTargetTime;
-          private double timeoutSeconds;
           private boolean hasSeenTarget;
-          private double condition2StartTime;
+          private double timeoutSeconds;
 
           @Override
           public void initialize() {
@@ -718,7 +717,6 @@ public class RobotContainer {
             lastTargetTime = startTime;
             hasSeenTarget = false;
             timeoutSeconds = 0;
-            condition2StartTime = -1;
           }
 
           @Override
@@ -740,17 +738,9 @@ public class RobotContainer {
               return true;
             }
 
-            // Condition 2: Time since last target visible exceeds calculated timeout for 0.2
-            // seconds
+            // Condition 2: Time since last target visible exceeds calculated timeout
             if (hasSeenTarget && (currentTime - lastTargetTime) >= timeoutSeconds) {
-              if (condition2StartTime < 0) {
-                condition2StartTime = currentTime;
-              }
-              if ((currentTime - condition2StartTime) >= 0.2) {
-                return true;
-              }
-            } else {
-              condition2StartTime = -1;
+              return true;
             }
 
             return false;
@@ -1289,6 +1279,10 @@ public class RobotContainer {
                         new WaitCommand(0.25),
                         intake.runOnce(
                             () -> intake.setTargetPose(ArmevatorPose.ALGAE_PRE_PLUCK_L2)))),
+                Commands.deadline(
+                    Commands.waitSeconds(0.25),
+                    drivetrain.run(
+                        () -> driveSlowlyDirection(scoringAngleMap.get(scoringPathOption)))),
                 getPluckAdjustSlowlyCommand(
                     () -> scoringAngleMap.get(scoringPathOption), () -> true),
                 Commands.parallel(
