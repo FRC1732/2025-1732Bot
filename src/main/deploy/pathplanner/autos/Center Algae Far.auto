@@ -113,15 +113,41 @@
           }
         },
         {
-          "type": "path",
+          "type": "named",
           "data": {
-            "pathName": "BAlgae-Net"
+            "name": "setPipelineCenter"
           }
         },
         {
-          "type": "named",
+          "type": "parallel",
           "data": {
-            "name": "ShootNet"
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "BAlgae-Net"
+                }
+              },
+              {
+                "type": "sequential",
+                "data": {
+                  "commands": [
+                    {
+                      "type": "wait",
+                      "data": {
+                        "waitTime": 1.24
+                      }
+                    },
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "ShootNet"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
           }
         },
         {
@@ -135,9 +161,22 @@
                 }
               },
               {
-                "type": "named",
+                "type": "sequential",
                 "data": {
-                  "name": "setPosePrePluckHigh"
+                  "commands": [
+                    {
+                      "type": "wait",
+                      "data": {
+                        "waitTime": 0.3
+                      }
+                    },
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "setPosePrePluckHigh"
+                      }
+                    }
+                  ]
                 }
               }
             ]
@@ -147,6 +186,25 @@
           "type": "sequential",
           "data": {
             "commands": [
+              {
+                "type": "deadline",
+                "data": {
+                  "commands": [
+                    {
+                      "type": "wait",
+                      "data": {
+                        "waitTime": 0.15
+                      }
+                    },
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "driveBlSlowly"
+                      }
+                    }
+                  ]
+                }
+              },
               {
                 "type": "named",
                 "data": {
@@ -173,15 +231,35 @@
                 }
               },
               {
-                "type": "path",
+                "type": "parallel",
                 "data": {
-                  "pathName": "BLAlgae-Net"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "ShootNet"
+                  "commands": [
+                    {
+                      "type": "path",
+                      "data": {
+                        "pathName": "BLAlgae-Net"
+                      }
+                    },
+                    {
+                      "type": "sequential",
+                      "data": {
+                        "commands": [
+                          {
+                            "type": "wait",
+                            "data": {
+                              "waitTime": 1.51
+                            }
+                          },
+                          {
+                            "type": "named",
+                            "data": {
+                              "name": "ShootNet"
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ]
                 }
               }
             ]
@@ -198,9 +276,22 @@
                 }
               },
               {
-                "type": "named",
+                "type": "sequential",
                 "data": {
-                  "name": "setPosePrePluckHigh"
+                  "commands": [
+                    {
+                      "type": "wait",
+                      "data": {
+                        "waitTime": 0.3
+                      }
+                    },
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "setPosePrePluckHigh"
+                      }
+                    }
+                  ]
                 }
               }
             ]
@@ -210,6 +301,25 @@
           "type": "sequential",
           "data": {
             "commands": [
+              {
+                "type": "deadline",
+                "data": {
+                  "commands": [
+                    {
+                      "type": "wait",
+                      "data": {
+                        "waitTime": 0.15
+                      }
+                    },
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "driveBrSlowly"
+                      }
+                    }
+                  ]
+                }
+              },
               {
                 "type": "named",
                 "data": {
@@ -236,15 +346,35 @@
                 }
               },
               {
-                "type": "path",
+                "type": "parallel",
                 "data": {
-                  "pathName": "BRAlgae-Net"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "ShootNet"
+                  "commands": [
+                    {
+                      "type": "path",
+                      "data": {
+                        "pathName": "BRAlgae-Net"
+                      }
+                    },
+                    {
+                      "type": "sequential",
+                      "data": {
+                        "commands": [
+                          {
+                            "type": "wait",
+                            "data": {
+                              "waitTime": 1.69
+                            }
+                          },
+                          {
+                            "type": "named",
+                            "data": {
+                              "name": "ShootNet"
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ]
                 }
               }
             ]
