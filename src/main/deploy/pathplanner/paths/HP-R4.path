@@ -8,20 +8,20 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.7337551712052308,
-        "y": 7.169380953696315
+        "x": 3.030838815793552,
+        "y": 7.171299342105876
       },
       "isLocked": false,
       "linkedName": "HP"
     },
     {
       "anchor": {
-        "x": 3.2042959084551215,
-        "y": 4.194
+        "x": 4.991503865841928,
+        "y": 5.21409461998858
       },
       "prevControl": {
-        "x": 2.0542959084551216,
-        "y": 4.194
+        "x": 5.774388422574015,
+        "y": 6.779211794781062
       },
       "nextControl": null,
       "isLocked": false,
@@ -42,7 +42,7 @@
   },
   "goalEndState": {
     "velocity": 0.3,
-    "rotation": 0.0
+    "rotation": -119.99999999999999
   },
   "reversed": false,
   "folder": "Four Piece Paths",

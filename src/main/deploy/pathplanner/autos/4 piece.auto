@@ -454,7 +454,7 @@
               {
                 "type": "wait",
                 "data": {
-                  "waitTime": 0.1
+                  "waitTime": 0.15
                 }
               },
               {
@@ -517,7 +517,7 @@
               {
                 "type": "named",
                 "data": {
-                  "name": "setPipelineLeft"
+                  "name": "setPipelineRight"
                 }
               }
             ]
@@ -526,7 +526,7 @@
         {
           "type": "named",
           "data": {
-            "name": "adjustFSlowly"
+            "name": "adjustBl1Slowly"
           }
         },
         {
@@ -536,13 +536,13 @@
               {
                 "type": "wait",
                 "data": {
-                  "waitTime": 0.2
+                  "waitTime": 0.1
                 }
               },
               {
                 "type": "named",
                 "data": {
-                  "name": "driveFSlowly"
+                  "name": "driveBlSlowly"
                 }
               }
             ]
@@ -571,7 +571,7 @@
                     {
                       "type": "named",
                       "data": {
-                        "name": "ejectCoral"
+                        "name": "setPoseFlip"
                       }
                     },
                     {
@@ -581,6 +581,12 @@
                       }
                     }
                   ]
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "ejectCoral"
                 }
               }
             ]

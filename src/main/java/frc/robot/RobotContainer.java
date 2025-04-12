@@ -467,6 +467,14 @@ public class RobotContainer {
                     : scoringAngleMap.get(scoringPathOption.PATH_BL1),
             () -> !isAutoFlipped().getAsBoolean()));
     NamedCommands.registerCommand(
+        "adjustBl1Slowly",
+        getAdjustSlowlyCommand(
+            () ->
+                isAutoFlipped().getAsBoolean()
+                    ? scoringAngleMap.get(scoringPathOption.PATH_BR1)
+                    : scoringAngleMap.get(scoringPathOption.PATH_BL1),
+            () -> isAutoFlipped().getAsBoolean()));
+    NamedCommands.registerCommand(
         "adjustFl1Slowly",
         getAdjustSlowlyCommand(
             () ->
