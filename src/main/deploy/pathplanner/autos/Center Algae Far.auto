@@ -17,7 +17,7 @@
               {
                 "type": "named",
                 "data": {
-                  "name": "setPoseL4"
+                  "name": "setPoseL3"
                 }
               },
               {
@@ -29,28 +29,10 @@
               {
                 "type": "named",
                 "data": {
-                  "name": "setPipelineRight"
+                  "name": "setPipelineCenter"
                 }
               }
             ]
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "adjustBSlowly"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "setPipelineLocalization"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "localizeRobotB"
           }
         },
         {
@@ -78,19 +60,7 @@
                                 {
                                   "type": "wait",
                                   "data": {
-                                    "waitTime": 0.075
-                                  }
-                                },
-                                {
-                                  "type": "named",
-                                  "data": {
-                                    "name": "setPoseFlip"
-                                  }
-                                },
-                                {
-                                  "type": "wait",
-                                  "data": {
-                                    "waitTime": 0.25
+                                    "waitTime": 0.2
                                   }
                                 }
                               ]
@@ -118,6 +88,12 @@
           }
         },
         {
+          "type": "named",
+          "data": {
+            "name": "setPipelineLocalization"
+          }
+        },
+        {
           "type": "deadline",
           "data": {
             "commands": [
@@ -130,7 +106,7 @@
               {
                 "type": "named",
                 "data": {
-                  "name": "driveBSlowly"
+                  "name": "localizeRobotB"
                 }
               }
             ]
