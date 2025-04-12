@@ -3,52 +3,57 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 3.7708,
-        "y": 5.261
+        "x": 6.9853618421054104,
+        "y": 5.189226973681559
       },
       "prevControl": null,
       "nextControl": {
-        "x": 3.8958000000000017,
-        "y": 5.044493649053892
+        "x": 7.447203947368421,
+        "y": 5.6703125
       },
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "Net1"
     },
     {
       "anchor": {
-        "x": 3.846,
-        "y": 5.129323863297086
+        "x": 9.5,
+        "y": 5.622203947368421
       },
       "prevControl": {
-        "x": 3.721,
-        "y": 5.345830214243195
+        "x": 8.25,
+        "y": 5.622203947368421
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "FLAlgae"
+      "linkedName": "Far"
     }
   ],
-  "rotationTargets": [],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 0.49528301886792453,
+      "rotationDegrees": 180.0
+    }
+  ],
   "constraintZones": [],
   "pointTowardsZones": [],
   "eventMarkers": [],
   "globalConstraints": {
-    "maxVelocity": 4.6,
-    "maxAcceleration": 3.3,
+    "maxVelocity": 2.0,
+    "maxAcceleration": 2.5,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0,
     "nominalVoltage": 12.0,
     "unlimited": false
   },
   "goalEndState": {
-    "velocity": 0.2,
-    "rotation": -59.99999999999999
+    "velocity": 0,
+    "rotation": 180.0
   },
   "reversed": false,
-  "folder": "Algae Pluck Paths",
+  "folder": "Center Auto Paths",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": -59.99999999999999
+    "rotation": -143.0
   },
-  "useDefaultConstraints": true
+  "useDefaultConstraints": false
 }

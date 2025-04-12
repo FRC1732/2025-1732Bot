@@ -3,29 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 3.7708,
-        "y": 5.261
+        "x": 6.9853618421054104,
+        "y": 5.189226973681559
       },
       "prevControl": null,
       "nextControl": {
-        "x": 3.8958000000000017,
-        "y": 5.044493649053892
+        "x": 5.311184210528287,
+        "y": 6.016694078952051
       },
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "Net1"
     },
     {
       "anchor": {
-        "x": 3.846,
-        "y": 5.129323863297086
+        "x": 1.623944805194805,
+        "y": 7.3939732142857135
       },
       "prevControl": {
-        "x": 3.721,
-        "y": 5.345830214243195
+        "x": 3.344674114247944,
+        "y": 4.936517081418739
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "FLAlgae"
+      "linkedName": "HP"
     }
   ],
   "rotationTargets": [],
@@ -41,14 +41,14 @@
     "unlimited": false
   },
   "goalEndState": {
-    "velocity": 0.2,
-    "rotation": -59.99999999999999
+    "velocity": 0,
+    "rotation": -55.0
   },
   "reversed": false,
-  "folder": "Algae Pluck Paths",
+  "folder": "Center Auto Paths",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": -59.99999999999999
+    "rotation": -143.0
   },
   "useDefaultConstraints": true
 }

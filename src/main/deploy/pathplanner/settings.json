@@ -4,8 +4,9 @@
   "holonomicMode": true,
   "pathFolders": [
     "Algae Pluck Paths",
+    "Center Auto Paths",
     "Pathfinding Paths",
-    "Reefscape",
+    "Four Piece Paths",
     "Scoring Paths"
   ],
   "autoFolders": [
