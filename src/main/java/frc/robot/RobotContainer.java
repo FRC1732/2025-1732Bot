@@ -122,7 +122,7 @@ public class RobotContainer {
   private double MaxSlowAngularRate = 0.25 * MaxAngularRate; // 25% of max angular rate
   private boolean isSlowMode = false;
   private boolean isFullAuto = true;
-  private boolean preferNetRightSide = true;
+  private boolean preferNetRightSide = false;
   private boolean isPlucking = false;
   private boolean isVisionEnabled = true;
   private boolean isPluckTargetHigh = false;
@@ -414,7 +414,7 @@ public class RobotContainer {
         "setPipelineLocalization",
         new InstantCommand(() -> visionApriltagSubsystem.setPipeline(Pipelines.LOCALIZATION)));
     NamedCommands.registerCommand(
-        "setPipelineLocalization",
+        "setPipelineCenter",
         new InstantCommand(() -> visionApriltagSubsystem.setPipeline(Pipelines.TRACKING_CENTER)));
     NamedCommands.registerCommand(
         "setPipelineLeft",
@@ -437,7 +437,7 @@ public class RobotContainer {
         new ConditionalCommand(
             Commands.deadline(
                 Commands.sequence(
-                    new WaitCommand(0.3),
+                    new WaitCommand(0.4),
                     Commands.runOnce(
                         () -> {
                           System.out.println("curPose: " + drivetrain.getPose().toString());
@@ -503,7 +503,7 @@ public class RobotContainer {
                         ? scoringAngleMap.get(scoringPathOption.PATH_BR1)
                         : scoringAngleMap.get(scoringPathOption.PATH_BL1))));
     NamedCommands.registerCommand(
-        "driveBRSlowly",
+        "driveBrSlowly",
         drivetrain.run(
             () ->
                 driveSlowlyDirection(
@@ -568,15 +568,31 @@ public class RobotContainer {
             () -> isAutoFlipped().getAsBoolean()));
     NamedCommands.registerCommand(
         "adjustPluckSlowly",
-        getPluckAdjustSlowlyCommand(
+        getAutoPluckAdjustSlowlyCommand(
             () -> scoringAngleMap.get(scoringPathOption.PATH_B1),
+            () -> isAutoFlipped().getAsBoolean()));
+    NamedCommands.registerCommand(
+        "adjustPluckSlowlyBL",
+        getPluckAdjustSlowlyCommand(
+            () -> scoringAngleMap.get(scoringPathOption.PATH_BL1),
+            () -> isAutoFlipped().getAsBoolean()));
+    NamedCommands.registerCommand(
+        "adjustPluckQuicklyBL",
+        getAutoPluckAdjustSlowlyCommand(
+            () -> scoringAngleMap.get(scoringPathOption.PATH_BL1),
+            () -> isAutoFlipped().getAsBoolean()));
+    NamedCommands.registerCommand(
+        "adjustPluckSlowlyBR",
+        getPluckAdjustSlowlyCommand(
+            () -> scoringAngleMap.get(scoringPathOption.PATH_BR1),
             () -> isAutoFlipped().getAsBoolean()));
     NamedCommands.registerCommand(
         "pluckAlgaeHigh",
         Commands.sequence(
             claw.runOnce(() -> claw.intakeAlgaePluck()),
             armevator.runOnce(() -> armevator.setTargetPose(ArmevatorPose.ALGAE_L3_PLUCK)),
-            Commands.waitSeconds(0.6),
+            Commands.waitSeconds(0.85),
+            claw.runOnce(() -> claw.intakeAlgae()),
             intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.ALGAE_NET_STAGE)),
             armevator.runOnce(() -> armevator.setTargetPose(ArmevatorPose.ALGAE_NET_STAGE))));
     NamedCommands.registerCommand(
@@ -584,8 +600,8 @@ public class RobotContainer {
         Commands.sequence(
             claw.runOnce(() -> claw.intakeAlgaePluck()),
             armevator.runOnce(() -> armevator.setTargetPose(ArmevatorPose.ALGAE_L2_PLUCK)),
-            Commands.waitSeconds(0.6),
-            claw.runOnce(() -> claw.brakeAlgae()),
+            Commands.waitSeconds(0.85),
+            claw.runOnce(() -> claw.intakeAlgae()),
             intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.ALGAE_NET_STAGE)),
             armevator.runOnce(() -> armevator.setTargetPose(ArmevatorPose.ALGAE_NET_STAGE))));
     NamedCommands.registerCommand(
@@ -594,7 +610,16 @@ public class RobotContainer {
             armevator.runOnce(() -> armevator.setTargetPose(ArmevatorPose.ALGAE_NET_SCORE)),
             Commands.waitUntil(armevator::isAtNetReleaseAngle),
             claw.runOnce(() -> claw.ejectAlgae()),
-            Commands.waitSeconds(0.3),
+            Commands.waitSeconds(0.2),
+            claw.runOnce(() -> claw.stopClaw()),
+            armevator.runOnce(() -> armevator.setTargetPose(ArmevatorPose.CORAL_HP_LOAD))));
+    NamedCommands.registerCommand(
+        "shootNetFar",
+        Commands.sequence(
+            armevator.runOnce(() -> armevator.setTargetPose(ArmevatorPose.ALGAE_NET_SCORE)),
+            Commands.waitUntil(armevator::isAtNetReleaseAngleFar),
+            claw.runOnce(() -> claw.ejectAlgae()),
+            Commands.waitSeconds(0.2),
             claw.runOnce(() -> claw.stopClaw()),
             armevator.runOnce(() -> armevator.setTargetPose(ArmevatorPose.CORAL_HP_LOAD))));
 
@@ -613,6 +638,12 @@ public class RobotContainer {
 
     Command fourPiece = new PathPlannerAuto("4 piece");
     autoChooser.addOption("4 piece left", fourPiece);
+
+    Command centerAlgaeFar = new PathPlannerAuto("Center Algae Far");
+    autoChooser.addOption("Center Algae Far", centerAlgaeFar);
+
+    Command centerCoral = new PathPlannerAuto("Center Coral");
+    autoChooser.addOption("Center Coral", centerCoral);
 
     fourPieceRight = new PathPlannerAuto("4 piece", true);
     autoChooser.addOption("4 piece right", fourPieceRight);
@@ -746,6 +777,17 @@ public class RobotContainer {
     driveSlowlyDirectionAlert = true;
   }
 
+  private void driveAutoSlowlyDirectionLocked(
+      Rotation2d targetDirection, Rotation2d rotationDireciton) {
+    drivetrain.setControl(
+        driveFacingAngleRequest
+            .withVelocityX(0.6 * Math.cos(targetDirection.getRadians()))
+            .withVelocityY(0.6 * Math.sin(targetDirection.getRadians()))
+            .withTargetDirection(rotationDireciton));
+
+    driveSlowlyDirectionAlert = true;
+  }
+
   private Command getAdjustSlowlyCommand(
       Supplier<Rotation2d> targetDirectionSupplier, BooleanSupplier isTargetRight) {
 
@@ -867,6 +909,70 @@ public class RobotContainer {
                     adjustingRight = visionApriltagSubsystem.getTX() > 0;
                   }
                   driveSlowlyDirectionLocked(
+                      targetDirectionSupplier
+                          .get()
+                          .plus(Rotation2d.kCW_90deg.times(adjustingRight ? 1 : -1)),
+                      targetDirectionSupplier.get());
+                })));
+  }
+
+  private Command getAutoPluckAdjustSlowlyCommand(
+      Supplier<Rotation2d> targetDirectionSupplier, BooleanSupplier isTargetRight) {
+
+    // Custom command that ends based on vision target conditions.
+    Command timeoutCommand =
+        new Command() {
+          private double startTime;
+          private double lastTargetTime;
+          private boolean hasSeenTarget;
+          private double timeoutSeconds;
+
+          @Override
+          public void initialize() {
+            startTime = Timer.getFPGATimestamp();
+            lastTargetTime = startTime;
+            hasSeenTarget = false;
+            timeoutSeconds = 0;
+          }
+
+          @Override
+          public void execute() {
+            if (visionApriltagSubsystem.hasReefTarget()) {
+              hasSeenTarget = true;
+              lastTargetTime = Timer.getFPGATimestamp();
+              timeoutSeconds =
+                  Math.max(Math.abs(visionApriltagSubsystem.getTX()) - 3.5, 0.0) * 0.045;
+            }
+          }
+
+          @Override
+          public boolean isFinished() {
+            double currentTime = Timer.getFPGATimestamp();
+
+            // Condition 1: Never saw a target and 0.5 seconds elapsed
+            if (!hasSeenTarget && (currentTime - startTime) > 0.25) {
+              return true;
+            }
+
+            // Condition 2: Time since last target visible exceeds calculated timeout
+            if (hasSeenTarget && (currentTime - lastTargetTime) >= timeoutSeconds) {
+              return true;
+            }
+
+            return false;
+          }
+        };
+
+    return Commands.deadline(
+        timeoutCommand,
+        Commands.sequence(
+            new InstantCommand(() -> adjustingRight = isTargetRight.getAsBoolean()),
+            drivetrain.run(
+                () -> {
+                  if (visionApriltagSubsystem.hasReefTarget()) {
+                    adjustingRight = visionApriltagSubsystem.getTX() > 0;
+                  }
+                  driveAutoSlowlyDirectionLocked(
                       targetDirectionSupplier
                           .get()
                           .plus(Rotation2d.kCW_90deg.times(adjustingRight ? 1 : -1)),

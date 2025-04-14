@@ -58,9 +58,9 @@
           "data": {
             "commands": [
               {
-                "type": "path",
+                "type": "named",
                 "data": {
-                  "pathName": "R1-HP"
+                  "name": "localizeRobot"
                 }
               },
               {
@@ -68,9 +68,21 @@
                 "data": {
                   "commands": [
                     {
-                      "type": "deadline",
+                      "type": "wait",
+                      "data": {
+                        "waitTime": 0.2
+                      }
+                    },
+                    {
+                      "type": "parallel",
                       "data": {
                         "commands": [
+                          {
+                            "type": "named",
+                            "data": {
+                              "name": "ejectCoral"
+                            }
+                          },
                           {
                             "type": "sequential",
                             "data": {
@@ -86,14 +98,41 @@
                                   "data": {
                                     "name": "setPoseFlip"
                                   }
-                                },
-                                {
-                                  "type": "wait",
-                                  "data": {
-                                    "waitTime": 0.325
-                                  }
                                 }
                               ]
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "deadline",
+          "data": {
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "R1-HP"
+                }
+              },
+              {
+                "type": "sequential",
+                "data": {
+                  "commands": [
+                    {
+                      "type": "deadline",
+                      "data": {
+                        "commands": [
+                          {
+                            "type": "wait",
+                            "data": {
+                              "waitTime": 0.2
                             }
                           },
                           {
@@ -223,9 +262,15 @@
           "data": {
             "commands": [
               {
-                "type": "path",
+                "type": "wait",
                 "data": {
-                  "pathName": "R2-HP"
+                  "waitTime": 0.4
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "driveFlSlowly"
                 }
               },
               {
@@ -233,9 +278,21 @@
                 "data": {
                   "commands": [
                     {
-                      "type": "deadline",
+                      "type": "wait",
+                      "data": {
+                        "waitTime": 0.2
+                      }
+                    },
+                    {
+                      "type": "parallel",
                       "data": {
                         "commands": [
+                          {
+                            "type": "named",
+                            "data": {
+                              "name": "ejectCoral"
+                            }
+                          },
                           {
                             "type": "sequential",
                             "data": {
@@ -251,14 +308,41 @@
                                   "data": {
                                     "name": "setPoseFlip"
                                   }
-                                },
-                                {
-                                  "type": "wait",
-                                  "data": {
-                                    "waitTime": 0.325
-                                  }
                                 }
                               ]
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "deadline",
+          "data": {
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "R2-HP"
+                }
+              },
+              {
+                "type": "sequential",
+                "data": {
+                  "commands": [
+                    {
+                      "type": "deadline",
+                      "data": {
+                        "commands": [
+                          {
+                            "type": "wait",
+                            "data": {
+                              "waitTime": 0.2
                             }
                           },
                           {
@@ -371,13 +455,58 @@
               {
                 "type": "wait",
                 "data": {
-                  "waitTime": 0.2
+                  "waitTime": 0.4
                 }
               },
               {
                 "type": "named",
                 "data": {
                   "name": "driveFlSlowly"
+                }
+              },
+              {
+                "type": "sequential",
+                "data": {
+                  "commands": [
+                    {
+                      "type": "wait",
+                      "data": {
+                        "waitTime": 0.2
+                      }
+                    },
+                    {
+                      "type": "parallel",
+                      "data": {
+                        "commands": [
+                          {
+                            "type": "named",
+                            "data": {
+                              "name": "ejectCoral"
+                            }
+                          },
+                          {
+                            "type": "sequential",
+                            "data": {
+                              "commands": [
+                                {
+                                  "type": "wait",
+                                  "data": {
+                                    "waitTime": 0.075
+                                  }
+                                },
+                                {
+                                  "type": "named",
+                                  "data": {
+                                    "name": "setPoseFlip"
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ]
                 }
               }
             ]
@@ -402,28 +531,9 @@
                       "data": {
                         "commands": [
                           {
-                            "type": "sequential",
+                            "type": "wait",
                             "data": {
-                              "commands": [
-                                {
-                                  "type": "wait",
-                                  "data": {
-                                    "waitTime": 0.075
-                                  }
-                                },
-                                {
-                                  "type": "named",
-                                  "data": {
-                                    "name": "setPoseFlip"
-                                  }
-                                },
-                                {
-                                  "type": "wait",
-                                  "data": {
-                                    "waitTime": 0.325
-                                  }
-                                }
-                              ]
+                              "waitTime": 0.2
                             }
                           },
                           {
@@ -454,7 +564,7 @@
               {
                 "type": "wait",
                 "data": {
-                  "waitTime": 0.15
+                  "waitTime": 0.25
                 }
               },
               {
@@ -563,12 +673,6 @@
                 "data": {
                   "commands": [
                     {
-                      "type": "wait",
-                      "data": {
-                        "waitTime": 0.075
-                      }
-                    },
-                    {
                       "type": "named",
                       "data": {
                         "name": "setPoseFlip"
@@ -577,7 +681,7 @@
                     {
                       "type": "wait",
                       "data": {
-                        "waitTime": 0.325
+                        "waitTime": 0.4
                       }
                     }
                   ]
