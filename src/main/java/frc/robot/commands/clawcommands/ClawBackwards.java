@@ -7,15 +7,16 @@ package frc.robot.commands.clawcommands;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.armevator.ArmevatorPose;
 import frc.robot.subsystems.claw.Claw;
+import java.util.function.Supplier;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
 public class ClawBackwards extends Command {
   /** Creates a new ClawForward. */
   private Claw claw;
 
-  private ArmevatorPose pose;
+  private Supplier<ArmevatorPose> pose;
 
-  public ClawBackwards(Claw claw, ArmevatorPose pose) {
+  public ClawBackwards(Claw claw, Supplier<ArmevatorPose> pose) {
     // Use addRequirements() here to declare subsystem dependencies.
     addRequirements(claw);
     this.claw = claw;
@@ -26,6 +27,7 @@ public class ClawBackwards extends Command {
     // Use addRequirements() here to declare subsystem dependencies.
     addRequirements(claw);
     this.claw = claw;
+    this.pose = null;
   }
 
   // Called when the command is initially scheduled.
@@ -34,7 +36,7 @@ public class ClawBackwards extends Command {
     if (this.pose == null) {
       claw.ejectCoral();
     } else {
-      switch (this.pose) {
+      switch (this.pose.get()) {
         case CORAL_L1_SCORE:
           claw.ejectCoralL1();
           break;
@@ -45,7 +47,7 @@ public class ClawBackwards extends Command {
           claw.ejectCoralL3();
           break;
         case CORAL_L4_SCORE:
-          claw.ejectCoralL4();
+          claw.ejectCoral();
           break;
         default:
           claw.ejectCoral();
