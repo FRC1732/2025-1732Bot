@@ -596,6 +596,14 @@ public class RobotContainer {
             intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.ALGAE_NET_STAGE)),
             armevator.runOnce(() -> armevator.setTargetPose(ArmevatorPose.ALGAE_NET_STAGE))));
     NamedCommands.registerCommand(
+        "pluckAlgaeHighEnd",
+        Commands.sequence(
+            claw.runOnce(() -> claw.intakeAlgaePluck()),
+            armevator.runOnce(() -> armevator.setTargetPose(ArmevatorPose.ALGAE_L3_PLUCK)),
+            Commands.waitSeconds(0.85),
+            claw.runOnce(() -> claw.intakeAlgae()),
+            intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.ALGAE_NET_STAGE))));
+    NamedCommands.registerCommand(
         "pluckAlgaeLow",
         Commands.sequence(
             claw.runOnce(() -> claw.intakeAlgaePluck()),
