@@ -5,12 +5,22 @@
 package frc.robot.commands.clawcommands;
 
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.subsystems.armevator.ArmevatorPose;
 import frc.robot.subsystems.claw.Claw;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
 public class ClawBackwards extends Command {
   /** Creates a new ClawForward. */
   private Claw claw;
+
+  private ArmevatorPose pose;
+
+  public ClawBackwards(Claw claw, ArmevatorPose pose) {
+    // Use addRequirements() here to declare subsystem dependencies.
+    addRequirements(claw);
+    this.claw = claw;
+    this.pose = pose;
+  }
 
   public ClawBackwards(Claw claw) {
     // Use addRequirements() here to declare subsystem dependencies.
@@ -21,7 +31,27 @@ public class ClawBackwards extends Command {
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    claw.ejectCoral();
+    if (this.pose == null) {
+      claw.ejectCoral();
+    } else {
+      switch (this.pose) {
+        case CORAL_L1_SCORE:
+          claw.ejectCoralL1();
+          break;
+        case CORAL_L2_SCORE:
+          claw.ejectCoralL2();
+          break;
+        case CORAL_L3_SCORE:
+          claw.ejectCoralL3();
+          break;
+        case CORAL_L4_SCORE:
+          claw.ejectCoralL4();
+          break;
+        default:
+          claw.ejectCoral();
+          break;
+      }
+    }
   }
 
   // Called every time the scheduler runs while the command is scheduled.

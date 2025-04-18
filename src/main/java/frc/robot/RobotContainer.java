@@ -1197,7 +1197,9 @@ public class RobotContainer {
                                                     ArmevatorPose.CORAL_L4_FLIP))),
                                     new InstantCommand(),
                                     () -> currentScoringLevel == ArmevatorPose.CORAL_L4_SCORE),
-                                Commands.sequence(new WaitCommand(0.075), new ClawBackwards(claw)),
+                                Commands.sequence(
+                                    new WaitCommand(0.075),
+                                    new ClawBackwards(claw, currentScoringLevel)),
                                 drivetrain.run(
                                     () ->
                                         driveSlowlyDirection(
