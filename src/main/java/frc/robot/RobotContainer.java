@@ -59,6 +59,7 @@ import frc.robot.operator_interface.OISelector;
 import frc.robot.operator_interface.OperatorInterface;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.QuestNavLoggerSubsystem;
+import frc.robot.subsystems.L1Scorer.L1Scorer;
 import frc.robot.subsystems.armevator.Armevator;
 import frc.robot.subsystems.armevator.ArmevatorPose;
 import frc.robot.subsystems.claw.Claw;
@@ -91,6 +92,7 @@ public class RobotContainer {
   private Armevator armevator;
   private Intake intake;
   private Climber climber;
+  private L1Scorer l1Scorer;
 
   private static final double NET_SCORE_LOCATION_X = 7.55;
   private static final double FAR_NET_SCORE_LOCATION_X = (8.774 - NET_SCORE_LOCATION_X) + 8.774;
@@ -139,6 +141,8 @@ public class RobotContainer {
   private BooleanSupplier isPluckTargetHighSupplier = () -> isPluckTargetHigh;
 
   private boolean adjustingRight = false;
+
+  private boolean l1ModeEnabled = false;
 
   public enum AprilTagStatus {
     REEF_TARGET_IN_RANGE,
@@ -318,6 +322,7 @@ public class RobotContainer {
             apriltagStatusSupplier);
     intake = new Intake();
     climber = new Climber();
+    l1Scorer = new L1Scorer();
 
     visionApriltagSubsystem =
         new VisionApriltagSubsystem(() -> drivetrain.getPose().getRotation().getDegrees());
@@ -1125,6 +1130,7 @@ public class RobotContainer {
     // drivetrain.registerTelemetry(telemetryLogger::telemeterize);
   }
 
+
   private void configureSubsystemCommands() {
 
     // full-auto toggle
@@ -1268,7 +1274,8 @@ public class RobotContainer {
                                 -oi.getTranslateY() * MaxSpeed,
                                 Rotation2d.fromDegrees(-55)))
                     .asProxy()));
-
+    
+/*
     oi.intakeCoralButton()
         .whileTrue(
             Commands.deadline(
@@ -1288,6 +1295,43 @@ public class RobotContainer {
                             drivetrain.run(
                                 () -> driveSlowlyDirection(Rotation2d.fromDegrees(-125.0)))),
                         this::shouldIntakeLeftSide))));
+*/
+
+    oi.intakeCoralButton()
+    .whileTrue(
+        Commands.deadline(
+            new ConditionalCommand(
+                // L1 Mode TRUE
+                Commands.sequence(
+                    l1Scorer.runOnce(() -> l1Scorer.tiltForward()),
+                    l1Scorer.runOnce(() -> l1Scorer.runIntake()),
+                    Commands.waitSeconds(1.0),
+                    l1Scorer.runOnce(() -> {
+                        l1Scorer.stopTilt();
+                        l1Scorer.stopIntake();
+                        l1ModeEnabled = false;
+                    })
+                ),
+
+                Commands.deadline(
+                    Commands.sequence(
+                        new InstantCommand(() -> isRunningPath = true),
+                        intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.CORAL_L1_SCORE)),
+                        armevator.runOnce(() -> armevator.setTargetPose(ArmevatorPose.CORAL_HP_LOAD)),
+                        new IntakeCoral(claw, statusRgb)
+                    ),
+                    Commands.sequence(
+                        AutoBuilder.pathfindThenFollowPath(
+                            shouldIntakeLeftSide() ? pathLeftHP : pathRightHP,
+                            hpPathConstraints
+                        ),
+                        drivetrain.run(() -> driveSlowlyDirection(
+                            Rotation2d.fromDegrees(shouldIntakeLeftSide() ? 125.0 : -125.0)
+                        ))
+                    )
+                ),
+
+                this::isL1Mode)));
 
     oi.intakeCoralButton().whileFalse(Commands.runOnce(() -> isRunningPath = false));
 
@@ -1366,6 +1410,7 @@ public class RobotContainer {
     oi.operatorL1()
         .onTrue(
             Commands.sequence(
+                Commands.runOnce(() -> l1ModeEnabled = true),
                 Commands.runOnce(() -> currentScoringLevel = ArmevatorPose.CORAL_L1_SCORE),
                 Commands.runOnce(() -> statusRgb.setScoringLevel(ScoringLevel.LEVEL_1)),
                 Commands.runOnce(() -> armevator.updateScoringLevel(currentScoringLevel))));
@@ -1663,6 +1708,10 @@ public class RobotContainer {
     oi.retractClimberSlowlySwitch().whileTrue(climber.runOnce(() -> climber.brakeClimber()));
     oi.retractClimberSlowlySwitch().onFalse(climber.runOnce(() -> climber.stopClimber()));
   }
+
+    private boolean isL1Mode() {
+        return l1ModeEnabled;
+    }
 
   private void configureVisionCommands() {
     // enable/disable vision

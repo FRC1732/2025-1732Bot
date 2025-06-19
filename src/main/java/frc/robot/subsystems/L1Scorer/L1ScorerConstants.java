@@ -17,8 +17,8 @@ public class L1ScorerConstants {
 
     public static final double INTAKE_SPEED = -0.5;
     public static final double EJECT_SPEED = 0.5;
-    public static final double TILT_FORWARD_SPEED = 0.3;
-    public static final double TILT_BACKWARD_SPEED = -0.3;
+    public static final double TILT_FORWARD_SPEED = 0.15;
+    public static final double TILT_BACKWARD_SPEED = -0.15;
 
     public static final double START_ANGLE = 0.0; // to be assigned
     public static final double SCORE_ANGLE = 0.0; // to be assigned

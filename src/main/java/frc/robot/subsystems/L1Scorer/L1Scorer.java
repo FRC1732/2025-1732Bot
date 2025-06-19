@@ -61,5 +61,5 @@ public class L1Scorer extends SubsystemBase {
   public void stopIntake() {
     intakeMotor.set(0);
   }
-
+  
 }
