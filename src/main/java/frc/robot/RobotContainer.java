@@ -1055,8 +1055,7 @@ public class RobotContainer {
                         Rotation2d.fromDegrees(90))));
 
     // slow-mode toggle
-    oi.slowModeSwitch().onTrue(Commands.runOnce(() -> isSlowMode = true));
-    oi.slowModeSwitch().onFalse(Commands.runOnce(() -> isSlowMode = false));
+    oi.toggleSlowMode().onTrue(Commands.runOnce(() -> isSlowMode = !isSlowMode));
 
     // reset gyro to 0 degrees
     oi.resetGyroButton()
