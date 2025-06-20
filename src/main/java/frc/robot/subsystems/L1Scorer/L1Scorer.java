@@ -4,9 +4,8 @@
 package frc.robot.subsystems.L1Scorer;
 
 import com.ctre.phoenix6.hardware.TalonFX;
-import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
-
+import com.revrobotics.spark.SparkMax;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
@@ -61,5 +60,4 @@ public class L1Scorer extends SubsystemBase {
   public void stopIntake() {
     intakeMotor.set(0);
   }
-  
 }
