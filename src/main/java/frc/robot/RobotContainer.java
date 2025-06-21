@@ -129,6 +129,7 @@ public class RobotContainer {
   private boolean isVisionEnabled = true;
   private boolean isPluckTargetHigh = false;
   private boolean isRunningPath = false;
+  private boolean isL1ModeEnabled = false;
 
   private boolean driveSlowlyDirectionAlert =
       false; // do drive slowly cyan flash when bot is stopped
@@ -142,7 +143,6 @@ public class RobotContainer {
 
   private boolean adjustingRight = false;
 
-  private boolean l1ModeEnabled = false;
 
   public enum AprilTagStatus {
     REEF_TARGET_IN_RANGE,
@@ -1309,7 +1309,7 @@ public class RobotContainer {
                             () -> {
                               l1Scorer.stopTilt();
                               l1Scorer.stopIntake();
-                              l1ModeEnabled = false;
+                              isL1ModeEnabled = false;
                             })),
                     Commands.deadline(
                         Commands.sequence(
@@ -1407,7 +1407,7 @@ public class RobotContainer {
     oi.operatorL1()
         .onTrue(
             Commands.sequence(
-                Commands.runOnce(() -> l1ModeEnabled = true),
+                Commands.runOnce(() -> isL1ModeEnabled = true),
                 Commands.runOnce(() -> currentScoringLevel = ArmevatorPose.CORAL_L1_SCORE),
                 Commands.runOnce(() -> statusRgb.setScoringLevel(ScoringLevel.LEVEL_1)),
                 Commands.runOnce(() -> armevator.updateScoringLevel(currentScoringLevel))));
@@ -1707,7 +1707,7 @@ public class RobotContainer {
   }
 
   private boolean isL1Mode() {
-    return l1ModeEnabled;
+    return isL1ModeEnabled;
   }
 
   private void configureVisionCommands() {
