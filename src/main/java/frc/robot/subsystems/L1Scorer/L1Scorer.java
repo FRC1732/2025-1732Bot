@@ -5,6 +5,7 @@ package frc.robot.subsystems.L1Scorer;
 
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.revrobotics.spark.SparkMax;
+import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 
 import edu.wpi.first.math.controller.PIDController;
@@ -19,9 +20,12 @@ public class L1Scorer extends SubsystemBase {
   private SparkMax tiltMotor;
   private TalonFX intakeMotor;
 
+  private RelativeEncoder tiltEncoder;
+
   public L1Scorer() {
     intakeMotor = new TalonFX(L1ScorerConstants.INTAKE_MOTOR_ID);
     tiltMotor = new SparkMax(L1ScorerConstants.TILT_MOTOR_ID, MotorType.kBrushless);
+    tiltEncoder = tiltMotor.getEncoder();
 
     tiltPID =
         new PIDController(
@@ -39,11 +43,11 @@ public class L1Scorer extends SubsystemBase {
   }
 
   public void tiltForward() {
-    tiltMotor.set(L1ScorerConstants.TILT_FORWARD_SPEED);
+    tiltMotor.set(L1ScorerConstants.TILT_SPEED);
   }
 
   public void tiltBackwards() {
-    tiltMotor.set(L1ScorerConstants.TILT_BACKWARD_SPEED);
+    tiltMotor.set(L1ScorerConstants.TILT_SPEED * -1);
   }
 
   public void stopTilt() {
@@ -60,6 +64,14 @@ public class L1Scorer extends SubsystemBase {
 
   public void stopIntake() {
     intakeMotor.set(0);
+  }
+
+  public double getTiltPosition() {
+    return tiltEncoder.getPosition();
+  }
+
+  public double getTiltVelocity() {
+    return tiltEncoder.getVelocity();
   }
   
 }

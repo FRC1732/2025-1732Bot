@@ -8,11 +8,11 @@ import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.L1Scorer.L1Scorer;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
-public class TiltToStart extends Command {
-  /** Creates a new TiltToStart. */
+public class TiltToHold extends Command {
+  /** Creates a new TiltToHold. */
   private L1Scorer l1Scorer;
 
-  public TiltToStart(L1Scorer l1Scorer) {
+  public TiltToHold(L1Scorer l1Scorer) {
     // Use addRequirements() here to declare subsystem dependencies.
     this.l1Scorer = l1Scorer;
     addRequirements(l1Scorer);
