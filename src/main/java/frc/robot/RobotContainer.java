@@ -58,8 +58,8 @@ import frc.robot.limelightVision.LimelightHelpers;
 import frc.robot.operator_interface.OISelector;
 import frc.robot.operator_interface.OperatorInterface;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
-import frc.robot.subsystems.QuestNavLoggerSubsystem;
 import frc.robot.subsystems.L1Scorer.L1Scorer;
+import frc.robot.subsystems.QuestNavLoggerSubsystem;
 import frc.robot.subsystems.armevator.Armevator;
 import frc.robot.subsystems.armevator.ArmevatorPose;
 import frc.robot.subsystems.claw.Claw;
@@ -1130,7 +1130,6 @@ public class RobotContainer {
     // drivetrain.registerTelemetry(telemetryLogger::telemeterize);
   }
 
-
   private void configureSubsystemCommands() {
 
     // full-auto toggle
@@ -1274,64 +1273,62 @@ public class RobotContainer {
                                 -oi.getTranslateY() * MaxSpeed,
                                 Rotation2d.fromDegrees(-55)))
                     .asProxy()));
-    
-/*
-    oi.intakeCoralButton()
-        .whileTrue(
-            Commands.deadline(
-                Commands.sequence(
-                    new InstantCommand(() -> isRunningPath = true),
-                    intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.CORAL_L1_SCORE)),
-                    armevator.runOnce(() -> armevator.setTargetPose(ArmevatorPose.CORAL_HP_LOAD)),
-                    new IntakeCoral(claw, statusRgb)),
-                Commands.sequence(
-                    new ConditionalCommand(
-                        Commands.sequence(
-                            AutoBuilder.pathfindThenFollowPath(pathLeftHP, hpPathConstraints),
-                            drivetrain.run(
-                                () -> driveSlowlyDirection(Rotation2d.fromDegrees(125.0)))),
-                        Commands.sequence(
-                            AutoBuilder.pathfindThenFollowPath(pathRightHP, hpPathConstraints),
-                            drivetrain.run(
-                                () -> driveSlowlyDirection(Rotation2d.fromDegrees(-125.0)))),
-                        this::shouldIntakeLeftSide))));
-*/
 
-    oi.intakeCoralButton()
-    .whileTrue(
-        Commands.deadline(
-            new ConditionalCommand(
-                // L1 Mode TRUE
-                Commands.sequence(
-                    l1Scorer.runOnce(() -> l1Scorer.tiltForward()),
-                    l1Scorer.runOnce(() -> l1Scorer.runIntake()),
-                    Commands.waitSeconds(1.0),
-                    l1Scorer.runOnce(() -> {
-                        l1Scorer.stopTilt();
-                        l1Scorer.stopIntake();
-                        l1ModeEnabled = false;
-                    })
-                ),
-
+    /*
+        oi.intakeCoralButton()
+            .whileTrue(
                 Commands.deadline(
                     Commands.sequence(
                         new InstantCommand(() -> isRunningPath = true),
                         intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.CORAL_L1_SCORE)),
                         armevator.runOnce(() -> armevator.setTargetPose(ArmevatorPose.CORAL_HP_LOAD)),
-                        new IntakeCoral(claw, statusRgb)
-                    ),
+                        new IntakeCoral(claw, statusRgb)),
                     Commands.sequence(
-                        AutoBuilder.pathfindThenFollowPath(
-                            shouldIntakeLeftSide() ? pathLeftHP : pathRightHP,
-                            hpPathConstraints
-                        ),
-                        drivetrain.run(() -> driveSlowlyDirection(
-                            Rotation2d.fromDegrees(shouldIntakeLeftSide() ? 125.0 : -125.0)
-                        ))
-                    )
-                ),
+                        new ConditionalCommand(
+                            Commands.sequence(
+                                AutoBuilder.pathfindThenFollowPath(pathLeftHP, hpPathConstraints),
+                                drivetrain.run(
+                                    () -> driveSlowlyDirection(Rotation2d.fromDegrees(125.0)))),
+                            Commands.sequence(
+                                AutoBuilder.pathfindThenFollowPath(pathRightHP, hpPathConstraints),
+                                drivetrain.run(
+                                    () -> driveSlowlyDirection(Rotation2d.fromDegrees(-125.0)))),
+                            this::shouldIntakeLeftSide))));
+    */
 
-                this::isL1Mode)));
+    oi.intakeCoralButton()
+        .whileTrue(
+            Commands.deadline(
+                new ConditionalCommand(
+                    // L1 Mode TRUE
+                    Commands.sequence(
+                        l1Scorer.runOnce(() -> l1Scorer.tiltForward()),
+                        l1Scorer.runOnce(() -> l1Scorer.runIntake()),
+                        Commands.waitSeconds(1.0),
+                        l1Scorer.runOnce(
+                            () -> {
+                              l1Scorer.stopTilt();
+                              l1Scorer.stopIntake();
+                              l1ModeEnabled = false;
+                            })),
+                    Commands.deadline(
+                        Commands.sequence(
+                            new InstantCommand(() -> isRunningPath = true),
+                            intake.runOnce(
+                                () -> intake.setTargetPose(ArmevatorPose.CORAL_L1_SCORE)),
+                            armevator.runOnce(
+                                () -> armevator.setTargetPose(ArmevatorPose.CORAL_HP_LOAD)),
+                            new IntakeCoral(claw, statusRgb)),
+                        Commands.sequence(
+                            AutoBuilder.pathfindThenFollowPath(
+                                shouldIntakeLeftSide() ? pathLeftHP : pathRightHP,
+                                hpPathConstraints),
+                            drivetrain.run(
+                                () ->
+                                    driveSlowlyDirection(
+                                        Rotation2d.fromDegrees(
+                                            shouldIntakeLeftSide() ? 125.0 : -125.0))))),
+                    this::isL1Mode)));
 
     oi.intakeCoralButton().whileFalse(Commands.runOnce(() -> isRunningPath = false));
 
@@ -1709,9 +1706,9 @@ public class RobotContainer {
     oi.retractClimberSlowlySwitch().onFalse(climber.runOnce(() -> climber.stopClimber()));
   }
 
-    private boolean isL1Mode() {
-        return l1ModeEnabled;
-    }
+  private boolean isL1Mode() {
+    return l1ModeEnabled;
+  }
 
   private void configureVisionCommands() {
     // enable/disable vision
