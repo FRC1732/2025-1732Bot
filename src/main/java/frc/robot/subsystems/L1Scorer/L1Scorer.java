@@ -4,16 +4,21 @@
 package frc.robot.subsystems.L1Scorer;
 
 import com.ctre.phoenix6.hardware.TalonFX;
-import com.revrobotics.spark.SparkMax;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import org.littletonrobotics.junction.Logger;
 
 public class L1Scorer extends SubsystemBase {
   /** Creates a new L1Scorer. */
-  private double L1ScorerSetpoint;
+  private double l1ScorerSetpoint;
+
+  private L1ScorerPose l1ScorerPose = L1ScorerPose.Start;
 
   private PIDController tiltPID;
 
@@ -35,11 +40,20 @@ public class L1Scorer extends SubsystemBase {
 
     intakeMotor.stopMotor();
     tiltMotor.stopMotor();
+
+    setupNT();
   }
 
   @Override
   public void periodic() {
-    // This method will be called once per scheduler run
+    if (DriverStation.isDisabled()) {
+      tiltPID.reset();
+    }
+
+    double output = tiltPID.calculate(getTiltPosition(), l1ScorerSetpoint);
+    // intakeMotor.set(output);
+
+    doLogging();
   }
 
   public void tiltForward() {
@@ -73,5 +87,39 @@ public class L1Scorer extends SubsystemBase {
   public double getTiltVelocity() {
     return tiltEncoder.getVelocity();
   }
-  
+
+  public void setL1Pose(L1ScorerPose l1ScorerPose) {
+    this.l1ScorerPose = l1ScorerPose;
+    switch (this.l1ScorerPose) {
+      case Start:
+        l1ScorerSetpoint = L1ScorerConstants.START_ANGLE;
+        break;
+      case Intake:
+        l1ScorerSetpoint = L1ScorerConstants.INTAKE_ANGLE;
+        break;
+      case Score:
+        l1ScorerSetpoint = L1ScorerConstants.SCORE_ANGLE;
+        break;
+      case Hold:
+        l1ScorerSetpoint = L1ScorerConstants.HOLD_ANGLE;
+        break;
+    }
+    tiltPID.setSetpoint(l1ScorerSetpoint);
+  }
+
+  private void doLogging() {
+    Logger.recordOutput(L1ScorerConstants.SUBSYSTEM_NAME + "/Tilt Position", getTiltPosition());
+    Logger.recordOutput(L1ScorerConstants.SUBSYSTEM_NAME + "/Tilt Velocity", getTiltVelocity());
+    Logger.recordOutput(L1ScorerConstants.SUBSYSTEM_NAME + "/Tilt Goal", l1ScorerSetpoint);
+  }
+
+  private void setupNT() {
+
+    ShuffleboardTab tab = Shuffleboard.getTab(L1ScorerConstants.SUBSYSTEM_NAME);
+
+    tab.addDouble("Tilt Position", this::getTiltPosition);
+    tab.addDouble("Tilt Velocity", this::getTiltVelocity);
+
+    tab.add("Tilt PID", tiltPID);
+  }
 }

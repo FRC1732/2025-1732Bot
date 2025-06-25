@@ -59,6 +59,7 @@ import frc.robot.operator_interface.OISelector;
 import frc.robot.operator_interface.OperatorInterface;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.L1Scorer.L1Scorer;
+import frc.robot.subsystems.L1Scorer.L1ScorerPose;
 import frc.robot.subsystems.QuestNavLoggerSubsystem;
 import frc.robot.subsystems.armevator.Armevator;
 import frc.robot.subsystems.armevator.ArmevatorPose;
@@ -142,7 +143,6 @@ public class RobotContainer {
   private BooleanSupplier isPluckTargetHighSupplier = () -> isPluckTargetHigh;
 
   private boolean adjustingRight = false;
-
 
   public enum AprilTagStatus {
     REEF_TARGET_IN_RANGE,
@@ -1008,8 +1008,8 @@ public class RobotContainer {
      * Field-centric: origin is back-right (blue), 0deg is forward, +x is forward,
      * +y is left,
      * +theta is CCW direction.
-     *      ___________
-     *      |    |    | ^
+     * ___________
+     * | | | ^
      * (0,0).____|____| y, x-> 0->
      */
     drivetrain.setDefaultCommand(
@@ -1158,79 +1158,95 @@ public class RobotContainer {
 
     oi.scoreCoralButton()
         .whileTrue(
-            Commands.sequence(
-                new InstantCommand(
-                    () -> visionApriltagSubsystem.setPipeline(getScoringTargetPipeline())),
-                intake.runOnce(() -> intake.setTargetPose(currentScoringLevelSupplier.get())),
-                new ConditionalCommand(
-                    // Full Auto
-                    Commands.parallel(
-                        // Raise Piece to scoring level
-                        Commands.sequence(
-                            new InstantCommand(() -> isRunningPath = true),
-                            new WaitUntilCommand(this::isRobotCloseToScoringPosition),
-                            armevator.runOnce(
-                                () -> armevator.setTargetPose(currentScoringLevelSupplier.get()))),
-                        // Drive to scoring location
-                        Commands.sequence(
-                            new ConditionalCommand(
-                                // Pathfind
-                                getScoringPathCommand(),
-                                // Drive directly to pose
-                                new InstantCommand(),
-                                this::isFarEnoughForPathfinding),
+            new ConditionalCommand(
+                /* L1 Score */
+                Commands.sequence(
+                    l1Scorer.runOnce(() -> l1Scorer.setL1Pose(L1ScorerPose.Score)),
+                    l1Scorer.runOnce(() -> l1Scorer.ejectIntake())),
+                Commands.sequence(
+                    new InstantCommand(
+                        () -> visionApriltagSubsystem.setPipeline(getScoringTargetPipeline())),
+                    intake.runOnce(() -> intake.setTargetPose(currentScoringLevelSupplier.get())),
+                    new ConditionalCommand(
+                        // Full Auto
+                        Commands.parallel(
+                            // Raise Piece to scoring level
                             Commands.sequence(
-                                new DriveToPoseSlew(
-                                    drivetrain,
-                                    () -> getPathStartingPose(scoringPathOption),
-                                    driveFacingAngleRequest), //
-                                // new WaitCommand(0.2),
-                                getSimpleScoringPathCommand()),
-                            new ConditionalCommand(
-                                new InstantCommand(),
-                                getAdjustSlowlyCommand(
-                                    () -> scoringAngleMap.get(scoringPathOption),
-                                    () -> getScoringAprilTagRight()),
-                                () -> currentScoringLevel == ArmevatorPose.CORAL_L2_SCORE),
-                            Commands.parallel(
-                                new ConditionalCommand(
-                                    Commands.sequence(
-                                        Commands.waitSeconds(0.1),
-                                        Commands.runOnce(
-                                            () ->
-                                                armevator.setTargetPose(
-                                                    ArmevatorPose.CORAL_L4_FLIP))),
-                                    new InstantCommand(),
-                                    () -> currentScoringLevel == ArmevatorPose.CORAL_L4_SCORE),
-                                Commands.sequence(
-                                    new WaitCommand(0.075),
-                                    new ClawBackwards(claw, () -> currentScoringLevel)),
-                                drivetrain.run(
+                                new InstantCommand(() -> isRunningPath = true),
+                                new WaitUntilCommand(this::isRobotCloseToScoringPosition),
+                                armevator.runOnce(
                                     () ->
-                                        driveSlowlyDirection(
-                                            scoringAngleMap.get(scoringPathOption)))))),
-                    // Manual
-                    Commands.parallel(
-                        Commands.sequence(
-                            new WaitCommand(0.5),
-                            armevator.runOnce(
-                                () -> armevator.setTargetPose(currentScoringLevelSupplier.get()))),
-                        drivetrain.run(
-                            () ->
-                                driveFacingAngle(
-                                    -oi.getTranslateX() * MaxSpeed,
-                                    -oi.getTranslateY() * MaxSpeed,
-                                    scoringAngleMap.get(scoringPathOption)))),
-                    isFullAutoSupplier)));
+                                        armevator.setTargetPose(
+                                            currentScoringLevelSupplier.get()))),
+                            // Drive to scoring location
+                            Commands.sequence(
+                                new ConditionalCommand(
+                                    // Pathfind
+                                    getScoringPathCommand(),
+                                    // Drive directly to pose
+                                    new InstantCommand(),
+                                    this::isFarEnoughForPathfinding),
+                                Commands.sequence(
+                                    new DriveToPoseSlew(
+                                        drivetrain,
+                                        () -> getPathStartingPose(scoringPathOption),
+                                        driveFacingAngleRequest), //
+                                    // new WaitCommand(0.2),
+                                    getSimpleScoringPathCommand()),
+                                new ConditionalCommand(
+                                    new InstantCommand(),
+                                    getAdjustSlowlyCommand(
+                                        () -> scoringAngleMap.get(scoringPathOption),
+                                        () -> getScoringAprilTagRight()),
+                                    () -> currentScoringLevel == ArmevatorPose.CORAL_L2_SCORE),
+                                Commands.parallel(
+                                    new ConditionalCommand(
+                                        Commands.sequence(
+                                            Commands.waitSeconds(0.1),
+                                            Commands.runOnce(
+                                                () ->
+                                                    armevator.setTargetPose(
+                                                        ArmevatorPose.CORAL_L4_FLIP))),
+                                        new InstantCommand(),
+                                        () -> currentScoringLevel == ArmevatorPose.CORAL_L4_SCORE),
+                                    Commands.sequence(
+                                        new WaitCommand(0.075),
+                                        new ClawBackwards(claw, () -> currentScoringLevel)),
+                                    drivetrain.run(
+                                        () ->
+                                            driveSlowlyDirection(
+                                                scoringAngleMap.get(scoringPathOption)))))),
+                        // Manual
+                        Commands.parallel(
+                            Commands.sequence(
+                                new WaitCommand(0.5),
+                                armevator.runOnce(
+                                    () ->
+                                        armevator.setTargetPose(
+                                            currentScoringLevelSupplier.get()))),
+                            drivetrain.run(
+                                () ->
+                                    driveFacingAngle(
+                                        -oi.getTranslateX() * MaxSpeed,
+                                        -oi.getTranslateY() * MaxSpeed,
+                                        scoringAngleMap.get(scoringPathOption)))),
+                        isFullAutoSupplier)),
+                this::isL1Mode));
     oi.scoreCoralButton()
         .onFalse(
             new ConditionalCommand(
-                    new InstantCommand(),
-                    armevator
-                        .runOnce(() -> armevator.setTargetPose(ArmevatorPose.CORAL_POST_SCORE))
-                        .asProxy(),
-                    () -> isPlucking)
-                .alongWith(new InstantCommand(() -> isRunningPath = false)));
+                Commands.sequence(
+                    /* L1 */
+                    l1Scorer.runOnce(() -> l1Scorer.stopIntake()),
+                    l1Scorer.runOnce(() -> l1Scorer.setL1Pose(L1ScorerPose.Hold))),
+                new ConditionalCommand(
+                        new InstantCommand(),
+                        armevator
+                            .runOnce(() -> armevator.setTargetPose(ArmevatorPose.CORAL_POST_SCORE))
+                            .asProxy(),
+                        () -> isPlucking)
+                    .alongWith(new InstantCommand(() -> isRunningPath = false)),
+                this::isL1Mode));
 
     oi.intakeCoralRight()
         .whileTrue(
@@ -1302,6 +1318,7 @@ public class RobotContainer {
                 new ConditionalCommand(
                     // L1 Mode TRUE
                     Commands.sequence(
+                        // l1Scorer.runOnce(() -> l1Scorer.setL1Pose(L1ScorerPose.Intake)),
                         l1Scorer.runOnce(() -> l1Scorer.tiltForward()),
                         l1Scorer.runOnce(() -> l1Scorer.runIntake()),
                         Commands.waitSeconds(1.0),
@@ -1745,8 +1762,8 @@ public class RobotContainer {
 
     // Optional<Alliance> alliance = DriverStation.getAlliance();
     // if (alliance.isPresent() && alliance.get() != lastAlliance) {
-    //   this.lastAlliance = alliance.get();
-    //   Field2d.getInstance().updateAlliance(this.lastAlliance);
+    // this.lastAlliance = alliance.get();
+    // Field2d.getInstance().updateAlliance(this.lastAlliance);
     // }
   }
 
@@ -2228,11 +2245,12 @@ public class RobotContainer {
     // LimelightHelpers.PoseEstimate limelightMeasurement =
     // visionApriltagSubsystem.getPoseEstimate();
     // if (limelightMeasurement != null && (limelightMeasurement.tagCount >= 2
-    //     || (limelightMeasurement.tagCount == 1 && limelightMeasurement.avgTagDist < 1.25))) {
-    //   drivetrain.addVisionMeasurement(
-    //       limelightMeasurement.pose,
-    //       limelightMeasurement.timestampSeconds,
-    //       VecBuilder.fill(.6, .6, 9999999));
+    // || (limelightMeasurement.tagCount == 1 && limelightMeasurement.avgTagDist <
+    // 1.25))) {
+    // drivetrain.addVisionMeasurement(
+    // limelightMeasurement.pose,
+    // limelightMeasurement.timestampSeconds,
+    // VecBuilder.fill(.6, .6, 9999999));
     // }
   }
 
