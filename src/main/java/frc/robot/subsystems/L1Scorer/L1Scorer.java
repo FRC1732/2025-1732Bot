@@ -5,8 +5,13 @@ package frc.robot.subsystems.L1Scorer;
 
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.revrobotics.RelativeEncoder;
+import com.revrobotics.spark.SparkBase.PersistMode;
+import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.config.EncoderConfig;
+import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
+import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
@@ -17,6 +22,8 @@ import org.littletonrobotics.junction.Logger;
 public class L1Scorer extends SubsystemBase {
   /** Creates a new L1Scorer. */
   private double l1ScorerSetpoint;
+
+  private double tiltOutput;
 
   private L1ScorerPose l1ScorerPose = L1ScorerPose.Start;
 
@@ -30,12 +37,30 @@ public class L1Scorer extends SubsystemBase {
   public L1Scorer() {
     intakeMotor = new TalonFX(L1ScorerConstants.INTAKE_MOTOR_ID);
     tiltMotor = new SparkMax(L1ScorerConstants.TILT_MOTOR_ID, MotorType.kBrushless);
+
+    SparkMaxConfig tiltConfig = new SparkMaxConfig();
+
+    tiltConfig.inverted(false);
+
+    tiltConfig.idleMode(IdleMode.kBrake);
+
+    EncoderConfig tiltEncoderConfig = new EncoderConfig();
+    tiltEncoderConfig.positionConversionFactor(L1ScorerConstants.INTAKE_DEGREES_PER_ROTATION);
+    tiltEncoderConfig.velocityConversionFactor(L1ScorerConstants.INTAKE_RPM_TO_DEGREES_PER_SECOND);
+    tiltConfig.apply(tiltEncoderConfig);
+
+    tiltMotor.configure(
+        tiltConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
+
     tiltEncoder = tiltMotor.getEncoder();
+
+    tiltEncoder.setPosition(0);
 
     tiltPID =
         new PIDController(
             L1ScorerConstants.TILT_KP, L1ScorerConstants.TILT_KI, L1ScorerConstants.TILT_KD);
     tiltPID.setTolerance(L1ScorerConstants.ANGLE_GOAL_TOLERANCE_DEGREES);
+
     tiltPID.reset();
 
     intakeMotor.stopMotor();
@@ -50,8 +75,8 @@ public class L1Scorer extends SubsystemBase {
       tiltPID.reset();
     }
 
-    double output = tiltPID.calculate(getTiltPosition(), l1ScorerSetpoint);
-    // intakeMotor.set(output);
+    tiltOutput = tiltPID.calculate(getTiltPosition(), l1ScorerSetpoint);
+    // intakeMotor.set(tiltOutput);
 
     doLogging();
   }
@@ -111,6 +136,7 @@ public class L1Scorer extends SubsystemBase {
     Logger.recordOutput(L1ScorerConstants.SUBSYSTEM_NAME + "/Tilt Position", getTiltPosition());
     Logger.recordOutput(L1ScorerConstants.SUBSYSTEM_NAME + "/Tilt Velocity", getTiltVelocity());
     Logger.recordOutput(L1ScorerConstants.SUBSYSTEM_NAME + "/Tilt Goal", l1ScorerSetpoint);
+    Logger.recordOutput(L1ScorerConstants.SUBSYSTEM_NAME + "/Tilt Output", tiltOutput);
   }
 
   private void setupNT() {
@@ -119,6 +145,7 @@ public class L1Scorer extends SubsystemBase {
 
     tab.addDouble("Tilt Position", this::getTiltPosition);
     tab.addDouble("Tilt Velocity", this::getTiltVelocity);
+    tab.addDouble("Tilt Output", () -> tiltOutput);
 
     tab.add("Tilt PID", tiltPID);
   }

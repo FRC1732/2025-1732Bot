@@ -24,8 +24,8 @@ public class L1ScorerConstants {
   public static final double SCORE_ANGLE = 0.0; // to be assigned
   public static final double INTAKE_ANGLE = 0.0; // to be assigned
 
-  public static final double INTAKE_DEGREES_PER_ROTATION = 360 / (50 / 26 * 25);
+  public static final double INTAKE_DEGREES_PER_ROTATION = 360d / (50d / 26d * 25d);
   // degrees per motor revolution (360 / reduction = 360 / (50 / 26 * 25))
-  public static final double INTAKE_RPM_TO_DEGREES_PER_SECOND = 360 / (50 / 26 * 25) / 60;
+  public static final double INTAKE_RPM_TO_DEGREES_PER_SECOND = 360d / (50d / 26d * 25d) / 60d;
   // RPM to deg/sec (360 / reduction / 60 = 360 / (50 / 26 * 25) / 60)
 }

@@ -1235,18 +1235,18 @@ public class RobotContainer {
     oi.scoreCoralButton()
         .onFalse(
             new ConditionalCommand(
-                Commands.sequence(
-                    /* L1 */
-                    l1Scorer.runOnce(() -> l1Scorer.stopIntake()),
-                    l1Scorer.runOnce(() -> l1Scorer.setL1Pose(L1ScorerPose.Hold))),
-                new ConditionalCommand(
+                    Commands.sequence(
+                        /* L1 */
+                        l1Scorer.runOnce(() -> l1Scorer.stopIntake()),
+                        l1Scorer.runOnce(() -> l1Scorer.setL1Pose(L1ScorerPose.Hold))),
+                    new ConditionalCommand(
                         new InstantCommand(),
                         armevator
                             .runOnce(() -> armevator.setTargetPose(ArmevatorPose.CORAL_POST_SCORE))
                             .asProxy(),
-                        () -> isPlucking)
-                    .alongWith(new InstantCommand(() -> isRunningPath = false)),
-                this::isL1Mode));
+                        () -> isPlucking),
+                    this::isL1Mode)
+                .alongWith(new InstantCommand(() -> isRunningPath = false)));
 
     oi.intakeCoralRight()
         .whileTrue(
@@ -1326,7 +1326,6 @@ public class RobotContainer {
                             () -> {
                               l1Scorer.stopTilt();
                               l1Scorer.stopIntake();
-                              isL1ModeEnabled = false;
                             })),
                     Commands.deadline(
                         Commands.sequence(
@@ -1431,18 +1430,21 @@ public class RobotContainer {
     oi.operatorL2()
         .onTrue(
             Commands.sequence(
+                Commands.runOnce(() -> isL1ModeEnabled = false),
                 Commands.runOnce(() -> currentScoringLevel = ArmevatorPose.CORAL_L2_SCORE),
                 Commands.runOnce(() -> statusRgb.setScoringLevel(ScoringLevel.LEVEL_2)),
                 Commands.runOnce(() -> armevator.updateScoringLevel(currentScoringLevel))));
     oi.operatorL3()
         .onTrue(
             Commands.sequence(
+                Commands.runOnce(() -> isL1ModeEnabled = false),
                 Commands.runOnce(() -> currentScoringLevel = ArmevatorPose.CORAL_L3_SCORE),
                 Commands.runOnce(() -> statusRgb.setScoringLevel(ScoringLevel.LEVEL_3)),
                 Commands.runOnce(() -> armevator.updateScoringLevel(currentScoringLevel))));
     oi.operatorL4()
         .onTrue(
             Commands.sequence(
+                Commands.runOnce(() -> isL1ModeEnabled = false),
                 Commands.runOnce(() -> currentScoringLevel = ArmevatorPose.CORAL_L4_SCORE),
                 Commands.runOnce(() -> statusRgb.setScoringLevel(ScoringLevel.LEVEL_4)),
                 Commands.runOnce(() -> armevator.updateScoringLevel(currentScoringLevel))));
