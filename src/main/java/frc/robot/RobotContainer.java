@@ -1322,13 +1322,7 @@ public class RobotContainer {
                     // L1 Mode TRUE
                     Commands.sequence(
                         l1Scorer.runOnce(() -> l1Scorer.setL1Pose(L1ScorerPose.Intake)),
-                        l1Scorer.runOnce(() -> l1Scorer.runIntake()),
-                        Commands.waitSeconds(1.0),
-                        l1Scorer.runOnce(
-                            () -> {
-                              l1Scorer.stopTilt();
-                              l1Scorer.stopIntake();
-                            })),
+                        l1Scorer.runOnce(() -> l1Scorer.runIntake())),
                     Commands.deadline(
                         Commands.sequence(
                             new InstantCommand(() -> isRunningPath = true),
