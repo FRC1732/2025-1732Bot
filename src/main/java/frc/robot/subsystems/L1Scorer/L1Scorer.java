@@ -3,7 +3,10 @@
 // the WPILib BSD license file in the root directory of this project.
 package frc.robot.subsystems.L1Scorer;
 
+import com.ctre.phoenix6.configs.MotorOutputConfigs;
+import com.ctre.phoenix6.configs.TalonFXConfigurator;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.InvertedValue;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
@@ -12,6 +15,7 @@ import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.EncoderConfig;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
@@ -39,6 +43,11 @@ public class L1Scorer extends SubsystemBase {
     tiltMotor = new SparkMax(L1ScorerConstants.TILT_MOTOR_ID, MotorType.kBrushless);
 
     SparkMaxConfig tiltConfig = new SparkMaxConfig();
+    TalonFXConfigurator intakeConfig = intakeMotor.getConfigurator();
+    MotorOutputConfigs motorConfig = new MotorOutputConfigs();
+
+    motorConfig.Inverted = InvertedValue.Clockwise_Positive;
+    intakeConfig.apply(motorConfig);
 
     tiltConfig.inverted(false);
 
@@ -75,8 +84,8 @@ public class L1Scorer extends SubsystemBase {
       tiltPID.reset();
     }
 
-    tiltOutput = tiltPID.calculate(getTiltPosition(), l1ScorerSetpoint);
-    // intakeMotor.set(tiltOutput);
+    tiltOutput = MathUtil.clamp(tiltPID.calculate(getTiltPosition()), -0.4, 0.4);
+    tiltMotor.set(tiltOutput);
 
     doLogging();
   }

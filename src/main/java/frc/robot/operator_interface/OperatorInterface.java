@@ -223,4 +223,8 @@ public interface OperatorInterface {
   public default Trigger operatorAlignForClimbDefendingSide() {
     return new Trigger(() -> false);
   }
+
+  public default Trigger testFunction() {
+    return new Trigger(() -> false);
+  }
 }
