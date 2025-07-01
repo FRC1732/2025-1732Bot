@@ -1344,7 +1344,13 @@ public class RobotContainer {
                                             shouldIntakeLeftSide() ? 125.0 : -125.0))))),
                     this::isL1Mode)));
 
-    oi.intakeCoralButton().whileFalse(Commands.runOnce(() -> isRunningPath = false));
+    oi.intakeCoralButton()
+        .whileFalse(
+            Commands.sequence(
+                Commands.runOnce(() -> isRunningPath = false),
+                l1Scorer.runOnce(() -> l1Scorer.runIntakeHoldSpeed()),
+                l1Scorer.runOnce(() -> l1Scorer.setL1Pose(L1ScorerPose.Hold))
+            ));
 
     oi.operatorF1()
         .onTrue(

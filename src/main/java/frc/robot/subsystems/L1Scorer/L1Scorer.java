@@ -115,6 +115,10 @@ public class L1Scorer extends SubsystemBase {
     intakeMotor.set(0);
   }
 
+  public void runIntakeHoldSpeed() {
+    intakeMotor.set(L1ScorerConstants.HOLD_INTAKE_SPEED);
+  }
+
   public double getTiltPosition() {
     return tiltEncoder.getPosition();
   }
