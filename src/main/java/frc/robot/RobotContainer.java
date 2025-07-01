@@ -1162,6 +1162,7 @@ public class RobotContainer {
                 /* L1 Score */
                 Commands.sequence(
                     l1Scorer.runOnce(() -> l1Scorer.setL1Pose(L1ScorerPose.Score)),
+                    new WaitUntilCommand(l1Scorer::isAtPosition),
                     l1Scorer.runOnce(() -> l1Scorer.ejectIntake())),
                 Commands.sequence(
                     new InstantCommand(
@@ -1322,6 +1323,7 @@ public class RobotContainer {
                     // L1 Mode TRUE
                     Commands.sequence(
                         l1Scorer.runOnce(() -> l1Scorer.setL1Pose(L1ScorerPose.Intake)),
+                        new WaitUntilCommand(l1Scorer::isAtPosition),
                         l1Scorer.runOnce(() -> l1Scorer.runIntake())),
                     Commands.deadline(
                         Commands.sequence(
@@ -1880,6 +1882,7 @@ public class RobotContainer {
   private boolean isRobotCloseToScoringPosition() {
     return getDistanceFromTarget() < 0.4;
   }
+
 
   private Pipelines getScoringTargetPipeline() {
     if (scoringPathOption == ScoringPathOption.PATH_B2
