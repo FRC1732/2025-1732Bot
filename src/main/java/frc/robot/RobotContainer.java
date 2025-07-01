@@ -1238,7 +1238,7 @@ public class RobotContainer {
             new ConditionalCommand(
                     Commands.sequence(
                         /* L1 */
-                        l1Scorer.runOnce(() -> l1Scorer.stopIntake()),
+                        l1Scorer.runOnce(() -> l1Scorer.runIntakeHoldSpeed()),
                         l1Scorer.runOnce(() -> l1Scorer.setL1Pose(L1ScorerPose.Hold))),
                     new ConditionalCommand(
                         new InstantCommand(),
