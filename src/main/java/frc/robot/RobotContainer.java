@@ -1160,10 +1160,7 @@ public class RobotContainer {
         .whileTrue(
             new ConditionalCommand(
                 /* L1 Score */
-                Commands.sequence(
-                    l1Scorer.runOnce(() -> l1Scorer.setL1Pose(L1ScorerPose.Score)),
-                    new WaitUntilCommand(l1Scorer::isAtPosition),
-                    l1Scorer.runOnce(() -> l1Scorer.ejectIntake())),
+                l1Scorer.runOnce(() -> l1Scorer.ejectIntake()),
                 Commands.sequence(
                     new InstantCommand(
                         () -> visionApriltagSubsystem.setPipeline(getScoringTargetPipeline())),
@@ -1238,7 +1235,6 @@ public class RobotContainer {
             new ConditionalCommand(
                     Commands.sequence(
                         /* L1 */
-                        l1Scorer.runOnce(() -> l1Scorer.runIntakeHoldSpeed()),
                         l1Scorer.runOnce(() -> l1Scorer.setL1Pose(L1ScorerPose.Hold))),
                     new ConditionalCommand(
                         new InstantCommand(),
@@ -1313,44 +1309,45 @@ public class RobotContainer {
                             this::shouldIntakeLeftSide))));
     */
 
-    oi.testFunction().whileTrue(l1Scorer.runOnce(() -> l1Scorer.tiltForward()));
-    oi.testFunction().whileFalse(l1Scorer.runOnce(() -> l1Scorer.stopTilt()));
-
     oi.intakeCoralButton()
         .whileTrue(
-            Commands.deadline(
-                new ConditionalCommand(
-                    // L1 Mode TRUE
+            new ConditionalCommand(
+                Commands.sequence(
+                    l1Scorer.runOnce(() -> l1Scorer.ejectIntake()),
+                    l1Scorer.runOnce(() -> l1Scorer.setL1Pose(L1ScorerPose.Intake)),
+                    new WaitUntilCommand(l1Scorer::isAtPosition),
+                    l1Scorer.runOnce(() -> l1Scorer.runIntake())),
+                Commands.deadline(
                     Commands.sequence(
-                        l1Scorer.runOnce(() -> l1Scorer.setL1Pose(L1ScorerPose.Intake)),
-                        new WaitUntilCommand(l1Scorer::isAtPosition),
-                        l1Scorer.runOnce(() -> l1Scorer.runIntake())),
-                    Commands.deadline(
-                        Commands.sequence(
-                            new InstantCommand(() -> isRunningPath = true),
-                            intake.runOnce(
-                                () -> intake.setTargetPose(ArmevatorPose.CORAL_L1_SCORE)),
-                            armevator.runOnce(
-                                () -> armevator.setTargetPose(ArmevatorPose.CORAL_HP_LOAD)),
-                            new IntakeCoral(claw, statusRgb)),
-                        Commands.sequence(
-                            AutoBuilder.pathfindThenFollowPath(
-                                shouldIntakeLeftSide() ? pathLeftHP : pathRightHP,
-                                hpPathConstraints),
-                            drivetrain.run(
-                                () ->
-                                    driveSlowlyDirection(
-                                        Rotation2d.fromDegrees(
-                                            shouldIntakeLeftSide() ? 125.0 : -125.0))))),
-                    this::isL1Mode)));
+                        new InstantCommand(() -> isRunningPath = true),
+                        intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.CORAL_L1_SCORE)),
+                        armevator.runOnce(() -> armevator.setTargetPose(ArmevatorPose.CORAL_HP_LOAD)),
+                        new IntakeCoral(claw, statusRgb)),
+                    Commands.sequence(
+                        new ConditionalCommand(
+                            Commands.sequence(
+                                AutoBuilder.pathfindThenFollowPath(pathLeftHP, hpPathConstraints),
+                                drivetrain.run(
+                                    () -> driveSlowlyDirection(Rotation2d.fromDegrees(125.0)))),
+                            Commands.sequence(
+                                AutoBuilder.pathfindThenFollowPath(pathRightHP, hpPathConstraints),
+                                drivetrain.run(
+                                    () -> driveSlowlyDirection(Rotation2d.fromDegrees(-125.0)))),
+                            this::shouldIntakeLeftSide))),
+                    this::isL1Mode));
 
     oi.intakeCoralButton()
         .whileFalse(
             Commands.sequence(
                 Commands.runOnce(() -> isRunningPath = false),
-                l1Scorer.runOnce(() -> l1Scorer.runIntakeHoldSpeed()),
-                l1Scorer.runOnce(() -> l1Scorer.setL1Pose(L1ScorerPose.Hold))
-            ));
+                new ConditionalCommand(
+                    Commands.sequence(
+                        l1Scorer.runOnce(() -> l1Scorer.runIntakeHoldSpeed()),
+                        l1Scorer.runOnce(() -> l1Scorer.setL1Pose(L1ScorerPose.Score)),
+                        new WaitUntilCommand(l1Scorer::isAtPosition),
+                        l1Scorer.runOnce(() -> l1Scorer.stopIntake())),
+                    new InstantCommand(),
+                    this::isL1Mode)));
 
     oi.operatorF1()
         .onTrue(
@@ -1888,7 +1885,6 @@ public class RobotContainer {
   private boolean isRobotCloseToScoringPosition() {
     return getDistanceFromTarget() < 0.4;
   }
-
 
   private Pipelines getScoringTargetPipeline() {
     if (scoringPathOption == ScoringPathOption.PATH_B2
