@@ -3,6 +3,7 @@
 // the WPILib BSD license file in the root directory of this project.
 package frc.robot.subsystems.L1Scorer;
 
+import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.MotorOutputConfigs;
 import com.ctre.phoenix6.configs.TalonFXConfigurator;
 import com.ctre.phoenix6.hardware.TalonFX;
@@ -17,6 +18,7 @@ import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
@@ -37,6 +39,9 @@ public class L1Scorer extends SubsystemBase {
   private TalonFX intakeMotor;
 
   private RelativeEncoder tiltEncoder;
+
+  private StatusSignal<Current> statorCurrent;
+  private double amps;
 
   public L1Scorer() {
     intakeMotor = new TalonFX(L1ScorerConstants.INTAKE_MOTOR_ID);
@@ -75,6 +80,9 @@ public class L1Scorer extends SubsystemBase {
     intakeMotor.stopMotor();
     tiltMotor.stopMotor();
 
+    statorCurrent = intakeMotor.getStatorCurrent();
+    statorCurrent.setUpdateFrequency(100);
+
     setupNT();
   }
 
@@ -86,6 +94,8 @@ public class L1Scorer extends SubsystemBase {
 
     tiltOutput = MathUtil.clamp(tiltPID.calculate(getTiltPosition()), -0.4, 0.4);
     tiltMotor.set(tiltOutput);
+
+    amps = statorCurrent.refresh().getValueAsDouble();
 
     doLogging();
   }
@@ -154,6 +164,7 @@ public class L1Scorer extends SubsystemBase {
     Logger.recordOutput(L1ScorerConstants.SUBSYSTEM_NAME + "/Tilt Velocity", getTiltVelocity());
     Logger.recordOutput(L1ScorerConstants.SUBSYSTEM_NAME + "/Tilt Goal", l1ScorerSetpoint);
     Logger.recordOutput(L1ScorerConstants.SUBSYSTEM_NAME + "/Tilt Output", tiltOutput);
+    Logger.recordOutput(L1ScorerConstants.SUBSYSTEM_NAME + "/Intake Stator Current", amps);
   }
 
   private void setupNT() {
@@ -163,6 +174,7 @@ public class L1Scorer extends SubsystemBase {
     tab.addDouble("Tilt Position", this::getTiltPosition);
     tab.addDouble("Tilt Velocity", this::getTiltVelocity);
     tab.addDouble("Tilt Output", () -> tiltOutput);
+    tab.addDouble("Intake Stator Current", () -> statorCurrent.refresh().getValueAsDouble());
 
     tab.add("Tilt PID", tiltPID);
   }
