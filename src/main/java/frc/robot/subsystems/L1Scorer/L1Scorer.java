@@ -140,6 +140,10 @@ public class L1Scorer extends SubsystemBase {
     return tiltPID.atSetpoint();
   }
 
+  public boolean hasGamePiece() {
+    return amps >= L1ScorerConstants.CURRENT_THRESHOLD_AMPS;
+  }
+
   public void setL1Pose(L1ScorerPose l1ScorerPose) {
     this.l1ScorerPose = l1ScorerPose;
     switch (this.l1ScorerPose) {
