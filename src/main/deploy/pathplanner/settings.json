@@ -5,8 +5,9 @@
   "pathFolders": [
     "Algae Pluck Paths",
     "Center Auto Paths",
-    "Pathfinding Paths",
     "Four Piece Paths",
+    "L1 Scoring Paths",
+    "Pathfinding Paths",
     "Scoring Paths"
   ],
   "autoFolders": [
@@ -36,5 +37,8 @@
   "brModuleY": -0.263525,
   "bumperOffsetX": 0.0,
   "bumperOffsetY": 0.0,
-  "robotFeatures": []
+  "robotFeatures": [
+    "{\"name\":\"Rectangle\",\"type\":\"rounded_rect\",\"data\":{\"center\":{\"x\":-0.127,\"y\":-0.2921},\"size\":{\"width\":0.2,\"length\":0.2},\"borderRadius\":0.05,\"strokeWidth\":0.02,\"filled\":false}}",
+    "{\"name\":\"Line\",\"type\":\"line\",\"data\":{\"start\":{\"x\":-0.127,\"y\":-0.292},\"end\":{\"x\":-0.127,\"y\":-0.5},\"strokeWidth\":0.01}}"
+  ]
 }
