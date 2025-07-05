@@ -229,6 +229,19 @@ public class RobotContainer {
 
   PathPlannerPath pathR2HP;
 
+  PathPlannerPath pathL1F1;
+  PathPlannerPath pathL1F2;
+  PathPlannerPath pathL1FL1;
+  PathPlannerPath pathL1FL2;
+  PathPlannerPath pathL1FR1;
+  PathPlannerPath pathL1FR2;
+  PathPlannerPath pathL1BL1;
+  PathPlannerPath pathL1BL2;
+  PathPlannerPath pathL1BR1;
+  PathPlannerPath pathL1BR2;
+  PathPlannerPath pathL1B1;
+  PathPlannerPath pathL1B2;
+
   private ScoringPathOption scoringPathOption = ScoringPathOption.PATH_F1;
 
   public enum ScoringPathOption {
@@ -251,6 +264,7 @@ public class RobotContainer {
   Map<ScoringPathOption, Command> simplePluckScoringMap = new HashMap<>(12);
   Map<ScoringPathOption, Command> pluckAlgaePathMap = new HashMap<>(12);
   Map<ScoringPathOption, Rotation2d> scoringAngleMap = new HashMap<>(12);
+  Map<ScoringPathOption, Command> scoringPathL1Map = new HashMap<>(12);
 
   private Field2d field2d;
 
@@ -284,6 +298,19 @@ public class RobotContainer {
 
       pathR2HP = PathPlannerPath.fromPathFile("R2-HP");
 
+      /* L1 scroing paths */
+      pathL1F1 = PathPlannerPath.fromPathFile("L1 F1");
+      pathL1F2 = PathPlannerPath.fromPathFile("L1 F2");
+      pathL1FL1 = PathPlannerPath.fromPathFile("L1 FL1");
+      pathL1FL2 = PathPlannerPath.fromPathFile("L1 FL2");
+      pathL1FR1 = PathPlannerPath.fromPathFile("L1 FR1");
+      pathL1FR2 = PathPlannerPath.fromPathFile("L1 FR2");
+      pathL1BL1 = PathPlannerPath.fromPathFile("L1 BL1");
+      pathL1BL2 = PathPlannerPath.fromPathFile("L1 BL2");
+      pathL1BR1 = PathPlannerPath.fromPathFile("L1 BR1");
+      pathL1BR2 = PathPlannerPath.fromPathFile("L1 BR2");
+      pathL1B1 = PathPlannerPath.fromPathFile("L1 B1");
+      pathL1B2 = PathPlannerPath.fromPathFile("L1 B2");
     } catch (Exception e) {
       System.out.println(e.getMessage());
     }
@@ -1230,6 +1257,7 @@ public class RobotContainer {
                                         scoringAngleMap.get(scoringPathOption)))),
                         isFullAutoSupplier)),
                 this::isL1Mode));
+
     oi.scoreCoralButton()
         .onFalse(
             new ConditionalCommand(
@@ -1321,7 +1349,8 @@ public class RobotContainer {
                     Commands.sequence(
                         new InstantCommand(() -> isRunningPath = true),
                         intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.CORAL_L1_SCORE)),
-                        armevator.runOnce(() -> armevator.setTargetPose(ArmevatorPose.CORAL_HP_LOAD)),
+                        armevator.runOnce(
+                            () -> armevator.setTargetPose(ArmevatorPose.CORAL_HP_LOAD)),
                         new IntakeCoral(claw, statusRgb)),
                     Commands.sequence(
                         new ConditionalCommand(
@@ -1334,7 +1363,7 @@ public class RobotContainer {
                                 drivetrain.run(
                                     () -> driveSlowlyDirection(Rotation2d.fromDegrees(-125.0)))),
                             this::shouldIntakeLeftSide))),
-                    this::isL1Mode));
+                this::isL1Mode));
 
     oi.intakeCoralButton()
         .whileFalse(
@@ -2116,6 +2145,43 @@ public class RobotContainer {
     scoringPathMap.put(
         ScoringPathOption.PATH_B2,
         AutoBuilder.pathfindToPose(getPathStartingPose(pathB2), scorePathConstraints));
+
+    scoringPathL1Map.put(
+        ScoringPathOption.PATH_F1,
+        AutoBuilder.pathfindToPose(getPathStartingPose(pathL1F1), scorePathConstraints));
+    scoringPathL1Map.put(
+        ScoringPathOption.PATH_F2,
+        AutoBuilder.pathfindToPose(getPathStartingPose(pathL1F2), scorePathConstraints));
+    scoringPathL1Map.put(
+        ScoringPathOption.PATH_FL1,
+        AutoBuilder.pathfindToPose(getPathStartingPose(pathL1FL1), scorePathConstraints));
+    scoringPathL1Map.put(
+        ScoringPathOption.PATH_FL2,
+        AutoBuilder.pathfindToPose(getPathStartingPose(pathL1FL2), scorePathConstraints));
+    scoringPathL1Map.put(
+        ScoringPathOption.PATH_FR1,
+        AutoBuilder.pathfindToPose(getPathStartingPose(pathL1FR1), scorePathConstraints));
+    scoringPathL1Map.put(
+        ScoringPathOption.PATH_FR2,
+        AutoBuilder.pathfindToPose(getPathStartingPose(pathL1FR2), scorePathConstraints));
+    scoringPathL1Map.put(
+        ScoringPathOption.PATH_BL1,
+        AutoBuilder.pathfindToPose(getPathStartingPose(pathL1BL1), scorePathConstraints));
+    scoringPathL1Map.put(
+        ScoringPathOption.PATH_BL2,
+        AutoBuilder.pathfindToPose(getPathStartingPose(pathL1BL2), scorePathConstraints));
+    scoringPathL1Map.put(
+        ScoringPathOption.PATH_BR1,
+        AutoBuilder.pathfindToPose(getPathStartingPose(pathL1BR1), scorePathConstraints));
+    scoringPathL1Map.put(
+        ScoringPathOption.PATH_BR2,
+        AutoBuilder.pathfindToPose(getPathStartingPose(pathL1BR2), scorePathConstraints));
+    scoringPathL1Map.put(
+        ScoringPathOption.PATH_B1,
+        AutoBuilder.pathfindToPose(getPathStartingPose(pathL1B1), scorePathConstraints));
+    scoringPathL1Map.put(
+        ScoringPathOption.PATH_B2,
+        AutoBuilder.pathfindToPose(getPathStartingPose(pathL1B2), scorePathConstraints));
 
     simpleScoringPathMap.put(ScoringPathOption.PATH_F1, AutoBuilder.followPath(pathF1));
     simpleScoringPathMap.put(ScoringPathOption.PATH_F2, AutoBuilder.followPath(pathF2));
