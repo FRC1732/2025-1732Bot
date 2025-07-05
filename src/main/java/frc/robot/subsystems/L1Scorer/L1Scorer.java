@@ -18,6 +18,7 @@ import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.filter.MedianFilter;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
@@ -39,9 +40,11 @@ public class L1Scorer extends SubsystemBase {
   private TalonFX intakeMotor;
 
   private RelativeEncoder tiltEncoder;
+  private MedianFilter filter;
 
   private StatusSignal<Current> statorCurrent;
   private double amps;
+  private double filteredAmps;
 
   public L1Scorer() {
     intakeMotor = new TalonFX(L1ScorerConstants.INTAKE_MOTOR_ID);
@@ -83,6 +86,8 @@ public class L1Scorer extends SubsystemBase {
     statorCurrent = intakeMotor.getStatorCurrent();
     statorCurrent.setUpdateFrequency(100);
 
+    filter = new MedianFilter(20);
+
     setupNT();
   }
 
@@ -96,6 +101,8 @@ public class L1Scorer extends SubsystemBase {
     tiltMotor.set(tiltOutput);
 
     amps = statorCurrent.refresh().getValueAsDouble();
+
+    filteredAmps = filter.calculate(amps);
 
     doLogging();
   }
@@ -141,7 +148,7 @@ public class L1Scorer extends SubsystemBase {
   }
 
   public boolean hasGamePiece() {
-    return amps >= L1ScorerConstants.CURRENT_THRESHOLD_AMPS;
+    return filteredAmps >= L1ScorerConstants.CURRENT_THRESHOLD_AMPS;
   }
 
   public void setL1Pose(L1ScorerPose l1ScorerPose) {
@@ -168,7 +175,8 @@ public class L1Scorer extends SubsystemBase {
     Logger.recordOutput(L1ScorerConstants.SUBSYSTEM_NAME + "/Tilt Velocity", getTiltVelocity());
     Logger.recordOutput(L1ScorerConstants.SUBSYSTEM_NAME + "/Tilt Goal", l1ScorerSetpoint);
     Logger.recordOutput(L1ScorerConstants.SUBSYSTEM_NAME + "/Tilt Output", tiltOutput);
-    Logger.recordOutput(L1ScorerConstants.SUBSYSTEM_NAME + "/Intake Stator Current", amps);
+    Logger.recordOutput(L1ScorerConstants.SUBSYSTEM_NAME + "/Intake Stator Input", amps);
+    Logger.recordOutput(L1ScorerConstants.SUBSYSTEM_NAME + "/Intake Stator Median", filteredAmps);
   }
 
   private void setupNT() {
@@ -178,7 +186,8 @@ public class L1Scorer extends SubsystemBase {
     tab.addDouble("Tilt Position", this::getTiltPosition);
     tab.addDouble("Tilt Velocity", this::getTiltVelocity);
     tab.addDouble("Tilt Output", () -> tiltOutput);
-    tab.addDouble("Intake Stator Current", () -> statorCurrent.refresh().getValueAsDouble());
+    tab.addDouble("Intake Stator Input", () -> statorCurrent.refresh().getValueAsDouble());
+    tab.addDouble("Intake Stator Median", () -> filteredAmps);
 
     tab.add("Tilt PID", tiltPID);
   }
