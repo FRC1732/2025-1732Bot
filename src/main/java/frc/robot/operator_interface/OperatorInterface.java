@@ -224,9 +224,6 @@ public interface OperatorInterface {
     return new Trigger(() -> false);
   }
 
-  public default Trigger testFunction() {
-    return new Trigger(() -> false);
-  }
 
   public default Trigger toggleSlowMode() {
     return new Trigger(() -> false);
