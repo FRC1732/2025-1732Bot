@@ -638,8 +638,7 @@ public class RobotContainer {
     NamedCommands.registerCommand(
         "preHandoff",
         Commands.sequence(
-            armevator.runOnce(() -> armevator.setTargetPose(ArmevatorPose.ALGAE_INTAKE  56
-            )),
+            armevator.runOnce(() -> armevator.setTargetPose(ArmevatorPose.ALGAE_INTAKE)),
             intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.ALGAE_PRE_INTAKE_AUTO))));
     NamedCommands.registerCommand(
         "groundIntake",
