@@ -15,10 +15,10 @@ public class L1ScorerConstants {
   public static final double TILT_KD = 0.0;
   public static final double TILT_KG = 0.0;
 
-  public static final double INTAKE_SPEED = -0.30; // test more
-  public static final double EJECT_SPEED = 0.20; // test more
+  public static final double INTAKE_SPEED = -0.40; // test more
+  public static final double EJECT_SPEED = 0.25; // test more
   public static final double TILT_SPEED = 0.10; // test more
-  public static final double HOLD_INTAKE_SPEED = -0.05; // test more
+  public static final double HOLD_INTAKE_SPEED = -0.10; // test more
 
   public static final double START_ANGLE = 0.0;
   public static final double HOLD_ANGLE = 5.0;

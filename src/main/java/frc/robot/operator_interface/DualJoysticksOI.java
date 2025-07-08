@@ -84,7 +84,6 @@ public class DualJoysticksOI implements OperatorInterface {
     return translateJoystickButtons[6];
   }
 
-
   public Trigger toggleSlowMode() {
     return translateJoystickButtons[11];
   }

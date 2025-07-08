@@ -103,8 +103,7 @@ public class L1Scorer extends SubsystemBase {
     amps = statorCurrent.refresh().getValueAsDouble();
 
     filteredAmps = filter.calculate(amps);
-    
-    tiltPID.setSetpoint(L1ScorerConstants.HOLD_ANGLE);
+
     doLogging();
   }
 

@@ -1895,6 +1895,7 @@ public class RobotContainer {
 
   public void autonomousInit() {
     // add robot-wide code here that will be executed when autonomous starts
+    l1Scorer.setL1Pose(L1ScorerPose.Hold);
   }
 
   public void teleopInit() {
