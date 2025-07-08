@@ -387,6 +387,11 @@ public class RobotContainer {
             intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.CORAL_L4_SCORE)),
             armevator.runOnce(() -> armevator.setTargetPose(ArmevatorPose.CORAL_L3_SCORE))));
     NamedCommands.registerCommand(
+        "setPoseL1",
+        Commands.sequence(
+            intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.CORAL_L4_SCORE)),
+            armevator.runOnce(() -> armevator.setTargetPose(ArmevatorPose.CORAL_L1_SCORE))));
+    NamedCommands.registerCommand(
         "setPosePrePluckHigh",
         Commands.sequence(
             intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.CORAL_L4_SCORE)),
@@ -630,6 +635,33 @@ public class RobotContainer {
             Commands.waitSeconds(0.2),
             claw.runOnce(() -> claw.stopClaw()),
             armevator.runOnce(() -> armevator.setTargetPose(ArmevatorPose.CORAL_HP_LOAD))));
+    NamedCommands.registerCommand(
+            "preHandoff",
+            Commands.sequence(
+                intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.ALGAE_PRE_HANDOFF))));
+    NamedCommands.registerCommand(
+            "groundIntake",
+            Commands.sequence(
+                intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.ALGAE_INTAKE)),
+                armevator.runOnce(() -> armevator.setTargetPose(ArmevatorPose.ALGAE_INTAKE)),
+                Commands.parallel(
+                    intake.run(() -> intake.runIntake()), claw.run(() -> claw.intakeAlgae()))));
+    NamedCommands.registerCommand(
+            "handoff",
+            Commands.sequence(
+                intake.runOnce(() -> intake.stopIntake()),
+                claw.runOnce(() -> claw.stopClaw()),
+                intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.ALGAE_PRE_HANDOFF)),
+                armevator.runOnce(() -> armevator.setTargetPose(ArmevatorPose.ALGAE_POST_HANDOFF)),
+                Commands.waitSeconds(0.65),
+                intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.ALGAE_HANDOFF)),
+                Commands.waitSeconds(0.2),
+                intake.runOnce(() -> intake.runIntake()),
+                claw.runOnce(() -> claw.intakeAlgae()),
+                Commands.waitSeconds(0.5),
+                intake.runOnce(() -> intake.stopIntake()),
+                claw.runOnce(() -> claw.brakeAlgae()),
+                intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.ALGAE_POST_HANDOFF))));
 
     // Event Markers
     new EventTrigger("Marker").onTrue(Commands.print("reached event marker"));
@@ -641,10 +673,10 @@ public class RobotContainer {
     // add commands to the auto chooser
     autoChooser.addDefaultOption("Do Nothing", new InstantCommand());
 
-    Command startPoint = new PathPlannerAuto("Start Point");
+    Command startPoint = new PathPlannerAuto("FOR TEST");
     autoChooser.addOption("Start Point", startPoint);
 
-    Command fourPiece = new PathPlannerAuto("4 piece");
+    Command fourPiece = new PathPlannerAuto("shorter 4 piece");
     autoChooser.addOption("4 piece left", fourPiece);
 
     Command centerAlgaeFar = new PathPlannerAuto("Center Algae Far");
