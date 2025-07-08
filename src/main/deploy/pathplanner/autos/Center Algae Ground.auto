@@ -237,7 +237,7 @@
                     {
                       "type": "path",
                       "data": {
-                        "pathName": "BLAlgae-Net Ground"
+                        "pathName": "BLAlgae-Net ground"
                       }
                     },
                     {
@@ -285,7 +285,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "Net-GroundPickup"
+                  "pathName": "Net-GroundIntake"
                 }
               }
             ]
@@ -302,7 +302,7 @@
                     {
                       "type": "wait",
                       "data": {
-                        "waitTime": 0.5
+                        "waitTime": 0.6
                       }
                     },
                     {
@@ -330,7 +330,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "GroundPickup-Net"
+                  "pathName": "GroundIntake-Net"
                 }
               },
               {
@@ -338,13 +338,14 @@
                 "data": {
                   "name": "shootNet"
                 }
-              },
-              {
-                "type": "wait",
-                "data": {
-                  "waitTime": 0.5
-                }
-              },
+              }
+            ]
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
               {
                 "type": "path",
                 "data": {

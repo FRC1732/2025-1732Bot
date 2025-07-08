@@ -636,32 +636,34 @@ public class RobotContainer {
             claw.runOnce(() -> claw.stopClaw()),
             armevator.runOnce(() -> armevator.setTargetPose(ArmevatorPose.CORAL_HP_LOAD))));
     NamedCommands.registerCommand(
-            "preHandoff",
-            Commands.sequence(
-                intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.ALGAE_PRE_HANDOFF))));
+        "preHandoff",
+        Commands.sequence(
+            armevator.runOnce(() -> armevator.setTargetPose(ArmevatorPose.ALGAE_INTAKE  56
+            )),
+            intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.ALGAE_PRE_INTAKE_AUTO))));
     NamedCommands.registerCommand(
-            "groundIntake",
-            Commands.sequence(
-                intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.ALGAE_INTAKE)),
-                armevator.runOnce(() -> armevator.setTargetPose(ArmevatorPose.ALGAE_INTAKE)),
-                Commands.parallel(
-                    intake.run(() -> intake.runIntake()), claw.run(() -> claw.intakeAlgae()))));
+        "groundIntake",
+        Commands.sequence(
+            intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.ALGAE_INTAKE)),
+            armevator.runOnce(() -> armevator.setTargetPose(ArmevatorPose.ALGAE_INTAKE)),
+            Commands.parallel(
+                intake.run(() -> intake.runIntake()), claw.run(() -> claw.intakeAlgae()))));
     NamedCommands.registerCommand(
-            "handoff",
-            Commands.sequence(
-                intake.runOnce(() -> intake.stopIntake()),
-                claw.runOnce(() -> claw.stopClaw()),
-                intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.ALGAE_PRE_HANDOFF)),
-                armevator.runOnce(() -> armevator.setTargetPose(ArmevatorPose.ALGAE_POST_HANDOFF)),
-                Commands.waitSeconds(0.65),
-                intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.ALGAE_HANDOFF)),
-                Commands.waitSeconds(0.2),
-                intake.runOnce(() -> intake.runIntake()),
-                claw.runOnce(() -> claw.intakeAlgae()),
-                Commands.waitSeconds(0.5),
-                intake.runOnce(() -> intake.stopIntake()),
-                claw.runOnce(() -> claw.brakeAlgae()),
-                intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.ALGAE_POST_HANDOFF))));
+        "handoff",
+        Commands.sequence(
+            intake.runOnce(() -> intake.stopIntake()),
+            claw.runOnce(() -> claw.stopClaw()),
+            intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.ALGAE_PRE_HANDOFF)),
+            armevator.runOnce(() -> armevator.setTargetPose(ArmevatorPose.ALGAE_POST_HANDOFF)),
+            Commands.waitSeconds(0.4),
+            intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.ALGAE_HANDOFF)),
+            Commands.waitSeconds(0.2),
+            intake.runOnce(() -> intake.runIntake()),
+            claw.runOnce(() -> claw.intakeAlgae()),
+            Commands.waitSeconds(0.3),
+            intake.runOnce(() -> intake.stopIntake()),
+            claw.runOnce(() -> claw.brakeAlgae()),
+            intake.runOnce(() -> intake.setTargetPose(ArmevatorPose.ALGAE_POST_HANDOFF))));
 
     // Event Markers
     new EventTrigger("Marker").onTrue(Commands.print("reached event marker"));
@@ -673,14 +675,17 @@ public class RobotContainer {
     // add commands to the auto chooser
     autoChooser.addDefaultOption("Do Nothing", new InstantCommand());
 
-    Command startPoint = new PathPlannerAuto("FOR TEST");
+    Command startPoint = new PathPlannerAuto("Start Point");
     autoChooser.addOption("Start Point", startPoint);
 
-    Command fourPiece = new PathPlannerAuto("shorter 4 piece");
+    Command fourPiece = new PathPlannerAuto("4 piece");
     autoChooser.addOption("4 piece left", fourPiece);
 
     Command centerAlgaeFar = new PathPlannerAuto("Center Algae Far");
     autoChooser.addOption("Center Algae Far", centerAlgaeFar);
+
+    Command centerAlgaeGround = new PathPlannerAuto("Center Algae Ground");
+    autoChooser.addOption("Center Algae Ground", centerAlgaeGround);
 
     Command centerCoral = new PathPlannerAuto("Center Coral");
     autoChooser.addOption("Center Coral", centerCoral);
