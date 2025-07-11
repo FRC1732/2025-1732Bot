@@ -220,6 +220,19 @@ public class RobotContainer {
   PathPlannerPath pathB2;
   PathPlannerPath pathLeftHP;
   PathPlannerPath pathRightHP;
+  
+  PathPlannerPath pathL1F1;
+  PathPlannerPath pathL1F2;
+  PathPlannerPath pathL1FL1;
+  PathPlannerPath pathL1FL2;
+  PathPlannerPath pathL1FR1;
+  PathPlannerPath pathL1FR2;
+  PathPlannerPath pathL1BL1;
+  PathPlannerPath pathL1BL2;
+  PathPlannerPath pathL1BR1;
+  PathPlannerPath pathL1BR2;
+  PathPlannerPath pathL1B1;
+  PathPlannerPath pathL1B2;
 
   PathPlannerPath pathFAlgae;
   PathPlannerPath pathFLAlgae;
@@ -244,7 +257,19 @@ public class RobotContainer {
     PATH_BR1,
     PATH_BR2,
     PATH_B1,
-    PATH_B2
+    PATH_B2,
+    PATH_L1_F1,
+    PATH_L1_F2,
+    PATH_L1_FL1,
+    PATH_L1_FL2,
+    PATH_L1_FR1,
+    PATH_L1_FR2,
+    PATH_L1_BL1,
+    PATH_L1_BL2,
+    PATH_L1_BR1,
+    PATH_L1_BR2,
+    PATH_L1_B1,
+    PATH_L1_B2
   }
 
   Map<ScoringPathOption, Command> scoringPathMap = new HashMap<>(12);
@@ -252,6 +277,7 @@ public class RobotContainer {
   Map<ScoringPathOption, Command> simplePluckScoringMap = new HashMap<>(12);
   Map<ScoringPathOption, Command> pluckAlgaePathMap = new HashMap<>(12);
   Map<ScoringPathOption, Rotation2d> scoringAngleMap = new HashMap<>(12);
+  Map<ScoringPathOption, Command> scoringPathMapL1 = new HashMap<>(12);
 
   private Field2d field2d;
 
@@ -2260,6 +2286,43 @@ public class RobotContainer {
     scoringAngleMap.put(ScoringPathOption.PATH_BR2, Rotation2d.fromDegrees(120.0));
     scoringAngleMap.put(ScoringPathOption.PATH_B1, Rotation2d.fromDegrees(180.0));
     scoringAngleMap.put(ScoringPathOption.PATH_B2, Rotation2d.fromDegrees(180.0));
+
+    scoringPathMapL1.put(
+        ScoringPathOption.PATH_L1_F1,
+        AutoBuilder.pathfindToPose(getPathStartingPose(pathL1F1), scorePathConstraints));
+    scoringPathMapL1.put(
+        ScoringPathOption.PATH_L1_F2,
+        AutoBuilder.pathfindToPose(getPathStartingPose(pathL1F2), scorePathConstraints));
+    scoringPathMapL1.put(
+        ScoringPathOption.PATH_L1_FL1,
+        AutoBuilder.pathfindToPose(getPathStartingPose(pathL1FL1), scorePathConstraints));
+    scoringPathMapL1.put(
+        ScoringPathOption.PATH_L1_FL2,
+        AutoBuilder.pathfindToPose(getPathStartingPose(pathL1FL2), scorePathConstraints));
+    scoringPathMapL1.put(
+        ScoringPathOption.PATH_L1_FR1,
+        AutoBuilder.pathfindToPose(getPathStartingPose(pathL1FR1), scorePathConstraints));
+    scoringPathMapL1.put(
+        ScoringPathOption.PATH_L1_FR2,
+        AutoBuilder.pathfindToPose(getPathStartingPose(pathL1FR2), scorePathConstraints));
+    scoringPathMapL1.put(
+        ScoringPathOption.PATH_L1_BL1,
+        AutoBuilder.pathfindToPose(getPathStartingPose(pathL1BL1), scorePathConstraints));
+    scoringPathMapL1.put(
+        ScoringPathOption.PATH_L1_BL2,
+        AutoBuilder.pathfindToPose(getPathStartingPose(pathL1BL2), scorePathConstraints));
+    scoringPathMapL1.put(
+        ScoringPathOption.PATH_L1_BR1,
+        AutoBuilder.pathfindToPose(getPathStartingPose(pathL1BR1), scorePathConstraints));
+    scoringPathMapL1.put(
+        ScoringPathOption.PATH_L1_BR2,
+        AutoBuilder.pathfindToPose(getPathStartingPose(pathL1BR2), scorePathConstraints));
+    scoringPathMapL1.put(
+        ScoringPathOption.PATH_L1_B1,
+        AutoBuilder.pathfindToPose(getPathStartingPose(pathL1B1), scorePathConstraints));
+    scoringPathMapL1.put(
+        ScoringPathOption.PATH_L1_B2,
+        AutoBuilder.pathfindToPose(getPathStartingPose(pathL1B2), scorePathConstraints));
   }
 
   public Pose2d inferPoseFromTarget(Pose2d targetPose, double txDegrees) {
