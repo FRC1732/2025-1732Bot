@@ -8,22 +8,22 @@ public class L1ScorerConstants {
 
   public static final double MIN_ANGLE_DEGREES = 0.0;
   public static final double MAX_ANGLE_DEGREES = 110.0;
-  public static final double ANGLE_GOAL_TOLERANCE_DEGREES = 3.0;
+  public static final double ANGLE_GOAL_TOLERANCE_DEGREES = 2.5;
 
   public static final double TILT_KP = 0.005;
   public static final double TILT_KI = 0.0;
   public static final double TILT_KD = 0.0;
   public static final double TILT_KG = 0.0;
 
-  public static final double INTAKE_SPEED = -0.35;
-  public static final double EJECT_SPEED = 0.25;
+  public static final double INTAKE_SPEED = -0.60;
+  public static final double EJECT_SPEED = 0.35;
   public static final double TILT_SPEED = 0.10;
-  public static final double HOLD_INTAKE_SPEED = -0.15;
+  public static final double HOLD_INTAKE_SPEED = -0.10;
 
   public static final double START_ANGLE = 0.0;
   public static final double HOLD_ANGLE = 5.0;
   public static final double SCORE_ANGLE = 8.0;
-  public static final double INTAKE_ANGLE = 101.0;
+  public static final double INTAKE_ANGLE = 99.0;
 
   public static final double CURRENT_THRESHOLD_AMPS = 27.0;
 

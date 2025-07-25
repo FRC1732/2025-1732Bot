@@ -220,7 +220,7 @@ public class RobotContainer {
   PathPlannerPath pathB2;
   PathPlannerPath pathLeftHP;
   PathPlannerPath pathRightHP;
-  
+
   PathPlannerPath pathL1F1;
   PathPlannerPath pathL1F2;
   PathPlannerPath pathL1FL1;
@@ -277,7 +277,6 @@ public class RobotContainer {
   Map<ScoringPathOption, Command> simplePluckScoringMap = new HashMap<>(12);
   Map<ScoringPathOption, Command> pluckAlgaePathMap = new HashMap<>(12);
   Map<ScoringPathOption, Rotation2d> scoringAngleMap = new HashMap<>(12);
-  Map<ScoringPathOption, Command> scoringPathMapL1 = new HashMap<>(12);
 
   private Field2d field2d;
 
@@ -1310,12 +1309,7 @@ public class RobotContainer {
     oi.scoreCoralButton()
         .onFalse(
             new ConditionalCommand(
-                    Commands.sequence(
-                        /* L1 */
-                        new ConditionalCommand(
-                            l1Scorer.runOnce(() -> l1Scorer.runIntakeHoldSpeed()),
-                            l1Scorer.runOnce(() -> l1Scorer.stopIntake()),
-                            l1Scorer::hasGamePiece)),
+                    l1Scorer.runOnce(() -> l1Scorer.stopIntake()),
                     new ConditionalCommand(
                         new InstantCommand(),
                         armevator
@@ -1395,7 +1389,7 @@ public class RobotContainer {
                 Commands.sequence(
                     l1Scorer.runOnce(() -> l1Scorer.ejectIntake()),
                     l1Scorer.runOnce(() -> l1Scorer.setL1Pose(L1ScorerPose.Intake)),
-                    new WaitUntilCommand(l1Scorer::isAtPosition),
+                    new WaitCommand(0.2),
                     l1Scorer.runOnce(() -> l1Scorer.runIntake())),
                 Commands.deadline(
                         Commands.sequence(
@@ -1427,13 +1421,7 @@ public class RobotContainer {
             Commands.sequence(
                 Commands.runOnce(() -> isRunningPath = false),
                 new ConditionalCommand(
-                    Commands.sequence(
-                            l1Scorer.runOnce(() -> l1Scorer.setL1Pose(L1ScorerPose.Score)),
-                            new ConditionalCommand(
-                                l1Scorer.runOnce(() -> l1Scorer.runIntake()),
-                                l1Scorer.runOnce(() -> l1Scorer.stopIntake()),
-                                l1Scorer::hasGamePiece))
-                        .asProxy(),
+                    l1Scorer.runOnce(() -> l1Scorer.setL1Pose(L1ScorerPose.Score)).asProxy(),
                     new ConditionalCommand(
                         new InstantCommand(),
                         armevator
@@ -2286,43 +2274,6 @@ public class RobotContainer {
     scoringAngleMap.put(ScoringPathOption.PATH_BR2, Rotation2d.fromDegrees(120.0));
     scoringAngleMap.put(ScoringPathOption.PATH_B1, Rotation2d.fromDegrees(180.0));
     scoringAngleMap.put(ScoringPathOption.PATH_B2, Rotation2d.fromDegrees(180.0));
-
-    scoringPathMapL1.put(
-        ScoringPathOption.PATH_L1_F1,
-        AutoBuilder.pathfindToPose(getPathStartingPose(pathL1F1), scorePathConstraints));
-    scoringPathMapL1.put(
-        ScoringPathOption.PATH_L1_F2,
-        AutoBuilder.pathfindToPose(getPathStartingPose(pathL1F2), scorePathConstraints));
-    scoringPathMapL1.put(
-        ScoringPathOption.PATH_L1_FL1,
-        AutoBuilder.pathfindToPose(getPathStartingPose(pathL1FL1), scorePathConstraints));
-    scoringPathMapL1.put(
-        ScoringPathOption.PATH_L1_FL2,
-        AutoBuilder.pathfindToPose(getPathStartingPose(pathL1FL2), scorePathConstraints));
-    scoringPathMapL1.put(
-        ScoringPathOption.PATH_L1_FR1,
-        AutoBuilder.pathfindToPose(getPathStartingPose(pathL1FR1), scorePathConstraints));
-    scoringPathMapL1.put(
-        ScoringPathOption.PATH_L1_FR2,
-        AutoBuilder.pathfindToPose(getPathStartingPose(pathL1FR2), scorePathConstraints));
-    scoringPathMapL1.put(
-        ScoringPathOption.PATH_L1_BL1,
-        AutoBuilder.pathfindToPose(getPathStartingPose(pathL1BL1), scorePathConstraints));
-    scoringPathMapL1.put(
-        ScoringPathOption.PATH_L1_BL2,
-        AutoBuilder.pathfindToPose(getPathStartingPose(pathL1BL2), scorePathConstraints));
-    scoringPathMapL1.put(
-        ScoringPathOption.PATH_L1_BR1,
-        AutoBuilder.pathfindToPose(getPathStartingPose(pathL1BR1), scorePathConstraints));
-    scoringPathMapL1.put(
-        ScoringPathOption.PATH_L1_BR2,
-        AutoBuilder.pathfindToPose(getPathStartingPose(pathL1BR2), scorePathConstraints));
-    scoringPathMapL1.put(
-        ScoringPathOption.PATH_L1_B1,
-        AutoBuilder.pathfindToPose(getPathStartingPose(pathL1B1), scorePathConstraints));
-    scoringPathMapL1.put(
-        ScoringPathOption.PATH_L1_B2,
-        AutoBuilder.pathfindToPose(getPathStartingPose(pathL1B2), scorePathConstraints));
   }
 
   public Pose2d inferPoseFromTarget(Pose2d targetPose, double txDegrees) {
