@@ -17,11 +17,11 @@
     {
       "anchor": {
         "x": 7.55,
-        "y": 4.2
+        "y": 5.1
       },
       "prevControl": {
         "x": 7.301370001314886,
-        "y": 4.173863363761944
+        "y": 5.0738633637619435
       },
       "nextControl": null,
       "isLocked": false,
@@ -42,7 +42,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -143.0
+    "rotation": 143.0
   },
   "reversed": false,
   "folder": "Center Auto Paths",

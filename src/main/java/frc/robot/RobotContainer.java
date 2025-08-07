@@ -221,19 +221,6 @@ public class RobotContainer {
   PathPlannerPath pathLeftHP;
   PathPlannerPath pathRightHP;
 
-  PathPlannerPath pathL1F1;
-  PathPlannerPath pathL1F2;
-  PathPlannerPath pathL1FL1;
-  PathPlannerPath pathL1FL2;
-  PathPlannerPath pathL1FR1;
-  PathPlannerPath pathL1FR2;
-  PathPlannerPath pathL1BL1;
-  PathPlannerPath pathL1BL2;
-  PathPlannerPath pathL1BR1;
-  PathPlannerPath pathL1BR2;
-  PathPlannerPath pathL1B1;
-  PathPlannerPath pathL1B2;
-
   PathPlannerPath pathFAlgae;
   PathPlannerPath pathFLAlgae;
   PathPlannerPath pathFRAlgae;
@@ -257,19 +244,7 @@ public class RobotContainer {
     PATH_BR1,
     PATH_BR2,
     PATH_B1,
-    PATH_B2,
-    PATH_L1_F1,
-    PATH_L1_F2,
-    PATH_L1_FL1,
-    PATH_L1_FL2,
-    PATH_L1_FR1,
-    PATH_L1_FR2,
-    PATH_L1_BL1,
-    PATH_L1_BL2,
-    PATH_L1_BR1,
-    PATH_L1_BR2,
-    PATH_L1_B1,
-    PATH_L1_B2
+    PATH_B2
   }
 
   Map<ScoringPathOption, Command> scoringPathMap = new HashMap<>(12);

@@ -8,8 +8,8 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 5.358731898445722,
-        "y": 5.044877918655119
+        "x": 5.954665492957746,
+        "y": 5.49894366197183
       },
       "isLocked": false,
       "linkedName": "BLAlgae"
@@ -17,11 +17,11 @@
     {
       "anchor": {
         "x": 7.55,
-        "y": 4.2
+        "y": 5.1
       },
       "prevControl": {
-        "x": 7.3158422836672585,
-        "y": 4.287579471806099
+        "x": 6.663292253521126,
+        "y": 5.470598591549296
       },
       "nextControl": null,
       "isLocked": false,
@@ -42,7 +42,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -143.0
+    "rotation": 143.0
   },
   "reversed": false,
   "folder": "Center Auto Paths",
